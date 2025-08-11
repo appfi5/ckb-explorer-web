@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: ckb-explorer-web
+  # Database configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ckbexplorer
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        globally_quoted_identifiers: true
+        jdbc.batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+# Server configuration
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com:
+      example:
+        ckbexplorer: DEBUG
+        ckb:
+          explorer: DEBUG
+
+# Swagger/OpenAPI configuration
+springdoc:
+  openapi:
+    paths-to-match: /api/v1/**
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  api-docs:
+    path: /v3/api-docs
