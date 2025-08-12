@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20250812001
+      author: liangyaqian
+      changes:
+        - sqlFile:
+            path: sql-scripts/20250812001-init-table.sql
+            relativeToChangelogFile: true
+

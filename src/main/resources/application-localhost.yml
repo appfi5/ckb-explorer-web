@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: ckb-explorer-web
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: rivtower
+#    password: rivtower
+#    virtual-host: /
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ckbexplorer
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: 192.168.10.143
+      port: 6350
+      database: 4
+      # password: ""
+      redisson:
+        config: |
+          singleServerConfig:
+            address: redis://192.168.10.143:6350
+            # password: ""
+            database: 4
+            idleConnectionTimeout: 10000
+            connectTimeout: 10000
+            timeout: 3000
+            retryAttempts: 3
+            retryInterval: 1500
+            subscriptionsPerConnection: 5
+            clientName: ckb-explorer-web
+            connectionMinimumIdleSize: 32
+            connectionPoolSize: 64
+            dnsMonitoringInterval: 5000
+            codec: !<org.redisson.codec.JsonJacksonCodec> {}
+  liquibase:
+    enabled: true
+    change-log: classpath:liquibase/changelog.yml
+    database-change-log-lock-table: liquibase-lock
+    database-change-log-table: liquibase-changelog
