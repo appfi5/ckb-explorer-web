@@ -1,12 +1,8 @@
 spring:
   application:
     name: ckb-explorer-web
-  # Database configuration
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ckbexplorer
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
+  profiles:
+    active: localhost
   # JPA configuration
   jpa:
     hibernate:
@@ -47,3 +43,6 @@ springdoc:
     tagsSorter: alpha
   api-docs:
     path: /v3/api-docs
+
+# Redisson configuration
+
