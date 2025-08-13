@@ -5,26 +5,54 @@ CREATE TABLE IF NOT EXISTS block(
                                     compact_target BYTEA,
                                     parent_hash BYTEA,
                                     nonce BYTEA,
+                                    difficulty BIGINT,
                                     timestamp BIGINT,
                                     version BYTEA,
                                     transactions_root BYTEA,
+                                    transactions_count INTEGER,
                                     epoch BYTEA,
+                                    start_number BIGINT,
+                                    length INTEGER,
+                                    epoch_number BIGINT,
                                     dao BYTEA,
                                     proposals_hash BYTEA,
                                     extra_hash BYTEA,
-                                    extension BYTEA
+                                    extension BYTEA,
+                                    proposals BYTEA,
+                                    proposals_count INTEGER,
+                                    uncles_count INTEGER,
+                                    uncle_block_hashes BYTEA,
+                                    miner_hash BYTEA,
+                                    miner_message character varying,
+                                    reward BIGINT,
+                                    received_tx_fee BIGINT,
+                                    total_transaction_fee BIGINT,
+                                    cell_consumed BIGINT,
+                                    total_cell_capacity BIGINT,
+                                    block_size INTEGER,
+                                    cycles BIGINT,
+                                    live_cell_changes INTEGER
 );
 
-CREATE TABLE IF NOT EXISTS block_association_proposal(
-                                                         id BIGSERIAL,
-                                                         block_id BIGINT NOT NULL,
-                                                         proposal BYTEA NOT NULL
-);
 
-CREATE TABLE IF NOT EXISTS block_association_uncle(
-                                                      id BIGSERIAL,
-                                                      block_id BIGINT NOT NULL,
-                                                      uncle_id BIGINT NOT NULL
+CREATE TABLE IF NOT EXISTS uncle_block(
+                                  id BIGSERIAL PRIMARY KEY,
+                                  block_id BIGINT NOT NULL,
+                                  index INTEGER,
+                                  block_hash BYTEA NOT NULL,
+                                  block_number BIGINT NOT NULL,
+                                  compact_target BYTEA,
+                                  parent_hash BYTEA,
+                                  nonce BYTEA,
+                                  timestamp BIGINT,
+                                  version BYTEA,
+                                  transactions_root BYTEA,
+                                  epoch BYTEA,
+                                  dao BYTEA,
+                                  proposals_hash BYTEA,
+                                  extra_hash BYTEA,
+                                  extension BYTEA,
+                                  proposals BYTEA
 );
 
 CREATE TABLE IF NOT EXISTS ckb_transaction(
@@ -35,43 +63,78 @@ CREATE TABLE IF NOT EXISTS ckb_transaction(
                                               output_count INTEGER NOT NULL,
                                               witnesses BYTEA,
                                               block_id BIGINT NOT NULL,
-                                              tx_index INTEGER NOT NULL
-);
+                                              block_number BIGINT NOT NULL,
+                                              block_hash BYTEA NOT NULL,
+                                              tx_index INTEGER NOT NULL,
+                                              header_deps BYTEA,
+                                              cycles INTEGER,
+                                              transaction_fee BIGINT,
+                                              bytes BIGINT,
+                                              capacity_involved BIGINT,
+                                              live_cell_changes INTEGER
+                                          );
 
 CREATE TABLE IF NOT EXISTS tx_association_header_dep(
                                                         id BIGSERIAL,
                                                         tx_id BIGINT NOT NULL,
                                                         block_id BIGINT NOT NULL
-);
+                                                    );
 
 CREATE TABLE IF NOT EXISTS tx_association_cell_dep(
                                                       id BIGSERIAL,
                                                       tx_id BIGINT NOT NULL,
+                                                      index INTEGER NOT NULL,
+                                                      outpoint_tx_hash BYTEA NOT NULL,
+                                                      outpoint_index INTEGER NOT NULL,
                                                       output_id BIGINT NOT NULL,
                                                       dep_type SMALLINT NOT NULL
-);
+                                                  );
 
 CREATE TABLE IF NOT EXISTS output(
                                      id BIGSERIAL PRIMARY KEY,
                                      tx_id BIGINT NOT NULL,
+                                     tx_hash BYTEA NOT NULL,
                                      output_index INTEGER NOT NULL,
                                      capacity BIGINT NOT NULL,
                                      lock_script_id BIGINT,
                                      type_script_id BIGINT,
-                                     data BYTEA
-);
+                                     data BYTEA,
+                                     is_spent INTEGER DEFAULT 0,
+                                     address_id BIGINT,
+                                     consumed_tx_hash BYTEA,
+                                     input_index INTEGER,
+                                     occupied_capacity BIGINT
+                                 );
 
 CREATE TABLE IF NOT EXISTS input(
-                                    output_id BIGINT PRIMARY KEY,
+                                    id BIGSERIAL PRIMARY KEY,
+                                    output_id BIGINT,
+                                    pre_outpoint_tx_hash BYTEA NOT NULL,
+                                    pre_outpoint_index INTEGER NOT NULL,
                                     since BYTEA NOT NULL,
                                     consumed_tx_id BIGINT NOT NULL,
+                                    consumed_tx_hash BYTEA,
                                     input_index INTEGER NOT NULL
-);
+                                );
 
 CREATE TABLE IF NOT EXISTS script(
                                      id BIGSERIAL PRIMARY KEY,
                                      code_hash BYTEA NOT NULL,
                                      hash_type SMALLINT NOT NULL,
                                      args BYTEA,
+                                     script_hash BYTEA NOT NULL,
                                      UNIQUE(code_hash, hash_type, args)
-    );
+);
+
+CREATE TABLE IF NOT EXISTS address(
+                                      id BIGSERIAL PRIMARY KEY,
+                                      address character varying NOT NULL,
+                                      script_id BIGINT NOT NULL
+                                  );
+
+CREATE TABLE IF NOT EXISTS account_book(
+                                           id BIGSERIAL PRIMARY KEY,
+                                           address_id BIGINT,
+                                           transaction_id BIGINT,
+                                           income numeric(30,0)
+);

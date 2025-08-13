@@ -1,0 +1,20 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.InputMapper">
+
+  <!-- 结果映射 -->
+  <resultMap id="inputResultMap" type="com.ckb.explorer.entity.Input">
+    <id property="id" column="id"/>
+    <result property="outputId" column="output_id"/>
+    <result property="preOutpointTxHash" column="pre_outpoint_tx_hash"/>
+    <result property="preOutpointIndex" column="pre_outpoint_index"/>
+    <result property="since" column="since"/>
+    <result property="blockId" column="block_id"/>
+    <result property="blockHash" column="block_hash"/>
+    <result property="blockNumber" column="block_number"/>
+  </resultMap>
+
+
+</mapper>

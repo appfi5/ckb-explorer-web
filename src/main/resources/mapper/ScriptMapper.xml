@@ -1,0 +1,17 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.ScriptMapper">
+
+  <!-- 结果映射 -->
+  <resultMap id="scriptResultMap" type="com.ckb.explorer.entity.Script">
+    <id property="id" column="id"/>
+    <result property="codeHash" column="code_hash"/>
+    <result property="hashType" column="hash_type"/>
+    <result property="args" column="args"/>
+    <result property="scriptHash" column="script_hash"/>
+  </resultMap>
+
+
+</mapper>

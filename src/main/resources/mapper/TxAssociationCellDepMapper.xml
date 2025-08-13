@@ -1,0 +1,19 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.TxAssociationCellDepMapper">
+
+  <!-- 结果映射 -->
+  <resultMap id="txAssociationCellDepResultMap" type="com.ckb.explorer.entity.TxAssociationCellDep">
+    <id property="id" column="id"/>
+    <result property="txId" column="tx_id"/>
+    <result property="index" column="index"/>
+    <result property="outpointTxHash" column="outpoint_tx_hash"/>
+    <result property="outpointIndex" column="outpoint_index"/>
+    <result property="blockHash" column="block_hash"/>
+    <result property="blockNumber" column="block_number"/>
+  </resultMap>
+
+
+</mapper>

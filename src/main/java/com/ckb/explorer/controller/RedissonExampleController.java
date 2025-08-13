@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/redisson")
+@RequestMapping("/v2/redisson")
 public class RedissonExampleController {
 
     private final RedissonExampleService redissonExampleService;
@@ -24,10 +24,9 @@ public class RedissonExampleController {
     public ResponseEntity<String> setValue(
             @RequestParam String key,
             @RequestParam String value,
-            @RequestParam(defaultValue = "60") long timeout,
-            @RequestParam(defaultValue = "SECONDS") TimeUnit unit) {
+            @RequestParam(defaultValue = "60") long timeout) {
 
-        redissonExampleService.setValue(key, value, timeout, unit);
+        redissonExampleService.setValue(key, value, timeout);
         return ResponseEntity.ok("值已设置: " + key + " = " + value);
     }
 

@@ -28,4 +28,4 @@ This is a REST API service for CKB Explorer, built with Spring Boot and Maven.
    ```
    mvn spring-boot:run
    ```
-4. Access the API at `http://localhost:8081/api/v1/swagger-ui/index.html`
+4. Access the API at `http://localhost:8081/api/swagger-ui/index.html`
