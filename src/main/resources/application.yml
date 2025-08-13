@@ -10,15 +10,6 @@ server:
   servlet:
     context-path: /api
 
-# Logging configuration
-logging:
-  level:
-    root: INFO
-    com:
-      example:
-        ckbexplorer: DEBUG
-        ckb:
-          explorer: DEBUG
 
 # Swagger/OpenAPI configuration
 springdoc:
