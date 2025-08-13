@@ -3,7 +3,7 @@ package com.ckb.explorer.controller;
 import com.ckb.explorer.entity.BasicBlock;
 import com.ckb.explorer.service.BasicBlockService;
 import com.ckb.explorer.domain.resp.BasicBlockResponse;
-import com.ckb.explorer.convert.BasicBlockConvert;
+import com.ckb.explorer.mapstruct.BasicBlockConvert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 
 @RestController
-@RequestMapping("/basic-blocks")
+@RequestMapping("/v1/basic-blocks")
 public class BasicBlockController {
 
     private final BasicBlockService basicBlockService;

@@ -1,6 +1,7 @@
 package com.ckb.explorer.service.impl;
 
 import com.ckb.explorer.service.RedissonExampleService;
+import java.time.Duration;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +16,13 @@ public class RedissonExampleServiceImpl implements RedissonExampleService {
   private RedissonClient redissonClient;
 
   @Override
-  public void setValue(String key, Object value, long timeout, TimeUnit unit) {
-    redissonClient.getBucket(key).set(value, timeout, unit);
+  public void setValue(String key, Object value, long timeout) {
+    redissonClient.getBucket(key).set(value, Duration.ofSeconds(timeout));
   }
 
   @Override
-  public <T> T getValue(String key) {
-    return (T) redissonClient.getBucket(key).get();
+  public Object getValue(String key) {
+    return redissonClient.getBucket(key).get();
   }
 
   @Override

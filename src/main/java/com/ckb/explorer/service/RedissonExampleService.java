@@ -8,17 +8,15 @@ public interface RedissonExampleService {
      * @param key 键
      * @param value 值
      * @param timeout 超时时间
-     * @param unit 时间单位
      */
-    void setValue(String key, Object value, long timeout, TimeUnit unit);
+    void setValue(String key, Object value, long timeout);
 
     /**
      * 获取缓存值
      * @param key 键
-     * @param <T> 值类型
      * @return 值
      */
-    <T> T getValue(String key);
+    Object getValue(String key);
 
     /**
      * 删除缓存值

@@ -40,3 +40,8 @@ spring:
     change-log: classpath:liquibase/changelog.yml
     database-change-log-lock-table: liquibase-lock
     database-change-log-table: liquibase-changelog
+logging:
+  level:
+    com.ckb.explorer.mapper: DEBUG
+    org.springframework: DEBUG
+    com.baomidou: DEBUG
