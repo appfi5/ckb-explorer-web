@@ -14,5 +14,5 @@ public class Address {
 
   private String address;
 
-  private Long scriptId;
+  private Long script_id;
 }

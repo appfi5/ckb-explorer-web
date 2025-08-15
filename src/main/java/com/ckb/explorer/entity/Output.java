@@ -13,27 +13,27 @@ public class Output {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long txId;
+  private Long tx_id;
 
-  private byte[] txHash;
+  private byte[] tx_hash;
 
-  private Integer outputIndex;
+  private Integer output_index;
 
   private Long capacity;
 
-  private Long lockScriptId;
+  private Long lock_script_id;
 
-  private Long typeScriptId;
+  private Long type_script_id;
 
   private byte[] data;
 
-  private Integer isSpent;
+  private Integer is_spent;
 
-  private Long addressId;
+  private Long address_id;
 
-  private byte[] consumedTxHash;
+  private byte[] consumed_tx_hash;
 
-  private Integer inputIndex;
+  private Integer input_index;
 
-  private Long occupiedCapacity;
+  private Long occupied_capacity;
 }

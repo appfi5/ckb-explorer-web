@@ -12,33 +12,33 @@ public class CkbTransaction {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private byte[] txHash;
+  private byte[] tx_hash;
 
   private byte[] version;
 
-  private Integer inputCount;
+  private Integer input_count;
 
-  private Integer outputCount;
+  private Integer output_count;
 
   private byte[] witnesses;
 
-  private Long blockId;
+  private Long block_id;
 
-  private Long blockNumber;
+  private Long block_number;
 
-  private byte[] blockHash;
+  private byte[] block_hash;
 
-  private Integer txIndex;
+  private Integer tx_index;
 
-  private byte[] headerDeps;
+  private byte[] header_deps;
 
   private Integer cycles;
 
-  private Long transactionFee;
+  private Long transaction_fee;
 
   private Long bytes;
 
-  private Long capacityInvolved;
+  private Long capacity_involved;
 
-  private Integer liveCellChanges;
+  private Integer live_cell_changes;
 }

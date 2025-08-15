@@ -17,21 +17,21 @@ public class BasicBlock {
     private Integer version;
 
 
-    private BigDecimal compactTarget;
+    private BigDecimal compact_target;
 
-    private Long blockTimestamp;
+    private Long block_timestamp;
 
     private Long number;
 
     private Long epoch;
 
-    private byte[] parentHash;
+    private byte[] parent_hash;
 
-    private byte[] transactionsRoot;
+    private byte[] transactions_root;
 
-    private byte[] proposalsHash;
+    private byte[] proposals_hash;
 
-    private byte[] extraHash;
+    private byte[] extra_hash;
 
     private String dao;
 
@@ -39,9 +39,9 @@ public class BasicBlock {
 
     private BigDecimal nonce;
 
-    private byte[] blockHash;
+    private byte[] block_hash;
 
     private byte[] proposals;
 
-    private Integer unclesCount;
+    private Integer uncles_count;
 }

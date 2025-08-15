@@ -1,5 +1,6 @@
 package com.ckb.explorer.controller;
 
+import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.entity.BasicBlock;
 import com.ckb.explorer.service.BasicBlockService;
 import com.ckb.explorer.domain.resp.BasicBlockResponse;
@@ -14,7 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/basic-blocks")
+@RequestMapping("/api/v1/basic-blocks")
 public class BasicBlockController {
 
     private final BasicBlockService basicBlockService;
@@ -28,9 +29,9 @@ public class BasicBlockController {
 
     @GetMapping
     @Operation(summary = "获取全部块")
-    public ResponseEntity<List<BasicBlockResponse>> getAllBasicBlocks() {
+    public ResponseInfo<List<BasicBlockResponse>> getAllBasicBlocks() {
         List<BasicBlock> basicBlocks = basicBlockService.getAllBasicBlocks();
         List<BasicBlockResponse> responses = basicBlockConvert.convertList(basicBlocks);
-        return ResponseEntity.ok(responses);
+        return ResponseInfo.SUCCESS(responses);
     }
 }

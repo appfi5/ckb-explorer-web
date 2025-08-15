@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/v2/redisson")
+@RequestMapping("/api/v2/redisson")
 public class RedissonExampleController {
 
     private final RedissonExampleService redissonExampleService;

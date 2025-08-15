@@ -16,11 +16,11 @@ public interface BasicBlockConvert {
 
   BasicBlockConvert INSTANCE = Mappers.getMapper(BasicBlockConvert.class);
 
-  @Mapping(source = "parentHash", target = "parentHash", qualifiedByName = "byteToString")
-  @Mapping(source = "transactionsRoot", target = "transactionsRoot", qualifiedByName = "byteToString")
-  @Mapping(source = "proposalsHash", target = "proposalsHash", qualifiedByName = "byteToString")
-  @Mapping(source = "extraHash", target = "extraHash", qualifiedByName = "byteToString")
-  @Mapping(source = "blockHash", target = "blockHash", qualifiedByName = "byteToString")
+  @Mapping(source = "parent_hash", target = "parent_hash", qualifiedByName = "byteToString")
+  @Mapping(source = "transactions_root", target = "transactions_root", qualifiedByName = "byteToString")
+  @Mapping(source = "proposals_hash", target = "proposals_hash", qualifiedByName = "byteToString")
+  @Mapping(source = "extra_hash", target = "extra_hash", qualifiedByName = "byteToString")
+  @Mapping(source = "block_hash", target = "block_hash", qualifiedByName = "byteToString")
   @Mapping(source = "extension", target = "extension", qualifiedByName = "byteToString")
   @Mapping(source = "proposals", target = "proposals", qualifiedByName = "byteArrayToListString")
   BasicBlockResponse convert(BasicBlock basicBlock);

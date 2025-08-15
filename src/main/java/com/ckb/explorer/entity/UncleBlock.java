@@ -12,17 +12,17 @@ public class UncleBlock {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long blockId;
+  private Long block_id;
 
   private Integer index;
 
-  private byte[] blockHash;
+  private byte[] block_hash;
 
-  private Long blockNumber;
+  private Long block_number;
 
-  private byte[] compactTarget;
+  private byte[] compact_target;
 
-  private byte[] parentHash;
+  private byte[] parent_hash;
 
   private byte[] nonce;
 
@@ -30,15 +30,15 @@ public class UncleBlock {
 
   private byte[] version;
 
-  private byte[] transactionsRoot;
+  private byte[] transactions_root;
 
   private byte[] epoch;
 
   private byte[] dao;
 
-  private byte[] proposalsHash;
+  private byte[] proposals_hash;
 
-  private byte[] extraHash;
+  private byte[] extra_hash;
 
   private byte[] extension;
 
