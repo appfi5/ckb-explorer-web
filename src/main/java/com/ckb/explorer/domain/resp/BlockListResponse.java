@@ -6,9 +6,9 @@ import lombok.Data;
 public class BlockListResponse {
 
   private String miner_hash;
-  private Long number;
-  private Long timestamp;
+  private String number;
+  private String timestamp;
   private String reward;
-  private Integer ckb_transactions_count;
-  private Integer live_cell_changes;
+  private String transactions_count;
+  private String live_cell_changes;
 }
