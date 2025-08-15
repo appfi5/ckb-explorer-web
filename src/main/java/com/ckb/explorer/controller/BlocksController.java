@@ -8,12 +8,11 @@ import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.exceptions.ApiError;
+import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.mapstruct.BlockConvert;
 import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.validations.PaginationValidator;
 import jakarta.annotation.Resource;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BlocksController {
 
 @Resource
-private BlockService blockService;
+private IBlockCacheFacade blockCacheFacade;
 
   @GetMapping
   public Object index(BlockPageReq req) {
@@ -46,22 +45,8 @@ private BlockService blockService;
             .toList();
       }
 
-
-      // 执行分页查询
-      Page<Block> pageResult = blockService.getBlocksByPage(req.getPage(), req.getPageSize(), req.getSort());
-
-      // 计算总页数
-      int totalPages = (int) Math.ceil(pageResult.getTotal() / (double) pageResult.getSize());
-
-      // TODO miner_hash的解码待确定
-      List<BaseResponse< BlockListResponse >> blockList = BlockConvert.INSTANCE.toConvertList(pageResult.getRecords());
-      // 使用静态SUCCESS方法构造响应
-      return ResponsePageInfo.SUCCESS(
-          blockList,
-          pageResult.getTotal(),
-          req.getPageSize(),
-          totalPages
-      );
+      // 查询带缓存
+      return blockCacheFacade.getBlocksByPage(req.getPage(), req.getPageSize(), req.getSort());
     } catch (Exception e) {
       // 记录异常详细信息
       System.err.println("Error in BlocksController.index():");
