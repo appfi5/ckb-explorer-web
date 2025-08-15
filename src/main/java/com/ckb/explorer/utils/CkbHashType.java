@@ -28,10 +28,8 @@ public class CkbHashType {
     if (hexString == null || hexString.isEmpty()) {
       return null;
     }
-    if (!hexString.startsWith(hashPrefix)) {
-      throw new IllegalArgumentException("Invalid hash format: missing prefix " + hashPrefix);
-    }
-    String hex = hexString.substring(hashPrefix.length());
+
+    String hex = hexString.startsWith(hashPrefix)?hexString.substring(hashPrefix.length()):hexString;
     return HEX_FORMAT.parseHex(hex);
   }
 }
