@@ -13,9 +13,9 @@ public class AccountBook {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long addressId;
+  private Long address_id;
 
-  private Long transactionId;
+  private Long transaction_id;
 
   private BigDecimal income;
 }
