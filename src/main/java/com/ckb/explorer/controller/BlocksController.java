@@ -1,16 +1,9 @@
 package com.ckb.explorer.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.common.dto.ErrorDetail;
-import com.ckb.explorer.common.dto.ResponsePageInfo;
 import com.ckb.explorer.domain.req.BlockPageReq;
-import com.ckb.explorer.domain.resp.BlockListResponse;
-import com.ckb.explorer.domain.resp.base.BaseResponse;
-import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.exceptions.ApiError;
 import com.ckb.explorer.facade.IBlockCacheFacade;
-import com.ckb.explorer.mapstruct.BlockConvert;
-import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.validations.PaginationValidator;
 import jakarta.annotation.Resource;
 import java.util.List;
@@ -39,7 +32,8 @@ public class BlocksController {
           .map(error -> new ErrorDetail(
               error.getCode(),
               error.getTitle(),
-              error.getDetail()
+              error.getDetail(),
+              error.getStatus()
           ))
           .toList();
     }
@@ -47,15 +41,5 @@ public class BlocksController {
     // 查询带缓存
     return blockCacheFacade.getBlocksByPage(req.getPage(), req.getPageSize(), req.getSort());
 
-  }
-
-  @GetMapping("/test")
-  public String test() {
-    Thread t = Thread.currentThread();
-    // 输出形如：Thread[#12345,VirtualThread[#12345]/runnable@ForkJoinPool-1-worker-1,5,main]
-    System.out.println("Thread: " + t);
-    System.out.println("Is Virtual: " + t.isVirtual());
-    System.out.println("Thread Group: " + t.getThreadGroup());
-    return "OK";
   }
 }

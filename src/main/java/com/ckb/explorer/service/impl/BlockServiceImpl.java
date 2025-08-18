@@ -52,8 +52,8 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
     };
 
     if (!VALID_SORT_FIELDS.contains(orderBy)) {
-      // TODO 待对应，原接口是报404
-      throw new IllegalArgumentException("Invalid sort field: " + orderBy);
+      // 对应原接口报404
+      throw new IllegalArgumentException();
     }
 
     // 添加排序条件

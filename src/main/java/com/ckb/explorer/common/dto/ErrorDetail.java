@@ -10,11 +10,11 @@ public class ErrorDetail {
   private final int status;
 
   // 构造器：接收单个 ApiError 的属性
-  public ErrorDetail(int code, String title, String detail) {
+  public ErrorDetail(int code, String title, String detail, int status) {
     this.code = code;
     this.title = title;
     this.detail = detail;
-    this.status = 400;
+    this.status = status;
   }
 
   // Getter：供 JSON 序列化（Spring 会自动将 List 转为数组）
