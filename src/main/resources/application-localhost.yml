@@ -1,6 +1,9 @@
 spring:
   application:
     name: ckb-explorer-web
+  threads:
+    virtual:
+      enabled: true
 #  rabbitmq:
 #    host: 127.0.0.1
 #    port: 5672
@@ -14,15 +17,19 @@ spring:
     driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: 192.168.10.143
-      port: 6350
+      host: localhost
+      port: 6379
       database: 4
-      # password: ""
+        # lettuce:
+        #   pool:
+          # 虚拟线程下建议关闭连接池（每个请求短平快）
+          #     max-active: 200
+      password: abcdefg
       redisson:
         config: |
           singleServerConfig:
-            address: redis://192.168.10.143:6350
-            # password: ""
+            address: redis://localhost:6379
+            password: abcdefg
             database: 4
             idleConnectionTimeout: 10000
             connectTimeout: 10000
@@ -31,8 +38,9 @@ spring:
             retryInterval: 1500
             subscriptionsPerConnection: 5
             clientName: ckb-explorer-web
-            connectionMinimumIdleSize: 32
-            connectionPoolSize: 64
+            # 降低连接池
+            connectionMinimumIdleSize: 4
+            connectionPoolSize: 16
             dnsMonitoringInterval: 5000
             codec: !<org.redisson.codec.JsonJacksonCodec> {}
   liquibase:

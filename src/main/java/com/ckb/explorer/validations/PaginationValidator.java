@@ -39,6 +39,10 @@ public class PaginationValidator {
       errors.add(new PageSizeParamError()); // 对应 Ruby 的 errors << PageSizeParamError.new
     }
 
+    // TODO 防止恶意请求 需确认
+//    if (page < 1 || page > 10000) errors.add(...);
+//    if (pageSize < 1 || pageSize > 100) errors.add(...); // 限制最大 100
+
     // 4. 返回收集的异常（后续可处理）
     return errors;
   }
