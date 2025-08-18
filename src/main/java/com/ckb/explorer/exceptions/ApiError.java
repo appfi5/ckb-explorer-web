@@ -3,7 +3,7 @@ package com.ckb.explorer.exceptions;
 /**
  * 业务异常基类（对应 Ruby 的 Api::V1::Exceptions::Error）
  */
-public class ApiError extends Exception {
+public class ApiError extends RuntimeException {
     // 错误码（如 1007）
     private final int code;
     // HTTP 状态码（如 400）
