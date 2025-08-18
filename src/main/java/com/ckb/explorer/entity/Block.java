@@ -22,7 +22,7 @@ public class Block {
 
   private byte[] nonce;
 
-  private Long difficulty;
+  private byte[] difficulty;
 
   private Long timestamp;
 
@@ -36,7 +36,7 @@ public class Block {
 
   private Long start_number;
 
-  private Integer length;
+  private Integer epoch_length;
 
   private Long epoch_number;
 
@@ -56,13 +56,11 @@ public class Block {
 
   private byte[] uncle_block_hashes;
 
-  private byte[] miner_hash;
+  private byte[] miner_script;
 
   private String miner_message;
 
   private Long reward;
-
-  private Long received_tx_fee;
 
   private Long total_transaction_fee;
 

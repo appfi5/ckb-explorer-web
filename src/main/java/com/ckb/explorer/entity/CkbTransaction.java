@@ -37,8 +37,4 @@ public class CkbTransaction {
   private Long transaction_fee;
 
   private Long bytes;
-
-  private Long capacity_involved;
-
-  private Integer live_cell_changes;
 }

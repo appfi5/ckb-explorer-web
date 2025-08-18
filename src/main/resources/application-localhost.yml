@@ -44,7 +44,7 @@ spring:
             dnsMonitoringInterval: 5000
             codec: !<org.redisson.codec.JsonJacksonCodec> {}
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:liquibase/changelog.yml
     database-change-log-lock-table: liquibase-lock
     database-change-log-table: liquibase-changelog
@@ -53,3 +53,5 @@ logging:
     com.ckb.explorer.mapper: DEBUG
     org.springframework: DEBUG
     com.baomidou: DEBUG
+ckb:
+  netWork: 2

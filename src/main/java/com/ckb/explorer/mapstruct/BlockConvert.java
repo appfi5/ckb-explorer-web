@@ -23,7 +23,7 @@ public interface BlockConvert {
   List<BaseResponse<BlockListResponse>> toConvertList(List<Block> blocks);
 
   @Named("toBlockListResponse")
-  @Mapping(source = "miner_hash", target = "miner_hash", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "miner_script", target = "miner_hash", qualifiedByName = "lockScriptToAddress(Value)")
   @Mapping(source = "block_number", target = "number", qualifiedByName = "longToString(Value)")
   @Mapping(source = "timestamp", target = "timestamp", qualifiedByName = "longToString(Value)")
   @Mapping(source = "reward", target = "reward", qualifiedByName = "longToString(Value)")

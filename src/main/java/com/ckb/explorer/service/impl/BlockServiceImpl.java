@@ -89,8 +89,10 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
         break;
     }
 
-    // 始终按block_number降序排序作为第二排序条件
-    queryWrapper.orderByDesc(Block::getBlock_number);
+    if(!orderBy.equals("block_number")){
+      // 始终按block_number降序排序作为第二排序条件
+      queryWrapper.orderByDesc(Block::getBlock_number);
+    }
 
     // 执行分页查询
     return baseMapper.selectPage(page, queryWrapper);

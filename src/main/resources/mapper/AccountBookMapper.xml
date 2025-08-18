@@ -4,13 +4,7 @@
 
 <mapper namespace="com.ckb.explorer.mapper.AccountBookMapper">
 
-  <!-- 结果映射 -->
-  <resultMap id="accountBookResultMap" type="com.ckb.explorer.entity.AccountBook">
-    <id property="id" column="id"/>
-    <result property="addressId" column="address_id"/>
-    <result property="transactionId" column="transaction_id"/>
-    <result property="income" column="income"/>
-  </resultMap>
+
 
 
 </mapper>
