@@ -4,26 +4,7 @@
 
 <mapper namespace="com.ckb.explorer.mapper.UncleBlockMapper">
 
-  <!-- 结果映射 -->
-  <resultMap id="uncleBlockResultMap" type="com.ckb.explorer.entity.UncleBlock">
-    <id property="id" column="id"/>
-    <result property="blockId" column="block_id"/>
-    <result property="index" column="index"/>
-    <result property="blockHash" column="block_hash"/>
-    <result property="blockNumber" column="block_number"/>
-    <result property="compactTarget" column="compact_target"/>
-    <result property="parentHash" column="parent_hash"/>
-    <result property="nonce" column="nonce"/>
-    <result property="timestamp" column="timestamp"/>
-    <result property="version" column="version"/>
-    <result property="transactionsRoot" column="transactions_root"/>
-    <result property="epoch" column="epoch"/>
-    <result property="dao" column="dao"/>
-    <result property="proposalsHash" column="proposals_hash"/>
-    <result property="extraHash" column="extra_hash"/>
-    <result property="extension" column="extension"/>
-    <result property="proposals" column="proposals"/>
-  </resultMap>
+
 
 
 </mapper>

@@ -4,25 +4,7 @@
 
 <mapper namespace="com.ckb.explorer.mapper.CkbTransactionMapper">
 
-  <!-- 结果映射 -->
-  <resultMap id="ckbTransactionResultMap" type="com.ckb.explorer.entity.CkbTransaction">
-    <id property="id" column="id"/>
-    <result property="txHash" column="tx_hash"/>
-    <result property="version" column="version"/>
-    <result property="inputCount" column="input_count"/>
-    <result property="outputCount" column="output_count"/>
-    <result property="witnesses" column="witnesses"/>
-    <result property="blockId" column="block_id"/>
-    <result property="blockNumber" column="block_number"/>
-    <result property="blockHash" column="block_hash"/>
-    <result property="txIndex" column="tx_index"/>
-    <result property="headerDeps" column="header_deps"/>
-    <result property="cycles" column="cycles"/>
-    <result property="transactionFee" column="transaction_fee"/>
-    <result property="bytes" column="bytes"/>
-    <result property="capacityInvolved" column="capacity_involved"/>
-    <result property="liveCellChanges" column="live_cell_changes"/>
-  </resultMap>
+
 
 
 </mapper>

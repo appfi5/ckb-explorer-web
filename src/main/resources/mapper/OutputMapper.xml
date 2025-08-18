@@ -4,22 +4,7 @@
 
 <mapper namespace="com.ckb.explorer.mapper.OutputMapper">
 
-  <!-- 结果映射 -->
-  <resultMap id="outputResultMap" type="com.ckb.explorer.entity.Output">
-    <id property="id" column="id"/>
-    <result property="txId" column="tx_id"/>
-    <result property="txHash" column="tx_hash"/>
-    <result property="index" column="index"/>
-    <result property="capacity" column="capacity"/>
-    <result property="lockScriptId" column="lock_script_id"/>
-    <result property="lockHash" column="lock_hash"/>
-    <result property="typeScriptId" column="type_script_id"/>
-    <result property="typeHash" column="type_hash"/>
-    <result property="data" column="data"/>
-    <result property="blockId" column="block_id"/>
-    <result property="blockHash" column="block_hash"/>
-    <result property="blockNumber" column="block_number"/>
-  </resultMap>
+
 
 
 </mapper>

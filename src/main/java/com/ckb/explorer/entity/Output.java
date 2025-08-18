@@ -29,8 +29,6 @@ public class Output {
 
   private Integer is_spent;
 
-  private Long address_id;
-
   private byte[] consumed_tx_hash;
 
   private Integer input_index;

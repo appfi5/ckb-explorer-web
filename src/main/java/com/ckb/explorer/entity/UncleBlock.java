@@ -12,8 +12,6 @@ public class UncleBlock {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long block_id;
-
   private Integer index;
 
   private byte[] block_hash;

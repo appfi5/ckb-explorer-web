@@ -4,13 +4,6 @@
 
 <mapper namespace="com.ckb.explorer.mapper.TxAssociationHeaderDepMapper">
 
-  <!-- 结果映射 -->
-  <resultMap id="txAssociationHeaderDepResultMap"
-    type="com.ckb.explorer.entity.TxAssociationHeaderDep">
-    <id property="id" column="id"/>
-    <result property="txId" column="tx_id"/>
-    <result property="blockId" column="block_id"/>
-  </resultMap>
 
 
 </mapper>

@@ -42,6 +42,34 @@
       <artifactId>spring-boot-starter-undertow</artifactId>
     </dependency>
 
+    <!-- Nervos CKB Java SDK 依赖 -->
+    <dependency>
+      <groupId>org.nervos.ckb</groupId>
+      <artifactId>ckb</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <!-- Nervos CKB Core 模块 -->
+    <dependency>
+      <groupId>org.nervos.ckb</groupId>
+      <artifactId>core</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <!-- Nervos CKB Utils 模块 -->
+    <dependency>
+      <groupId>org.nervos.ckb</groupId>
+      <artifactId>utils</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <!-- Nervos CKB Utils 模块 -->
+    <dependency>
+      <groupId>org.nervos.ckb</groupId>
+      <artifactId>serialization</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
     <!-- MapStruct dependency -->
     <dependency>
       <groupId>org.mapstruct</groupId>
