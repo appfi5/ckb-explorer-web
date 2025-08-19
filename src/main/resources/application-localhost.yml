@@ -17,19 +17,22 @@ spring:
     driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
+      #host: localhost
+      host: 192.168.10.143
+      #port: 6379
+      port: 6350
       database: 4
         # lettuce:
         #   pool:
           # 虚拟线程下建议关闭连接池（每个请求短平快）
           #     max-active: 200
-      password: abcdefg
+      #password: abcdefg
       redisson:
         config: |
           singleServerConfig:
-            address: redis://localhost:6379
-            password: abcdefg
+            #address: redis://localhost:6379
+            #password: abcdefg
+            address: redis://192.168.10.143:6350
             database: 4
             idleConnectionTimeout: 10000
             connectTimeout: 10000
@@ -55,3 +58,5 @@ logging:
     com.baomidou: DEBUG
 ckb:
   netWork: 2
+  default-hash-prefix: 0x
+  default-with-prefix-hash-length: 66
