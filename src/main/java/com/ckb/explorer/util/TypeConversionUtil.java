@@ -78,4 +78,15 @@ public class TypeConversionUtil {
     var addrResult = new Address(scriptNew, net);
     return addrResult.encode();
   }
+
+  /**
+   * 将 byte[] 类型转换为 String 类型Hash
+   *
+   * @param value 要转换的 Integer 值
+   * @return 转换后的 String 值，如果输入为 null 则返回 null
+   */
+  @Named("byteToStringHash(Value)")
+  public static String byteToStringHash(byte[] value) {
+    return value != null ? "0x"+HexFormat.of().formatHex(value) : null;
+  }
 }

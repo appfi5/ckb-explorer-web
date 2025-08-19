@@ -12,7 +12,7 @@ public class TxAssociationHeaderDep {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long tx_id;
+  private Long txId;
 
-  private Long block_id;
+  private Long blockId;
 }

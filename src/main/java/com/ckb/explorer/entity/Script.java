@@ -12,11 +12,11 @@ public class Script {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private byte[] code_hash;
+  private byte[] codeHash;
 
-  private Short hash_type;
+  private Short hashType;
 
   private byte[] args;
 
-  private byte[] script_hash;
+  private byte[] scriptHash;
 }

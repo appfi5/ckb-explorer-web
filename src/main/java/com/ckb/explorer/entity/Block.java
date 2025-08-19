@@ -12,13 +12,13 @@ public class Block {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private byte[] block_hash;
+  private byte[] blockHash;
 
-  private Long block_number;
+  private Long blockNumber;
 
-  private byte[] compact_target;
+  private byte[] compactTarget;
 
-  private byte[] parent_hash;
+  private byte[] parentHash;
 
   private byte[] nonce;
 
@@ -28,49 +28,49 @@ public class Block {
 
   private byte[] version;
 
-  private byte[] transactions_root;
+  private byte[] transactionsRoot;
 
-  private Integer transactions_count;
+  private Integer transactionsCount;
 
   private byte[] epoch;
 
-  private Long start_number;
+  private Long startNumber;
 
-  private Integer epoch_length;
+  private Integer epochLength;
 
-  private Long epoch_number;
+  private Long epochNumber;
 
   private byte[] dao;
 
-  private byte[] proposals_hash;
+  private byte[] proposalsHash;
 
-  private byte[] extra_hash;
+  private byte[] extraHash;
 
   private byte[] extension;
 
   private byte[] proposals;
 
-  private Integer proposals_count;
+  private Integer proposalsCount;
 
-  private Integer uncles_count;
+  private Integer unclesCount;
 
-  private byte[] uncle_block_hashes;
+  private byte[] uncleBlockHashes;
 
-  private byte[] miner_script;
+  private byte[] minerScript;
 
-  private String miner_message;
+  private String minerMessage;
 
   private Long reward;
 
-  private Long total_transaction_fee;
+  private Long totalTransactionFee;
 
-  private Long cell_consumed;
+  private Long cellConsumed;
 
-  private Long total_cell_capacity;
+  private Long totalCellCapacity;
 
-  private Integer block_size;
+  private Integer blockSize;
 
   private Long cycles;
 
-  private Integer live_cell_changes;
+  private Integer liveCellChanges;
 }

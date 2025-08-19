@@ -1,13 +1,13 @@
 package com.ckb.explorer.mapstruct;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.BlockListResponse;
-import com.ckb.explorer.domain.resp.base.BaseResponse;
+import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.util.TypeConversionUtil;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring", uses = {TypeConversionUtil.class})
@@ -15,20 +15,26 @@ public interface BlockConvert {
 
   BlockConvert INSTANCE = Mappers.getMapper(BlockConvert.class);
 
-  @Mapping(source = "id", target = "id", qualifiedByName = "longToString(Value)")
-  @Mapping(target = "type", constant = "block_list")
-  @Mapping(source = "block", target = "attributes", qualifiedByName = "toBlockListResponse")
-  BaseResponse<BlockListResponse> toConvert(Block block);
+  @Mapping(source = "minerScript", target = "minerHash", qualifiedByName = "lockScriptToAddress(Value)")
+  @Mapping(source = "blockNumber", target = "number")
+  BlockListResponse toConvert(Block block);
 
-  List<BaseResponse<BlockListResponse>> toConvertList(List<Block> blocks);
+  List<BlockListResponse> toConvertList(List<Block> blocks);
 
-  @Named("toBlockListResponse")
-  @Mapping(source = "miner_script", target = "miner_hash", qualifiedByName = "lockScriptToAddress(Value)")
-  @Mapping(source = "block_number", target = "number", qualifiedByName = "longToString(Value)")
-  @Mapping(source = "timestamp", target = "timestamp", qualifiedByName = "longToString(Value)")
-  @Mapping(source = "reward", target = "reward", qualifiedByName = "longToString(Value)")
-  @Mapping(source = "transactions_count", target = "transactions_count", qualifiedByName = "integerToString(Value)")
-  @Mapping(source = "live_cell_changes", target = "live_cell_changes", qualifiedByName = "integerToString(Value)")
-  BlockListResponse toBlockListResponse(Block block);
+  Page<BlockListResponse> toConvertPage(Page<Block> page);
+
+
+  @Mapping(source = "blockHash", target = "blockHash", qualifiedByName = "byteToStringHash(Value)")
+  //@Mapping(source = "uncleBlockHashes", target = "uncleBlockHashes", qualifiedByName = "lockScriptToAddress(Value)")
+  @Mapping(source = "minerScript", target = "minerHash", qualifiedByName = "lockScriptToAddress(Value)")
+  @Mapping(source = "transactionsRoot", target = "transactionsRoot", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "blockNumber", target = "number")
+  @Mapping(source = "epochLength", target = "length")
+  @Mapping(source = "version", target = "version", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "epoch", target = "epoch", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "epochNumber", target = "blockIndexInEpoch")
+  @Mapping(source = "nonce", target = "nonce", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "difficulty", target = "difficulty", qualifiedByName = "byteToString(Value)")
+  BlockResponse toConvertBlockResponse(Block block);
 
 }

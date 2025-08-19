@@ -3,12 +3,15 @@ package com.ckb.explorer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.config.ServerException;
+import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.service.BlockService;
+import com.ckb.explorer.util.I18n;
+import jakarta.annotation.Resource;
 import java.util.Set;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 /**
  * BlockService的实现类 提供区块相关的服务实现，包括分页查询
@@ -16,8 +19,11 @@ import java.util.List;
 @Service
 public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements BlockService {
 
+  @Resource
+  private I18n i18n;
+
   private static final Set<String> VALID_SORT_FIELDS = Set.of(
-      "block_number", "reward", "timestamp", "transactions_count"
+      "blockNumber", "reward", "timestamp", "transactionsCount"
   );
 
   /**
@@ -29,14 +35,10 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
    * @return 分页结果
    */
   public Page<Block> getBlocksByPage(int pageNum, int pageSize, String sort) {
-    // 创建分页对象
-    Page<Block> page = new Page<>(pageNum, pageSize);
-    // 创建查询条件
-    LambdaQueryWrapper<Block> queryWrapper = new LambdaQueryWrapper<>();
 
     // 设置默认排序
     if (sort == null || sort.isEmpty()) {
-      sort = "block_number.desc";
+      sort = "blockNumber.desc";
     }
 
     // 解析排序参数
@@ -46,24 +48,27 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
 
     // 字段映射
     orderBy = switch (orderBy) {
-      case "height" -> "block_number";
-      case "transactions" -> "transactions_count";
+      case "height" -> "blockNumber";
+      case "transactions" -> "transactionsCount";
       default -> orderBy;
     };
 
     if (!VALID_SORT_FIELDS.contains(orderBy)) {
-      // 对应原接口报404
-      throw new IllegalArgumentException();
+      throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
     }
 
+    // 创建分页对象
+    Page<Block> page = new Page<>(pageNum, pageSize);
+    // 创建查询条件
+    LambdaQueryWrapper<Block> queryWrapper = new LambdaQueryWrapper<>();
     // 添加排序条件
     boolean isAsc = "asc".equals(ascOrDesc);
     switch (orderBy) {
-      case "block_number":
+      case "blockNumber":
         if (isAsc) {
-          queryWrapper.orderByAsc(Block::getBlock_number);
+          queryWrapper.orderByAsc(Block::getBlockNumber);
         } else {
-          queryWrapper.orderByDesc(Block::getBlock_number);
+          queryWrapper.orderByDesc(Block::getBlockNumber);
         }
         break;
       case "reward":
@@ -80,18 +85,18 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
           queryWrapper.orderByDesc(Block::getTimestamp);
         }
         break;
-      case "transactions_count":
+      case "transactionsCount":
         if (isAsc) {
-          queryWrapper.orderByAsc(Block::getTransactions_count);
+          queryWrapper.orderByAsc(Block::getTransactionsCount);
         } else {
-          queryWrapper.orderByDesc(Block::getTransactions_count);
+          queryWrapper.orderByDesc(Block::getTransactionsCount);
         }
         break;
     }
 
-    if(!orderBy.equals("block_number")){
-      // 始终按block_number降序排序作为第二排序条件
-      queryWrapper.orderByDesc(Block::getBlock_number);
+    if(!orderBy.equals("blockNumber")){
+      // 始终按blockNumber降序排序作为第二排序条件
+      queryWrapper.orderByDesc(Block::getBlockNumber);
     }
 
     // 执行分页查询

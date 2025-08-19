@@ -24,42 +24,42 @@ public class OpenApiConfig {
                         .description("REST API for CKB Explorer, providing access to blockchain data")
                         .license(new License()
                                 .name("Apache 2.0")
-                                .url("http://springdoc.org")))
-            .components(new Components()
-                // 可选：定义全局 content 复用
-                .addSchemas("JsonApiSchema", new Schema<>().type("object"))
-            );
+                                .url("http://springdoc.org")));
+//            .components(new Components()
+//                // 可选：定义全局 content 复用
+//                .addSchemas("JsonApiSchema", new Schema<>().type("object"))
+//            );
 
 
 
     }
 
-  @Bean
-  public OperationCustomizer jsonApiOperationCustomizer() {
-    return (operation, handlerMethod) -> {
-      String mediaType = "application/vnd.api+json";
-
-      // 创建通用 media type
-      Content content = new Content();
-      content.addMediaType(mediaType, new MediaType().schema(new ObjectSchema()));
-
-      // 修改所有响应
-      if (operation.getResponses() != null) {
-        operation.getResponses().values().forEach(response -> {
-          if (response.getContent() != null) {
-            response.setContent(content);
-          }
-        });
-      }
-
-      // 修改请求体
-      if (operation.getRequestBody() != null && operation.getRequestBody().getContent() != null) {
-        operation.getRequestBody().setContent(content);
-      }
-
-      return operation;
-    };
-  }
+//  @Bean
+//  public OperationCustomizer jsonApiOperationCustomizer() {
+//    return (operation, handlerMethod) -> {
+//      String mediaType = "application/vnd.api+json";
+//
+//      // 创建通用 media type
+//      Content content = new Content();
+//      content.addMediaType(mediaType, new MediaType().schema(new ObjectSchema()));
+//
+//      // 修改所有响应
+//      if (operation.getResponses() != null) {
+//        operation.getResponses().values().forEach(response -> {
+//          if (response.getContent() != null) {
+//            response.setContent(content);
+//          }
+//        });
+//      }
+//
+//      // 修改请求体
+//      if (operation.getRequestBody() != null && operation.getRequestBody().getContent() != null) {
+//        operation.getRequestBody().setContent(content);
+//      }
+//
+//      return operation;
+//    };
+//  }
 
 
 }
