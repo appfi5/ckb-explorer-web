@@ -17,14 +17,14 @@ import lombok.NoArgsConstructor;
 public class BlockResponse extends BaseResponse<Long> {
 
   private String blockHash;
-  private List<String> uncleBlockHashes;
+  private List<String> uncleBlockHashes;// TODO 需调研解析逻辑
   private String minerHash;
   private String transactionsRoot;
-  private String rewardStatus;
+  private String rewardStatus;// TODO 状态待定，需定时任务刷
   private String receivedTxFeeStatus;
   private String minerMessage;
 
-  private Long number; // from object.number.to_s
+  private Long number;
   private Long startNumber;
   private Integer length;
   private String version;
@@ -36,16 +36,16 @@ public class BlockResponse extends BaseResponse<Long> {
   private Long totalTransactionFee;
   private Integer transactionsCount; // from object.ckb_transactions_count.to_s
   private Long totalCellCapacity;
-  private Long receivedTxFee;
+  private Long receivedTxFee;// TODO 待定
   private String epoch;
   private Long blockIndexInEpoch;
   private String nonce;
   private String difficulty;
-  private Long minerReward; // (object.received_tx_fee + object.reward).to_s
-  private Integer size; // 逻辑由业务层处理（如异步更新）
-  private Long largestBlockInEpoch; // from object.epoch_statistic&.largest_block_size
-  private Long largestBlock; // from EpochStatistic.largest_block_size
+  private Long minerReward; // TODO (object.received_tx_fee + object.reward).to_s
+  private Integer size; // TODO 异步更新UpdateBlockSizeWorker.perform_async
+  private Long largestBlockInEpoch; // TODO from object.epoch_statistic&.largest_block_size
+  private Long largestBlock; // TODO from EpochStatistic.largest_block_size
   private Long cycles;
-  private Long maxCyclesInEpoch; // from object.epoch_statistic&.max_block_cycles
-  private Long maxCycles; // from EpochStatistic.max_block_cycles
+  private Long maxCyclesInEpoch; // TODO from object.epoch_statistic&.max_block_cycles
+  private Long maxCycles; // TODO from EpochStatistic.max_block_cycles
 }

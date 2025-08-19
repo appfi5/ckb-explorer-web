@@ -59,7 +59,7 @@ public class BlocksController {
 
     // 校验入参
     if(StringUtils.isEmpty(id) || (!queryKeyUtils.isIntegerString(id) && !queryKeyUtils.isValidHex(id))){
-      throw new ServerException(I18nKey.BLOCK_HASH_ERROR_CODE, i18n.getMessage(I18nKey.BLOCK_HASH_ERROR_MESSAGE));
+      throw new ServerException(I18nKey.BLOCK_QUERY_KEY_INVALID_CODE, i18n.getMessage(I18nKey.BLOCK_QUERY_KEY_INVALID_MESSAGE));
     }
 
     // 查询带缓存

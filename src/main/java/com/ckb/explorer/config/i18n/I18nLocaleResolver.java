@@ -27,9 +27,9 @@ public class I18nLocaleResolver implements LocaleResolver {
             lang = request.getParameter(LANG_PARAMETER);
         }
         Locale locale = null;
-        if (!StringUtils.isEmpty(lang)) {
+        if (lang.contains("zh_CN")|| lang.contains("en_US")) {
             String[] split = lang.split(PATH_PARAMETER_SPLIT);
-            locale = new Locale(split[0], split[1]);
+            locale = new Locale(split[0], split[1].substring(0,1));
         }else{
             locale = request.getLocale();
         }
