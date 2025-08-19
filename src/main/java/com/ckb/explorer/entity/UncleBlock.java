@@ -14,13 +14,13 @@ public class UncleBlock {
 
   private Integer index;
 
-  private byte[] block_hash;
+  private byte[] blockHash;
 
-  private Long block_number;
+  private Long blockNumber;
 
-  private byte[] compact_target;
+  private byte[] compactTarget;
 
-  private byte[] parent_hash;
+  private byte[] parentHash;
 
   private byte[] nonce;
 
@@ -28,15 +28,15 @@ public class UncleBlock {
 
   private byte[] version;
 
-  private byte[] transactions_root;
+  private byte[] transactionsRoot;
 
   private byte[] epoch;
 
   private byte[] dao;
 
-  private byte[] proposals_hash;
+  private byte[] proposalsHash;
 
-  private byte[] extra_hash;
+  private byte[] extraHash;
 
   private byte[] extension;
 

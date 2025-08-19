@@ -12,15 +12,15 @@ public class TxAssociationCellDep {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long tx_id;
+  private Long txId;
 
   private Integer index;
 
-  private byte[] outpoint_tx_hash;
+  private byte[] outpointTxHash;
 
-  private Integer outpoint_index;
+  private Integer outpointIndex;
 
-  private Long output_id;
+  private Long outputId;
 
-  private Short dep_type;
+  private Short depType;
 }

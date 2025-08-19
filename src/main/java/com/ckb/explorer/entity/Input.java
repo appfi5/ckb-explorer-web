@@ -12,17 +12,17 @@ public class Input {
   @TableId(type = IdType.AUTO)
   private Long id;
 
-  private Long output_id;
+  private Long outputId;
 
-  private byte[] pre_outpoint_tx_hash;
+  private byte[] preOutpointTxHash;
 
-  private Integer pre_outpoint_index;
+  private Integer preOutpointIndex;
 
   private byte[] since;
 
-  private Long consumed_tx_id;
+  private Long consumedTxId;
 
-  private byte[] consumed_tx_hash;
+  private byte[] consumedTxHash;
 
-  private Integer input_index;
+  private Integer inputIndex;
 }
