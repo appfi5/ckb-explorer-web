@@ -12,7 +12,6 @@ import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.Set;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 /**
  * BlockService的实现类 提供区块相关的服务实现，包括分页查询
@@ -36,10 +35,6 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
    * @return 分页结果
    */
   public Page<Block> getBlocksByPage(int pageNum, int pageSize, String sort) {
-    // 创建分页对象
-    Page<Block> page = new Page<>(pageNum, pageSize);
-    // 创建查询条件
-    LambdaQueryWrapper<Block> queryWrapper = new LambdaQueryWrapper<>();
 
     // 设置默认排序
     if (sort == null || sort.isEmpty()) {
@@ -62,6 +57,10 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
       throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
     }
 
+    // 创建分页对象
+    Page<Block> page = new Page<>(pageNum, pageSize);
+    // 创建查询条件
+    LambdaQueryWrapper<Block> queryWrapper = new LambdaQueryWrapper<>();
     // 添加排序条件
     boolean isAsc = "asc".equals(ascOrDesc);
     switch (orderBy) {
