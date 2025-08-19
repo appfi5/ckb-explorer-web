@@ -1,8 +1,10 @@
 package com.ckb.explorer.facade.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.common.dto.ResponsePageInfo;
 import com.ckb.explorer.domain.resp.BlockListResponse;
+import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.facade.IBlockCacheFacade;
@@ -96,6 +98,11 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
         lock.unlock();
       }
     }
+  }
+
+  @Override
+  public ResponseInfo<BaseResponse<BlockResponse>> findBlock(String id) {
+    return null;
   }
 
   private ResponsePageInfo<List<BaseResponse<BlockListResponse>>> loadFromDatabase(
