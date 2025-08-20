@@ -14,4 +14,12 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @return 分页结果
    */
   Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort);
+
+  /**
+   * 根据交易哈希获取交易详情
+   *
+   * @param txHash 交易哈希
+   * @return 交易详情响应
+   */
+  CkbTransaction getTransactionByHash(String txHash);
 }

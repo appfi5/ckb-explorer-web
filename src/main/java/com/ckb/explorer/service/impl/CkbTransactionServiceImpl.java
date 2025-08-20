@@ -84,4 +84,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     // 执行分页查询
     return baseMapper.selectPage(pageResult, queryWrapper);
   }
+
+  @Override
+  public CkbTransaction getTransactionByHash(String txHash) {
+    return null;
+  }
 }
