@@ -2,6 +2,7 @@ package com.ckb.explorer.facade.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
+import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
@@ -125,8 +126,61 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
   }
 
   @Override
-  public TransactionPageResponse getTransactionByHash(String txHash) {
-    return null;
+  public TransactionResponse getTransactionByHash(String txHash) {
+    // 创建缓存键
+    String cacheKey = String.format("%s%s:%s",
+        TRANSACTION_CACHE_PREFIX, CACHE_VERSION, txHash);
+
+    RBucket<TransactionResponse> bucket = redissonClient.getBucket(cacheKey);
+
+    // 1. 先尝试读缓存
+    TransactionResponse cached = bucket.get();
+    if (cached != null) {
+      return cached;
+    }
+
+    // 2. 缓存未命中，使用分布式锁防止击穿
+    String lockKey = cacheKey + ":lock";
+    RLock lock = redissonClient.getLock(lockKey);
+
+    try {
+      // 双重检查
+      cached = bucket.get();
+      if (cached != null) {
+        return cached;
+      }
+
+      if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
+        try {
+          // 再次检查
+          cached = bucket.get();
+          if (cached != null) {
+            return cached;
+          }
+
+          // 真正加载数据
+          TransactionResponse result = loadTransactionFromDatabase(txHash);
+
+          // 写入缓存 10s
+          bucket.set(result, Duration.ofSeconds(10));
+
+          return result;
+        } finally {
+          if (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+          }
+        }
+      } else {
+        // 获取锁失败，降级：直接查库
+        TransactionResponse result = loadTransactionFromDatabase(txHash);
+        bucket.set(result, Duration.ofSeconds(10));
+        return result;
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      // 降级处理
+      return loadTransactionFromDatabase(txHash);
+    }
   }
 
   /**
@@ -135,10 +189,10 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
    * @param txHash 交易哈希
    * @return 交易详情响应
    */
-  private TransactionPageResponse loadTransactionFromDatabase(String txHash) {
-    // 实际项目中需要调用DAO或Repository层获取数据
-    // 这里仅作为示例返回null
-    return null;
+  private TransactionResponse loadTransactionFromDatabase(String txHash) {
+    // 调用service层方法获取交易数据
+    return ckbTransactionService.getTransactionByHash(txHash);
+
   }
 
 }

@@ -2,6 +2,7 @@ package com.ckb.explorer.facade;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
+import com.ckb.explorer.domain.resp.TransactionResponse;
 
 /**
  * ITransactionCacheFacade 提供交易相关的缓存操作接口
@@ -24,5 +25,5 @@ public interface ICkbTransactionCacheFacade {
    * @param txHash 交易哈希
    * @return 交易详情响应
    */
-  TransactionPageResponse getTransactionByHash(String txHash);
+  TransactionResponse getTransactionByHash(String txHash);
 }

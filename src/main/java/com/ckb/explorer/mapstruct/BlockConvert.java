@@ -25,7 +25,7 @@ public interface BlockConvert {
 
 
   @Mapping(source = "blockHash", target = "blockHash", qualifiedByName = "byteToStringHash(Value)")
-  //@Mapping(source = "uncleBlockHashes", target = "uncleBlockHashes", qualifiedByName = "lockScriptToAddress(Value)")
+  @Mapping(source = "uncleBlockHashes", target = "uncleBlockHashes", qualifiedByName = "byteToHashList(Value)")
   @Mapping(source = "minerScript", target = "minerHash", qualifiedByName = "lockScriptToAddress(Value)")
   @Mapping(source = "transactionsRoot", target = "transactionsRoot", qualifiedByName = "byteToString(Value)")
   @Mapping(source = "blockNumber", target = "number")
@@ -35,6 +35,7 @@ public interface BlockConvert {
   @Mapping(source = "epochNumber", target = "blockIndexInEpoch")
   @Mapping(source = "nonce", target = "nonce", qualifiedByName = "byteToString(Value)")
   @Mapping(source = "difficulty", target = "difficulty", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "blockSize", target = "size")
   BlockResponse toConvertBlockResponse(Block block);
 
 }

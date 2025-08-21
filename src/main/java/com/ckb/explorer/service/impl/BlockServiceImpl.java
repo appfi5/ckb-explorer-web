@@ -5,12 +5,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
+import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.mapper.BlockMapper;
+import com.ckb.explorer.mapstruct.BlockConvert;
 import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.util.I18n;
+import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,6 +25,9 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
 
   @Resource
   private I18n i18n;
+
+  @Resource
+  private QueryKeyUtils queryKeyUtils;
 
   private static final Set<String> VALID_SORT_FIELDS = Set.of(
       "blockNumber", "reward", "timestamp", "transactionsCount"
@@ -101,6 +108,39 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
 
     // 执行分页查询
     return baseMapper.selectPage(page, queryWrapper);
+  }
+
+  @Override
+  public BlockResponse getBlock(String id) {
+    Block block;
+    if (queryKeyUtils.isValidHex(id)) {
+      // 按区块哈希查询
+      block = this.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockHash, id));
+    } else {
+      // 按区块号查询
+      block = this.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockNumber, Long.parseLong(id)));
+    }
+
+    if (block == null) {
+      throw new ServerException(I18nKey.BLOCK_NOT_FOUND_CODE, i18n.getMessage(I18nKey.BLOCK_NOT_FOUND_MESSAGE));
+    }
+
+    // 转换为响应对象
+    var result = BlockConvert.INSTANCE.toConvertBlockResponse(block);
+
+    var currentBlockNumber = result.getNumber();
+    var afterBlock = baseMapper.selectOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockNumber, currentBlockNumber+11));
+    if(afterBlock == null){
+      result.setMinerReward(0L);
+      result.setRewardStatus("pending");
+      result.setReceivedTxFeeStatus("pending");
+    }else{
+      result.setMinerReward(afterBlock.getReward());
+      result.setRewardStatus("issued");
+      result.setReceivedTxFeeStatus("calculated");
+    }
+
+    return result;
   }
 
 }

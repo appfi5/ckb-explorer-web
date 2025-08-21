@@ -6,6 +6,7 @@ import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.req.TransactionPageReq;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
+import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
@@ -54,7 +55,7 @@ public class TransactionsController {
    */
   @GetMapping("/{txHash}")
   @Operation(summary = "获取交易详情")
-  public ResponseInfo<TransactionPageResponse> show(@PathVariable String txHash) {
+  public ResponseInfo<TransactionResponse> show(@PathVariable String txHash) {
 
     // 校验入参
     if(StringUtils.isEmpty(txHash) || (!queryKeyUtils.isValidHex(txHash))){

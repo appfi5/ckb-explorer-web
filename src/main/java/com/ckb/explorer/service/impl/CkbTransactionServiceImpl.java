@@ -5,13 +5,20 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
+import com.ckb.explorer.domain.dto.TransactionDto;
+import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
+import com.ckb.explorer.entity.TxAssociationCellDep;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
+import com.ckb.explorer.mapper.TxAssociationCellDepMapper;
+import com.ckb.explorer.mapstruct.CkbTransactionConvert;
 import com.ckb.explorer.service.CkbTransactionService;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -71,14 +78,13 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
           queryWrapper.orderByDesc(CkbTransaction::getBlockNumber);
         }
         break;
-        // TODO 字段待确定
-//      case "capacityInvolved":
-//        if (isAsc) {
-//          queryWrapper.orderByAsc(CkbTransaction::getCapacityInvolved);
-//        } else {
-//          queryWrapper.orderByDesc(CkbTransaction::getCapacityInvolved);
-//        }
-//        break;
+      case "capacityInvolved":
+        if (isAsc) {
+          queryWrapper.orderByAsc(CkbTransaction::getCapacityInvolved);
+        } else {
+          queryWrapper.orderByDesc(CkbTransaction::getCapacityInvolved);
+        }
+        break;
     }
 
     // 执行分页查询
@@ -86,7 +92,19 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   }
 
   @Override
-  public CkbTransaction getTransactionByHash(String txHash) {
-    return null;
+  public TransactionResponse getTransactionByHash(String txHash) {
+
+    // 查询第一个匹配的交易
+    TransactionDto transaction = baseMapper.selectTransactionWithCellDeps(Numeric.hexStringToByteArray(txHash));
+    
+    // 如果找不到交易，抛出异常
+    if (transaction == null) {
+      throw new ServerException(I18nKey.CKB_TRANSACTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_NOT_FOUND_MESSAGE));
+    }
+
+    TransactionResponse result = CkbTransactionConvert.INSTANCE.toConvertTransactionResponse(transaction);
+    // result.setTxStatus(); TODO
+
+    return result;
   }
 }

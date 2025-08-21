@@ -60,7 +60,7 @@ public class Block {
 
   private String minerMessage;
 
-  private Long reward;
+  private Long reward; // 是11个块之前的奖励
 
   private Long totalTransactionFee;
 
