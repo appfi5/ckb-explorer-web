@@ -33,9 +33,6 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
   @Autowired
   private BlockService blockService;
 
-  @Autowired
-  private QueryKeyUtils queryKeyUtils;
-
   @Resource
   private I18n i18n;
 
@@ -170,22 +167,8 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
    * @return 区块响应信息
    */
   private BlockResponse loadBlockFromDatabase(String id) {
-    Block block;
-    if (queryKeyUtils.isValidHex(id)) {
-      // 按区块哈希查询
-      block = blockService.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockHash, id));
-    } else {
-      // 按区块号查询
-      block = blockService.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockNumber, Long.parseLong(id)));
-    }
 
-    if (block == null) {
-      throw new ServerException(I18nKey.BLOCK_NOT_FOUND_CODE, i18n.getMessage(I18nKey.BLOCK_NOT_FOUND_MESSAGE));
-    }
-
-    // 转换为响应对象
-    return BlockConvert.INSTANCE.toConvertBlockResponse(block);
-
+    return blockService.getBlock(id);
   }
 
   private Page<BlockListResponse> loadFromDatabase(

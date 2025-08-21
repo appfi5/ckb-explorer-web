@@ -33,7 +33,6 @@ CREATE TABLE IF NOT EXISTS block(
                                     live_cell_changes INTEGER
 );
 
-
 CREATE TABLE IF NOT EXISTS uncle_block(
                                           id BIGSERIAL PRIMARY KEY,
                                           index INTEGER,
@@ -63,11 +62,13 @@ CREATE TABLE IF NOT EXISTS ckb_transaction(
                                               block_id BIGINT NOT NULL,
                                               block_number BIGINT NOT NULL,
                                               block_hash BYTEA NOT NULL,
+                                              block_timestamp BIGINT NOT NULL,
                                               tx_index INTEGER NOT NULL,
                                               header_deps BYTEA,
                                               cycles INTEGER,
                                               transaction_fee BIGINT,
-                                              bytes BIGINT
+                                              bytes BIGINT,
+                                              capacity_involved BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS tx_association_header_dep(
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS output(
 
 CREATE TABLE IF NOT EXISTS input(
                                     id BIGSERIAL PRIMARY KEY,
-                                    output_id BIGINT ,
+                                    output_id BIGINT,
                                     pre_outpoint_tx_hash BYTEA NOT NULL,
                                     pre_outpoint_index INTEGER NOT NULL,
                                     since BYTEA NOT NULL,
@@ -120,16 +121,3 @@ CREATE TABLE IF NOT EXISTS script(
                                      script_hash BYTEA NOT NULL,
                                      UNIQUE(code_hash, hash_type, args)
     );
-
-CREATE TABLE IF NOT EXISTS address(
-                                      id BIGSERIAL PRIMARY KEY,
-                                      address character varying NOT NULL,
-                                      script_id BIGINT NOT NULL
-                                  );
-
-CREATE TABLE IF NOT EXISTS account_book(
-                                           id BIGSERIAL PRIMARY KEY,
-                                           address_id BIGINT,
-                                           transaction_id BIGINT,
-                                           income numeric(30,0)
-);

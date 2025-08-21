@@ -28,6 +28,8 @@ public class CkbTransaction {
 
   private byte[] blockHash;
 
+  private Long blockTimestamp;
+
   private Integer txIndex;
 
   private byte[] headerDeps;
@@ -37,4 +39,6 @@ public class CkbTransaction {
   private Long transactionFee;
 
   private Long bytes;
+
+  private Long capacityInvolved;
 }

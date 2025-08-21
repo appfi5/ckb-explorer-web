@@ -2,10 +2,14 @@ package com.ckb.explorer.util;
 
 import com.ckb.explorer.enums.NetWorkEnums;
 import jakarta.annotation.PostConstruct;
-import java.util.HexFormat;
+import java.util.ArrayList;
+import java.util.List;
 import org.mapstruct.Named;
 import org.nervos.ckb.type.Script;
 import org.nervos.ckb.type.Script.HashType;
+import org.nervos.ckb.type.concrete.Byte32Vec;
+import org.nervos.ckb.type.concrete.BytesVec;
+import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -60,7 +64,7 @@ public class TypeConversionUtil {
    */
   @Named("byteToString(Value)")
   public static String byteToString(byte[] value) {
-    return value != null ? HexFormat.of().formatHex(value) : null;
+    return value != null ? Numeric.toHexStringNoPrefix(value) : null;
   }
 
   /**
@@ -87,6 +91,48 @@ public class TypeConversionUtil {
    */
   @Named("byteToStringHash(Value)")
   public static String byteToStringHash(byte[] value) {
-    return value != null ? "0x"+HexFormat.of().formatHex(value) : null;
+    return value != null ? Numeric.toHexString(value) : null;
+  }
+
+  /**
+   * 将 byte[] 类型转换为 List<String> 类型Witnesses
+   *
+   * @param value 要转换的 Integer 值
+   * @return 转换后的 String 值，如果输入为 null 则返回 null
+   */
+  @Named("byteToWitnesses(Value)")
+  public static List<String> byteToWitnesses(byte[] value) {
+    if(value == null) {
+      return null;
+    }
+    var bytesVec = BytesVec.builder(value).build();
+    var bytesList = bytesVec.getItems();
+    List<String> witnessList = new ArrayList<>();
+    for(int i = 0; i < bytesList.length; i++){
+      var bytes = bytesList[i];
+      witnessList.add(Numeric.toHexString(bytes.getItems()));
+    }
+    return witnessList;
+  }
+
+  /**
+   * 将 byte[] 类型转换为 List<String> 类型 哈希列表
+   *
+   * @param value 要转换的 Integer 值
+   * @return 转换后的 String 值，如果输入为 null 则返回 null
+   */
+  @Named("byteToHashList(Value)")
+  public static List<String> byteToHashList(byte[] value) {
+    if(value == null) {
+      return null;
+    }
+    var byte32Vec = Byte32Vec.builder(value).build();
+    var byte32List = byte32Vec.getItems();
+    List<String> hashs = new ArrayList<>();
+    for(int i = 0; i < byte32List.length; i++){
+      var bytes = byte32List[i];
+      hashs.add(Numeric.toHexString(bytes.getItems()));
+    }
+    return hashs;
   }
 }

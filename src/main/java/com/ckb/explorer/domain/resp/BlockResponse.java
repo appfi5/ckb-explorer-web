@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class BlockResponse extends BaseResponse<Long> {
 
   private String blockHash;
-  private List<String> uncleBlockHashes;// TODO 需调研解析逻辑
+  private List<String> uncleBlockHashes;
   private String minerHash;
   private String transactionsRoot;
   private String rewardStatus;// TODO 状态待定，需定时任务刷
@@ -31,18 +31,18 @@ public class BlockResponse extends BaseResponse<Long> {
   private Integer proposalsCount;
   private Integer unclesCount;
   private Long timestamp;
-  private Long reward;
+  private Long reward;// TODO 待定先不要
   private Long cellConsumed;
   private Long totalTransactionFee;
   private Integer transactionsCount; // from object.ckb_transactions_count.to_s
   private Long totalCellCapacity;
-  private Long receivedTxFee;// TODO 待定
+  private Long receivedTxFee;// TODO 待定先不要
   private String epoch;
   private Long blockIndexInEpoch;
   private String nonce;
   private String difficulty;
-  private Long minerReward; // TODO (object.received_tx_fee + object.reward).to_s
-  private Integer size; // TODO 异步更新UpdateBlockSizeWorker.perform_async
+  private Long minerReward; // 原(object.received_tx_fee + object.reward).to_s 现11个块之后的reward值
+  private Integer size; // 原异步更新UpdateBlockSizeWorker.perform_async 现blockSize
   private Long largestBlockInEpoch; // TODO from object.epoch_statistic&.largest_block_size
   private Long largestBlock; // TODO from EpochStatistic.largest_block_size
   private Long cycles;

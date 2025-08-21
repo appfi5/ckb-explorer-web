@@ -2,6 +2,7 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
 
 /**
@@ -18,4 +19,5 @@ public interface BlockService extends IService<Block> {
      */
     Page<Block> getBlocksByPage(int pageNum, int pageSize, String sort);
 
+    BlockResponse getBlock(String id);
 }

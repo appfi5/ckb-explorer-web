@@ -2,6 +2,7 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 
 public interface CkbTransactionService extends IService<CkbTransaction> {
@@ -14,4 +15,12 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @return 分页结果
    */
   Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort);
+
+  /**
+   * 根据交易哈希获取交易详情
+   *
+   * @param txHash 交易哈希
+   * @return 交易详情响应
+   */
+  TransactionResponse getTransactionByHash(String txHash);
 }

@@ -4,7 +4,68 @@
 
 <mapper namespace="com.ckb.explorer.mapper.CkbTransactionMapper">
 
+  <!-- 定义 resultMap 支持一对多映射 -->
+  <resultMap id="transactionDtoResultMap" type="com.ckb.explorer.domain.dto.TransactionDto">
+    <id property="id" column="id"/>
+    <result property="isCellbase" column="is_cellbase"/>
+    <result property="witnesses" column="witnesses"/>
+    <result property="headerDeps" column="header_deps"/>
+    <result property="txHash" column="tx_hash"/>
+    <result property="transactionFee" column="transaction_fee"/>
+    <result property="blockNumber" column="block_number"/>
+    <result property="version" column="version"/>
+    <result property="cycles" column="cycles"/>
+    <result property="bytes" column="bytes"/>
 
+    <!-- 一对多映射：cellDeps -->
+    <collection property="cellDeps" ofType="com.ckb.explorer.domain.resp.CellDependencyResponse">
+      <id property="id" column="dep_id"/>
+      <result property="depType" column="dep_type"/>
+      <!-- 使用 association 映射嵌套对象 outPoint -->
+      <association property="outPoint" javaType="com.ckb.explorer.domain.resp.OutPoint">
+        <result property="txHash" column="outpoint_tx_hash"/>
+        <result property="index" column="outpoint_index"/>
+      </association>
+      <!--<association property="outPoint" javaType="com.ckb.explorer.domain.resp.Script">
+        <result property="codeHash" column="code_hash"/>
+        <result property="hashType" column="hash_type"/>
+      </association>-->
+    </collection>
+  </resultMap>
+
+  <select id="selectTransactionWithCellDeps"
+    resultMap="transactionDtoResultMap">
+    SELECT ct.id,
+           ct.tx_index = 0 as is_cellbase,
+           ct.witnesses,
+           ct.header_deps,
+           '0x' || encode(ct.tx_hash, 'hex') as tx_hash,
+           ct.transaction_fee,
+           ct.block_number,
+           COALESCE(NULLIF(ltrim(encode(ct.version, 'hex'), '0'), ''), '0') AS version,
+           ct.cycles,
+           ct.bytes,
+           acd.id as dep_id,
+           '0x' || encode(acd.outpoint_tx_hash, 'hex') as outpoint_tx_hash,
+           acd.outpoint_index,
+           CASE
+             WHEN acd.dep_type = 0 THEN 'code'
+             WHEN acd.dep_type = 1 THEN 'dep_group'
+             END           AS dep_type
+           /*,
+           '0x' || encode(s.code_hash, 'hex') as code_hash,
+           CASE
+             WHEN s.hash_type = 0 THEN 'data'
+             WHEN s.hash_type = 1 THEN 'type'
+             WHEN s.hash_type = 2 THEN 'data1'
+             WHEN s.hash_type = 4 THEN 'data2'
+             ELSE null
+             END           AS hash_type*/
+    FROM ckb_transaction ct
+           LEFT JOIN tx_association_cell_dep acd on ct.id = acd.tx_id
+    WHERE ct.tx_hash = #{txHash}
+    order by dep_id
+  </select>
 
 
 </mapper>
