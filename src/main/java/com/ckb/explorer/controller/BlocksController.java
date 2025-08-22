@@ -53,7 +53,7 @@ public class BlocksController {
    * @param id
    * @return
    */
-  @GetMapping("/blocks/{id}")
+  @GetMapping("/{id}")
   @Operation(summary = "获取块详情")
   public ResponseInfo<BlockResponse> show(@PathVariable String id) {
 
