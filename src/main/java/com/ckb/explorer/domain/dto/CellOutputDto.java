@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class CellInputDto {
+public class CellOutputDto {
   private Long id;
   /**
    * 单元格容量
@@ -16,12 +16,15 @@ public class CellInputDto {
    */
   private Long occupiedCapacity;
 
-
   private byte[] lockCodeHash;
 
   private byte[] lockArgs;
 
   private Short lockHashType;
+
+  private String status;
+
+  private String consumedTxHash;
 
   /**
    * 生成的交易哈希
@@ -37,11 +40,6 @@ public class CellInputDto {
    * 单元格类型
    */
   private String cellType;
-
-  /**
-   * since信息
-   */
-  private String sinceRaw;
 
   /**
    * 标签列表

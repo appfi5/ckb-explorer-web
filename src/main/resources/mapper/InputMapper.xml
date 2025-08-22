@@ -21,11 +21,11 @@
            '0x' || encode(type.code_hash, 'hex') as code_hash,
            type.hash_type                        as hash_type
     from input i
-           inner join output o on o.id = i.output_id
-           LEFT join script s on o.lock_script_id = s.id
+           left join output o on o.id = i.output_id
+           left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
     where consumed_tx_id = #{transactionId}
-    order by id
+    order by id asc
   </select>
 
 </mapper>

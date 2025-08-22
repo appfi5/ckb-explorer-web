@@ -12,7 +12,6 @@ import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
-import com.ckb.explorer.service.CkbTransactionService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -78,30 +77,12 @@ public class CkbTransactionsController {
   }
 
   /**
-   * 获取交易转账详情
-   * @param txHash 交易哈希
-   * @return 交易转账详情数据
-   */
-//  @GetMapping("/{txHash}/details")
-//  @Operation(summary = "获取交易转账详情")
-//  public ResponseInfo<Map<String, Object>> details(@PathVariable String txHash, HttpServletResponse response) {
-//    setCkbTransaction(txHash);
-//    // 设置缓存控制头（10秒）
-//    response.setHeader("Cache-Control", "public, max-age=10, must-revalidate");
-//    transactionCacheFacade.compareCells();
-//    // 比较单元格以获取转账信息
-//    Map<String, Object> transfers = ckbTransactionService.compareCells(ckbTransaction);
-//
-//    return ResponseInfo.SUCCESS(transfers);
-//  }
-
-  /**
    * 获取交易输入单元格列表
    * @param txHash 交易哈希
    * @param req  请求
    * @return 分页的单元格输入列表及元数据
    */
-  @GetMapping("/{txHash}/inputs")
+  @GetMapping("/{txHash}/display_inputs")
   @Operation(summary = "获取交易输入单元格列表")
   public ResponseInfo<Page<CellInputResponse>> displayInputs(
       @PathVariable String txHash,
@@ -124,36 +105,22 @@ public class CkbTransactionsController {
    * @param req 请求
    * @return 分页的单元格输出列表及元数据
    */
-  @GetMapping("/{txHash}/outputs")
+  @GetMapping("/{txHash}/display_outputs")
   @Operation(summary = "获取交易输出单元格列表")
-  public ResponseInfo<Map<String, Object>> displayOutputs(
+  public ResponseInfo<Page<CellOutputResponse>> displayOutputs(
       @PathVariable String txHash,
       @Valid BasePageReq req,
       HttpServletResponse servletResponse) {
-    
+
+    // 校验入参
+    if(StringUtils.isEmpty(txHash) || (!queryKeyUtils.isValidHex(txHash))){
+      throw new ServerException(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_MESSAGE));
+    }
+
     // 设置缓存控制头（15秒）
     servletResponse.setHeader("Cache-Control", "public, max-age=15, must-revalidate");
-    
-    Page<CellOutputResponse> cellOutputs;
-    long totalCount;
-    
-//    if (Boolean.TRUE.equals(ckbTransaction.getIsCellbase())) {
-//      // 处理cellbase交易
-//      cellOutputs = ckbTransactionService.getCellbaseDisplayOutputs(ckbTransaction.getId(), this.page, this.pageSize);
-//      totalCount = cellOutputs.getTotal();
-//    } else {
-//      // 处理普通交易
-//      cellOutputs = ckbTransactionService.getNormalTxDisplayOutputs(ckbTransaction.getId(), this.page, this.pageSize);
-//      totalCount = cellOutputs.getTotal();
-//    }
-//
-//    Map<String, Object> response = Map.of(
-//        "data", cellOutputs.getRecords(),
-//        "meta", Map.of("total", totalCount, "page_size", this.pageSize)
-//    );
 
-    return ResponseInfo.SUCCESS(null);
+    return ResponseInfo.SUCCESS(transactionCacheFacade.getDisplayOutputs(txHash, req.getPage(), req.getPageSize()));
   }
-
 
 }

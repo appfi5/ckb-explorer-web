@@ -263,7 +263,60 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
 
   @Override
   public Page<CellOutputResponse> getDisplayOutputs(String txHash,Integer page, Integer size) {
-    return null;
+    // 创建缓存键
+    String cacheKey = String.format("%s%s:page:%d:size:%d",
+        TRANSACTIONS_OUTPUT_CACHE_PREFIX, CACHE_VERSION, page, size);
+
+    RBucket<Page<CellOutputResponse>> bucket = redissonClient.getBucket(cacheKey);
+
+    // 1. 先尝试读缓存
+    Page<CellOutputResponse> cached = bucket.get();
+    if (cached != null) {
+      return cached;
+    }
+
+    // 2. 缓存未命中，使用分布式锁防止击穿
+    String lockKey = cacheKey + ":lock";
+    RLock lock = redissonClient.getLock(lockKey);
+
+    try {
+      // 双重检查
+      cached = bucket.get();
+      if (cached != null) {
+        return cached;
+      }
+
+      if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
+        try {
+          // 再次检查
+          cached = bucket.get();
+          if (cached != null) {
+            return cached;
+          }
+
+          // 真正加载数据
+          Page<CellOutputResponse> result = loadOutputFromDatabase(txHash, page, size);
+
+          // 写入缓存
+          bucket.set(result, Duration.ofSeconds(TTL_SECONDS_DETAIL));
+
+          return result;
+        } finally {
+          if (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+          }
+        }
+      } else {
+        // 获取锁失败，降级：直接查库
+        Page<CellOutputResponse> result = loadOutputFromDatabase(txHash, page, size);
+        bucket.set(result, Duration.ofSeconds(TTL_SECONDS_DETAIL));
+        return result;
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      // 降级处理
+      return loadOutputFromDatabase(txHash, page, size);
+    }
   }
 
   private Page<CellOutputResponse> loadOutputFromDatabase(String txHash,Integer page, Integer size){

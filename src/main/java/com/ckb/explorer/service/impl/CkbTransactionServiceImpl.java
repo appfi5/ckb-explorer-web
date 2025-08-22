@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
+import com.ckb.explorer.domain.dto.CellOutputDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
 import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
@@ -13,7 +14,9 @@ import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
 import com.ckb.explorer.mapper.InputMapper;
+import com.ckb.explorer.mapper.OutputMapper;
 import com.ckb.explorer.mapstruct.CellInputConvert;
+import com.ckb.explorer.mapstruct.CellOutputConvert;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
 import com.ckb.explorer.service.CkbTransactionService;
 import com.ckb.explorer.util.I18n;
@@ -34,6 +37,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Resource
   private InputMapper inputMapper;
+
+  @Resource
+  private OutputMapper outputMapper;
 
   // 有效的排序字段
   private static final Set<String> VALID_SORT_FIELDS = new HashSet<String>() {
@@ -205,38 +211,24 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Override
   public Page<CellOutputResponse> getDisplayOutputs(String txHash, int pageNum, int pageSize) {
-    return null;
-  }
+    CkbTransaction ckbTransaction = getCkbTransaction(txHash);
+    Page<CellOutputDto> pageResult = new Page<>(pageNum, pageSize);
+    // cellbase交易
+    if(ckbTransaction.getTxIndex() == 0){
 
-  private Page<CellOutputResponse> getCellbaseDisplayOutputs(Long transactionId, int page, int pageSize) {
-    // In a real implementation, you would query the database for cell outputs
-    // associated with this cellbase transaction and sort them by id
-    Page<CellOutputResponse> resultPage = new Page<>(page, pageSize);
-    List<CellOutputResponse> records = new ArrayList<>();
-    
-    // This is a placeholder - in reality, you would query actual cell outputs
-    // For now, we'll just return an empty list with total 0
-    
-    resultPage.setRecords(records);
-    resultPage.setTotal(0);
-    
-    return resultPage;
-  }
+      Page<CellOutputDto> resultPage = outputMapper.getCellbaseDisplayOutputs(pageResult, ckbTransaction.getId());
 
+      // TODO 标签判断：如果区块时间戳等于创世区块时间戳则包含标签，否则为空列表
+      Page<CellOutputResponse> result = CellOutputConvert.INSTANCE.toConvertPage(resultPage);
+      List<CellOutputResponse> records = result.getRecords();
+      records.stream().forEach(record-> record.setTargetBlockNumber(ckbTransaction.getBlockNumber()< 11 ?0:ckbTransaction.getBlockNumber()-11));
+      return result;
+      // 普通交易
+    } else {
+      Page<CellOutputDto> resultPage = outputMapper.getNormalTxDisplayOutputs(pageResult, ckbTransaction.getId());
 
-  private Page<CellOutputResponse> getNormalTxDisplayOutputs(Long transactionId, int page, int pageSize) {
-    // In a real implementation, you would query the database for cell outputs
-    // associated with this transaction
-    Page<CellOutputResponse> resultPage = new Page<>(page, pageSize);
-    List<CellOutputResponse> records = new ArrayList<>();
-    
-    // This is a placeholder - in reality, you would query actual cell outputs
-    // For now, we'll just return an empty list with total 0
-    
-    resultPage.setRecords(records);
-    resultPage.setTotal(0);
-
-    //    display_output.merge!(attributes_for_udt_cell(output)) if output.udt?
+      return CellOutputConvert.INSTANCE.toConvertPage(resultPage);
+      //    display_output.merge!(attributes_for_udt_cell(output)) if output.udt?
 //        display_output.merge!(attributes_for_xudt_cell(output)) if output.xudt?
 //        display_output.merge!(attributes_for_ssri_cell(output)) if output.ssri?
 //        display_output.merge!(attributes_for_xudt_compatible_cell(output)) if output.xudt_compatible?
@@ -260,7 +252,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 //    if output.lock_script.code_hash == Settings.fiber_funding_code_hash
 //    display_output.merge!(attributes_for_fiber_cell(output))
 //    end
-    return resultPage;
+    }
   }
 
   private CkbTransaction getCkbTransaction(String txHash) {

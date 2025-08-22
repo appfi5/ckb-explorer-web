@@ -75,4 +75,37 @@ public class CellInputResponse extends BaseResponse<Long> {
    */
   private ScriptResponse typeScript;
 
+  // ========== DAO 相关字段（可选）==========
+  private String compensationStartedBlockNumber;
+  private String compensationStartedTimestamp;
+  private String compensationEndedBlockNumber;
+  private String compensationEndedTimestamp;
+  private String interest;
+  private String lockedUntilBlockNumber;
+  private String lockedUntilBlockTimestamp;
+
+  // ========== UDT / XUDT / SSRI / XUDT Compatible（可选）==========
+  /*private UdtInfo udtInfo;
+  private UdtInfo xudtInfo;
+  private UdtInfo ssriInfo;
+  private UdtInfo xudtCompatibleInfo;
+  private UdtInfo extraInfo; // 多个类型共用
+
+  // ========== M-NFT（可选）==========
+  private MnftInfo mNftInfo;
+
+  // ========== NRC-721（可选）==========
+  private Nrc721TokenInfo nrc721TokenInfo;
+
+  // ========== Omiga Inscription（可选）==========
+  private OmigaInscriptionInfo omigaInscriptionInfo;
+
+  // ========== RGB / Bitcoin Vout（可选）==========
+  private RgbInfo rgbInfo;
+
+  // ========== DOB (Spore, DID)（可选）==========
+  private DobInfo dobInfo;
+
+  // ========== Fiber Graph Channel（可选）==========
+  private FiberGraphChannelInfo fiberGraphChannelInfo;*/
 }
