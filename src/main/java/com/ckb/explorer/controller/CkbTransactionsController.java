@@ -1,0 +1,159 @@
+package com.ckb.explorer.controller;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.common.dto.ResponseInfo;
+import com.ckb.explorer.config.ServerException;
+import com.ckb.explorer.constants.I18nKey;
+import com.ckb.explorer.domain.req.TransactionPageReq;
+import com.ckb.explorer.domain.req.base.BasePageReq;
+import com.ckb.explorer.domain.resp.CellInputResponse;
+import com.ckb.explorer.domain.resp.CellOutputResponse;
+import com.ckb.explorer.domain.resp.TransactionPageResponse;
+import com.ckb.explorer.domain.resp.TransactionResponse;
+import com.ckb.explorer.entity.CkbTransaction;
+import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
+import com.ckb.explorer.service.CkbTransactionService;
+import com.ckb.explorer.util.I18n;
+import com.ckb.explorer.util.QueryKeyUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/ckb_transactions")
+@Validated
+public class CkbTransactionsController {
+
+  @Resource
+  private ICkbTransactionCacheFacade transactionCacheFacade;
+
+  @Resource
+  private QueryKeyUtils queryKeyUtils;
+
+  @Resource
+  private I18n i18n;
+
+  private CkbTransaction ckbTransaction;
+  private Integer page = 1;
+  private Integer pageSize = 20;
+
+  /**
+   * 查询交易列表
+   * @param req
+   * @return
+   */
+  @GetMapping
+  @Operation(summary = "获取交易列表")
+  public ResponseInfo<Page<TransactionPageResponse>> index(@Valid TransactionPageReq req) {
+
+    // 查询带缓存
+    return ResponseInfo.SUCCESS(transactionCacheFacade.getTransactionsByPage(req.getPage(), req.getPageSize(), req.getSort()));
+
+  }
+  
+  /**
+   * 查询交易详情
+   * @param txHash
+   * @return
+   */
+  @GetMapping("/{txHash}")
+  @Operation(summary = "获取交易详情")
+  public ResponseInfo<TransactionResponse> show(@PathVariable String txHash) {
+
+    // 校验入参
+    if(StringUtils.isEmpty(txHash) || (!queryKeyUtils.isValidHex(txHash))){
+      throw new ServerException(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_MESSAGE));
+    }
+    // 查询带缓存
+    return ResponseInfo.SUCCESS(transactionCacheFacade.getTransactionByHash(txHash));
+  }
+
+  /**
+   * 获取交易转账详情
+   * @param txHash 交易哈希
+   * @return 交易转账详情数据
+   */
+//  @GetMapping("/{txHash}/details")
+//  @Operation(summary = "获取交易转账详情")
+//  public ResponseInfo<Map<String, Object>> details(@PathVariable String txHash, HttpServletResponse response) {
+//    setCkbTransaction(txHash);
+//    // 设置缓存控制头（10秒）
+//    response.setHeader("Cache-Control", "public, max-age=10, must-revalidate");
+//    transactionCacheFacade.compareCells();
+//    // 比较单元格以获取转账信息
+//    Map<String, Object> transfers = ckbTransactionService.compareCells(ckbTransaction);
+//
+//    return ResponseInfo.SUCCESS(transfers);
+//  }
+
+  /**
+   * 获取交易输入单元格列表
+   * @param txHash 交易哈希
+   * @param req  请求
+   * @return 分页的单元格输入列表及元数据
+   */
+  @GetMapping("/{txHash}/inputs")
+  @Operation(summary = "获取交易输入单元格列表")
+  public ResponseInfo<Page<CellInputResponse>> displayInputs(
+      @PathVariable String txHash,
+      @Valid BasePageReq req,
+      HttpServletResponse servletResponse) {
+
+    // 校验入参
+    if(StringUtils.isEmpty(txHash) || (!queryKeyUtils.isValidHex(txHash))){
+      throw new ServerException(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_MESSAGE));
+    }
+    // 设置缓存控制头（15秒）
+    servletResponse.setHeader("Cache-Control", "public, max-age=15, must-revalidate");
+
+    return ResponseInfo.SUCCESS(transactionCacheFacade.getDisplayInputs(txHash, req.getPage(), req.getPageSize()));
+  }
+
+  /**
+   * 获取交易输出单元格列表
+   * @param txHash 交易哈希
+   * @param req 请求
+   * @return 分页的单元格输出列表及元数据
+   */
+  @GetMapping("/{txHash}/outputs")
+  @Operation(summary = "获取交易输出单元格列表")
+  public ResponseInfo<Map<String, Object>> displayOutputs(
+      @PathVariable String txHash,
+      @Valid BasePageReq req,
+      HttpServletResponse servletResponse) {
+    
+    // 设置缓存控制头（15秒）
+    servletResponse.setHeader("Cache-Control", "public, max-age=15, must-revalidate");
+    
+    Page<CellOutputResponse> cellOutputs;
+    long totalCount;
+    
+//    if (Boolean.TRUE.equals(ckbTransaction.getIsCellbase())) {
+//      // 处理cellbase交易
+//      cellOutputs = ckbTransactionService.getCellbaseDisplayOutputs(ckbTransaction.getId(), this.page, this.pageSize);
+//      totalCount = cellOutputs.getTotal();
+//    } else {
+//      // 处理普通交易
+//      cellOutputs = ckbTransactionService.getNormalTxDisplayOutputs(ckbTransaction.getId(), this.page, this.pageSize);
+//      totalCount = cellOutputs.getTotal();
+//    }
+//
+//    Map<String, Object> response = Map.of(
+//        "data", cellOutputs.getRecords(),
+//        "meta", Map.of("total", totalCount, "page_size", this.pageSize)
+//    );
+
+    return ResponseInfo.SUCCESS(null);
+  }
+
+
+}

@@ -23,10 +23,4 @@ public class BasePageReq implements Serializable {
   @Min(value = 1, message = "Params page should be an integer greater than 0")
   private int page = 1;
 
-  /**
-   * 排序字段
-   */
-  @Schema(description = "排序字段")
-  private String sort;
-
 }

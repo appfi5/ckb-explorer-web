@@ -2,6 +2,8 @@ package com.ckb.explorer.domain.resp;
 
 import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.util.List;
@@ -35,6 +37,7 @@ public class BlockResponse extends BaseResponse<Long> {
   private Long cellConsumed;
   private Long totalTransactionFee;
   private Integer transactionsCount; // from object.ckb_transactions_count.to_s
+  @JsonSerialize(using = ToStringSerializer.class)
   private Long totalCellCapacity;
   private Long receivedTxFee;// TODO 待定先不要
   private String epoch;

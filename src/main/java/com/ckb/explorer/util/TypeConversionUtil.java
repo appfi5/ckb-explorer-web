@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import org.mapstruct.Named;
+import org.nervos.ckb.Network;
 import org.nervos.ckb.type.Script;
 import org.nervos.ckb.type.Script.HashType;
 import org.nervos.ckb.type.concrete.Byte32Vec;
@@ -70,7 +71,7 @@ public class TypeConversionUtil {
   /**
    * 将 byte[] 类型的lockScript转换为 String 类型的Address
    *
-   * @param value 要转换的 Integer 值
+   * @param value 要转换的 byte[] 值
    * @return 转换后的 String 值，如果输入为 null 则返回 null
    */
   @Named("lockScriptToAddress(Value)")
@@ -134,5 +135,21 @@ public class TypeConversionUtil {
       hashs.add(Numeric.toHexString(bytes.getItems()));
     }
     return hashs;
+  }
+
+  /**
+   * 将 script结构体的lockScript转换为 String 类型的Address
+   *
+   * @param codeHash
+   * @param args
+   * @param hashType
+   * @return
+   */
+  public static String scriptToAddress(byte[] codeHash, byte[] args, Short hashType){
+    var net = NetWorkEnums.getNet(getNetwork());
+    Script script = new Script(codeHash,
+        args,
+        HashType.unpack(hashType.byteValue()));
+    return new Address(script, net).encode();
   }
 }

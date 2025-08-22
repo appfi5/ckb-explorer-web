@@ -1,6 +1,8 @@
 package com.ckb.explorer.facade;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.resp.CellInputResponse;
+import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
 
@@ -26,4 +28,20 @@ public interface ICkbTransactionCacheFacade {
    * @return 交易详情响应
    */
   TransactionResponse getTransactionByHash(String txHash);
+
+  /**
+   * 根据交易哈希获取交易输入单元格列表
+   *
+   * @param txHash 交易哈希
+   * @return 交易详情响应
+   */
+  Page<CellInputResponse> getDisplayInputs(String txHash,Integer page, Integer size);
+
+  /**
+   * 根据交易哈希获取交易输出单元格列表
+   *
+   * @param txHash 交易哈希
+   * @return 交易详情响应
+   */
+  Page<CellOutputResponse> getDisplayOutputs(String txHash,Integer page, Integer size);
 }
