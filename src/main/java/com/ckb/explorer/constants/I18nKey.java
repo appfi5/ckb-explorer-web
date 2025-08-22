@@ -138,4 +138,48 @@ public final class I18nKey {
   public static final String NOT_ACCEPTABLE_MESSAGE = "not_acceptable";
   public static final String UNSUPPORTED_MEDIA_TYPE_MESSAGE = "unsupported_media_type";
   public static final String QUERY_PARAMETER_INVALID_MESSAGE = "query_parameter_is_invalid";
+
+  // Portfolio and user related errors
+  public static final int PARAMS_INVALID_CODE = 2000;
+  public static final String PARAMS_INVALID_MESSAGE = "params_are_invalid";
+
+  public static final int TOKEN_COLLECTION_NOT_FOUND_CODE = 2001;
+  public static final String TOKEN_COLLECTION_NOT_FOUND_MESSAGE = "no_token_collection_found_by_given_script_hash_or_id";
+
+  public static final int ADDRESS_NOT_MATCH_ENVIRONMENT_CODE_V2 = 2022;
+  public static final String ADDRESS_NOT_MATCH_ENVIRONMENT_MESSAGE_V2 = "this_address_is_not_the_environment_address_v2";
+
+  public static final int INVALID_PORTFOLIO_MESSAGE_CODE = 2003;
+  public static final String INVALID_PORTFOLIO_MESSAGE_MESSAGE = "portfolio_message_is_invalid";
+
+  public static final int INVALID_PORTFOLIO_SIGNATURE_CODE = 2004;
+  public static final String INVALID_PORTFOLIO_SIGNATURE_MESSAGE = "portfolio_signature_is_invalid";
+
+  public static final int USER_NOT_EXIST_CODE = 2005;
+  public static final String USER_NOT_EXIST_MESSAGE = "user_not_exist";
+
+  public static final int DECODE_JWT_FAILED_CODE = 2006;
+  public static final String DECODE_JWT_FAILED_MESSAGE = "decode_jwt_failed";
+
+  public static final int PORTFOLIO_LATEST_DISCREPANCY_CODE = 2007;
+  public static final String PORTFOLIO_LATEST_DISCREPANCY_MESSAGE = "portfolio_has_not_synchronized_the_latest_addresses";
+
+  public static final int SYNC_PORTFOLIO_ADDRESSES_CODE = 2008;
+  public static final String SYNC_PORTFOLIO_ADDRESSES_MESSAGE = "sync_portfolio_addresses_failed";
+
+  public static final int ADDRESS_NOT_FOUND_CODE_V2 = 2009;
+  public static final String ADDRESS_NOT_FOUND_MESSAGE_V2 = "no_address_found_by_given_address_hash_or_lock_hash_v2";
+
+  // Fiber related errors
+  public static final int FIBER_PEER_PARAMS_INVALID_CODE = 2010;
+  public static final String FIBER_PEER_PARAMS_INVALID_MESSAGE = "fiber_peer_params_invalid";
+
+  public static final int FIBER_PEER_NOT_FOUND_CODE = 2011;
+  public static final String FIBER_PEER_NOT_FOUND_MESSAGE = "no_peer_found_by_given_peer_id";
+
+  public static final int FIBER_CHANNEL_NOT_FOUND_CODE = 2012;
+  public static final String FIBER_CHANNEL_NOT_FOUND_MESSAGE = "no_channel_found_by_given_channel_id";
+
+  public static final int FIBER_GRAPH_NODE_NOT_FOUND_CODE = 2013;
+  public static final String FIBER_GRAPH_NODE_NOT_FOUND_MESSAGE = "no_graph_node_found_by_given_node_id";
 }
