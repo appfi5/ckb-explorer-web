@@ -66,7 +66,7 @@ public final class I18nKey {
   public static final String CELL_OUTPUT_NOT_FOUND_MESSAGE = "no_cell_output_records_found_by_given_id";
 
   public static final int CELL_OUTPUT_DATA_SIZE_EXCEEDS_LIMIT_CODE = 1022;
-  public static final String CELL_OUTPUT_DATA_SIZE_EXCEEDS_LIMIT_MESSAGE = "you_can_download_output_data_up_to_1000_kb";
+  public static final String CELL_OUTPUT_DATA_SIZE_EXCEEDS_LIMIT_MESSAGE = "cell_output_data_size_exceeds_limit";
 
   // Query errors
   public static final int SUGGEST_QUERY_KEY_INVALID_CODE = 1017;
