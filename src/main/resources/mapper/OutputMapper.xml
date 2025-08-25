@@ -82,4 +82,104 @@
       o.id ASC
   </select>
 
+  <select id="getCellbaseDisplayOutputsByTransactionIds"
+    resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT
+        o.id,
+        o.capacity,
+        o.occupied_capacity ,
+        -- 从script表获取地址信息
+        s.code_hash as lock_code_hash,
+        s.args as lock_args,
+        s.hash_type as lock_hash_type,
+        -- Cellbase奖励相关字段
+        -- t.block_number - 11 as target_block_number,
+        -- b.base_reward,
+        -- b.commit_reward,
+        -- b.proposal_reward,
+        -- b.secondary_reward,
+        -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+        CASE WHEN o.is_spent = 1 THEN 'dead' ELSE 'live' END AS status,
+        -- 消耗的交易哈希
+        CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
+        -- 生成的交易哈希
+        '0x' || encode(o.tx_hash, 'hex') AS generated_tx_hash,
+        o.output_index AS cell_index,
+        o.tx_id as transaction_id
+    FROM
+    output o
+    left join script s ON o.lock_script_id = s.id
+    -- JOIN
+    -- block b ON t.block_id = b.id
+    WHERE
+    <if test="null != transactionIds">
+      o.tx_id in
+      <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
+        close=" )">
+        #{item}
+      </foreach>
+    </if>
+  </select>
+
+  <select id="getNormalTxDisplayOutputsByTransactionIds"
+    resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT id,
+           capacity,
+           occupied_capacity,
+           lock_code_hash,
+           lock_args,
+           lock_hash_type,
+           status,
+           consumed_tx_hash,
+           generated_tx_hash,
+           cell_index,
+           cell_type,
+           args,
+           code_hash,
+           hash_type,
+           transaction_id
+    from (SELECT o.id,
+                 o.capacity,
+                 o.occupied_capacity,
+                 -- 从script表获取地址信息
+                 s.code_hash                                                                 as lock_code_hash,
+                 s.args                                                                      as lock_args,
+                 s.hash_type                                                                 as lock_hash_type,
+                 -- Cellbase奖励相关字段
+                 -- b.base_reward,
+                 -- b.commit_reward,
+                 -- b.proposal_reward,
+                 -- b.secondary_reward,
+                 -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+                 CASE WHEN o.is_spent = 1 THEN 'dead' ELSE 'live' END                        AS status,
+                 -- 消耗的交易哈希
+                 CASE
+                   WHEN o.is_spent = 1
+                     THEN '0x' || encode(o.consumed_tx_hash, 'hex') END                      AS consumed_tx_hash,
+                 -- 生成的交易哈希
+                 '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+                 o.output_index                                                              AS cell_index,
+                 'normal'                                                                    as cell_type,-- TODO 后面需根据资产返回不同的cell_type
+                 '0x' || encode(type.args, 'hex')                                            as args,
+                 '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
+                 type.hash_type                                                              as hash_type,
+                 o.tx_id                                                                     as transaction_id,
+                 ROW_NUMBER()                                                                   OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn
+          FROM output o
+                 left join script s ON o.lock_script_id = s.id
+                 left join script type on o.type_script_id = type.id
+          -- JOIN
+          -- block b ON t.block_id = b.id
+          WHERE
+              <if test="null != transactionIds">
+                o.tx_id in
+                <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
+                  close=" )">
+                  #{item}
+                </foreach>
+              </if>
+          ) t
+    WHERE rn &lt;= #{size}
+    ORDER BY transaction_id, cell_index ASC;
+  </select>
 </mapper>

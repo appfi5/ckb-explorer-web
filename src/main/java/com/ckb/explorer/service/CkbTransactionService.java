@@ -2,6 +2,7 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
 import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
@@ -47,4 +48,15 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @return 分页的输出单元格列表
    */
   Page<CellOutputResponse> getDisplayOutputs(String txHash, int page, int pageSize);
+
+  /**
+   * 获取块里的交易
+   * @param blockHash
+   * @param txHash
+   * @param addressHash
+   * @param page
+   * @param pageSize
+   * @return
+   */
+  Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash, String addressHash, int page, int pageSize);
 }

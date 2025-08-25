@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class CellInputDto {
   private Long id;
+
   /**
    * 单元格容量
    */
@@ -53,4 +54,6 @@ public class CellInputDto {
   private String codeHash;
 
   private Short hashType;
+
+  private Long transactionId;
 }

@@ -8,13 +8,19 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.dto.CellOutputDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
+import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
 import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
+import com.ckb.explorer.entity.AccountBook;
+import com.ckb.explorer.entity.Address;
 import com.ckb.explorer.entity.CkbTransaction;
+import com.ckb.explorer.mapper.AccountBookMapper;
+import com.ckb.explorer.mapper.AddressMapper;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
 import com.ckb.explorer.mapper.InputMapper;
 import com.ckb.explorer.mapper.OutputMapper;
+import com.ckb.explorer.mapstruct.BlockTransactionConvert;
 import com.ckb.explorer.mapstruct.CellInputConvert;
 import com.ckb.explorer.mapstruct.CellOutputConvert;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
@@ -22,10 +28,15 @@ import com.ckb.explorer.service.CkbTransactionService;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,6 +51,15 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Resource
   private OutputMapper outputMapper;
+
+  @Resource
+  private AddressMapper addressMapper;
+
+  @Resource
+  private AccountBookMapper accountBookMapper;
+
+  @Resource
+  private CkbTransactionMapper ckbTransactionMapper;
 
   // 有效的排序字段
   private static final Set<String> VALID_SORT_FIELDS = new HashSet<String>() {
@@ -126,7 +146,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     // cellbase交易
     if(ckbTransaction.getTxIndex() == 0){
 
-      return getCellbaseDisplayInputs(txHash, ckbTransaction);
+      return getCellbaseDisplayInputs(txHash, ckbTransaction.getBlockNumber());
       // 普通交易
     } else{
       return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize);
@@ -174,17 +194,17 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   /**
    * 处理cellbase交易的DisplayInputs
    * @param txHash
-   * @param ckbTransaction
+   * @param blockNumber
    * @return
    */
-  private Page<CellInputResponse> getCellbaseDisplayInputs(String txHash,CkbTransaction ckbTransaction) {
+  private Page<CellInputResponse> getCellbaseDisplayInputs(String txHash,Long blockNumber) {
     Page<CellInputResponse> page = new Page<>(1, 1);
     List<CellInputResponse> records = new ArrayList<>();
     
     // Cellbase交易只有一个特殊的输入
     CellInputResponse cellInput = new CellInputResponse();
     cellInput.setFromCellbase(true);
-    cellInput.setTargetBlockNumber(ckbTransaction.getBlockNumber()< 11 ?0:ckbTransaction.getBlockNumber()-11);
+    cellInput.setTargetBlockNumber(blockNumber< 11 ?0:blockNumber-11);
     cellInput.setGeneratedTxHash(txHash);
     
     records.add(cellInput);
@@ -260,4 +280,96 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     queryWrapper.eq(CkbTransaction::getTxHash, Numeric.hexStringToByteArray(txHash));
     return baseMapper.selectOne(queryWrapper);
   }
+
+  @Override
+  public Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash,
+      String addressHash, int page, int pageSize) {
+
+    // 创建分页对象
+    Page<CkbTransaction> transactionPage = new Page<>(page, pageSize);
+    LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.eq(CkbTransaction::getBlockHash, Numeric.hexStringToByteArray(blockHash));
+
+    if (txHash != null && !txHash.isEmpty()) {
+      queryWrapper.eq(CkbTransaction::getTxHash, Numeric.hexStringToByteArray(txHash));
+    }
+
+    // TODO 如果指定地址
+    if (addressHash != null && !addressHash.isEmpty()) {
+      // 查找地址
+      Address address = addressMapper.selectOne(new LambdaQueryWrapper<Address>().eq(Address::getAddress, Numeric.hexStringToByteArray(addressHash)));
+      if (address == null) {
+        throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+      }
+
+      // 查询该地址相关的交易ID
+      List<Long> transactionIds = accountBookMapper.selectList(
+              new LambdaQueryWrapper<AccountBook>().eq(AccountBook::getAddressId, address.getId()))
+          .stream()
+          .map(AccountBook::getTransactionId)
+          .filter(Objects::nonNull)
+          .distinct()
+          .toList();
+
+      if (!transactionIds.isEmpty()) {
+        queryWrapper.in(CkbTransaction::getId, transactionIds);
+      }
+    }
+
+    queryWrapper.orderByAsc(CkbTransaction::getTxIndex);
+
+    // 执行分页查询
+    Page<CkbTransaction> resultPage = ckbTransactionMapper.selectPage(transactionPage, queryWrapper);
+
+    var result = BlockTransactionConvert.INSTANCE.toConvertPage(resultPage);
+
+    var transactions = result.getRecords();
+    var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(BlockTransactionPageResponse::getId).collect(Collectors.toList());
+    var normalTransactionsIds = transactions.stream().filter(transaction-> !transaction.getIsCellbase()).map(BlockTransactionPageResponse::getId).collect(Collectors.toList());
+
+    Map<Long,List<CellOutputDto>>  cellbaseOutputsWithTrans;
+    Map<Long,List<CellInputDto>> normalInputsWithTrans = new HashMap<>();
+    Map<Long,List<CellOutputDto>>  normalOutputsWithTrans= new HashMap<>();
+    if(cellbaseTransactionsIds.size() > 0){
+      cellbaseOutputsWithTrans = outputMapper.getCellbaseDisplayOutputsByTransactionIds(cellbaseTransactionsIds).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else {
+      cellbaseOutputsWithTrans = new HashMap<>();
+    }
+    if(normalTransactionsIds.size() > 0){
+      normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    }
+    Map<Long, List<CellInputDto>> finalNormalInputsWithTrans = normalInputsWithTrans;
+    Map<Long, List<CellOutputDto>> finalNormalOutputsWithTrans = normalOutputsWithTrans;
+    transactions.stream().forEach(transaction -> {
+      if(transaction.getIsCellbase()){
+        Long targetBlockNumber = transaction.getBlockNumber()< 11 ?0:transaction.getBlockNumber()-11;
+        List<CellInputResponse> records = new ArrayList<>();
+
+        // Cellbase交易只有一个特殊的输入
+        CellInputResponse cellInput = new CellInputResponse();
+        cellInput.setFromCellbase(true);
+        cellInput.setTargetBlockNumber(targetBlockNumber);
+        cellInput.setGeneratedTxHash(transaction.getTransactionHash());
+
+        records.add(cellInput);
+        transaction.setDisplayInputs(records);
+
+        List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
+        cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+
+        transaction.setDisplayOutputs(cellbaseOutput);
+      }else{
+        transaction.setDisplayInputs(CellInputConvert.INSTANCE.toConvertList(
+            finalNormalInputsWithTrans.get(transaction.getId())));
+
+        transaction.setDisplayOutputs(CellOutputConvert.INSTANCE.INSTANCE.toConvertList(
+            finalNormalOutputsWithTrans.get(transaction.getId())));
+      }
+    });
+
+    return result;
+  }
+
+
 }

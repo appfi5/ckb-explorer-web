@@ -51,4 +51,6 @@ public class CellOutputDto {
   private String codeHash;
 
   private Short hashType;
+
+  private Long transactionId;
 }
