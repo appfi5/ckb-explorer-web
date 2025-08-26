@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/v1/ckb_transactions")
 @Validated
