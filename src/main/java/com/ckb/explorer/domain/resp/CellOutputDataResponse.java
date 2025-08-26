@@ -17,7 +17,13 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CellOutputDataResponse {
 
-    @JsonProperty("data")
-    private String data;
+  private String type = "data";
+
+  @JsonProperty("data")
+  private String data;
+
+  public CellOutputDataResponse(String data){
+    this.data = data;
+  }
 
 }

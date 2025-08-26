@@ -14,6 +14,7 @@ import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
 import java.util.Set;
+import org.nervos.ckb.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -115,7 +116,7 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
     Block block;
     if (queryKeyUtils.isValidHex(id)) {
       // 按区块哈希查询
-      block = this.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockHash, id));
+      block = this.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockHash, Numeric.hexStringToByteArray(id)));
     } else {
       // 按区块号查询
       block = this.getOne(new LambdaQueryWrapper<Block>().eq(Block::getBlockNumber, Long.parseLong(id)));
