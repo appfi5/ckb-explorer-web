@@ -27,14 +27,14 @@ public interface BlockConvert {
   @Mapping(source = "blockHash", target = "blockHash", qualifiedByName = "byteToStringHash(Value)")
   @Mapping(source = "uncleBlockHashes", target = "uncleBlockHashes", qualifiedByName = "byteToHashList(Value)")
   @Mapping(source = "minerScript", target = "minerHash", qualifiedByName = "lockScriptToAddress(Value)")
-  @Mapping(source = "transactionsRoot", target = "transactionsRoot", qualifiedByName = "byteToString(Value)")
+  @Mapping(source = "transactionsRoot", target = "transactionsRoot", qualifiedByName = "byteToStringHash(Value)")
   @Mapping(source = "blockNumber", target = "number")
   @Mapping(source = "epochLength", target = "length")
   @Mapping(source = "version", target = "version", qualifiedByName = "byteToString(Value)")
   @Mapping(source = "epoch", target = "epoch", qualifiedByName = "byteToString(Value)")
   @Mapping(source = "epochNumber", target = "blockIndexInEpoch")
   @Mapping(source = "nonce", target = "nonce", qualifiedByName = "byteToString(Value)")
-  @Mapping(source = "difficulty", target = "difficulty", qualifiedByName = "byteToString(Value)")
+  @Mapping(target = "difficulty", expression = "java(org.nervos.ckb.utils.Numeric.toBigInt(block.getDifficulty()))")
   @Mapping(source = "blockSize", target = "size")
   BlockResponse toConvertBlockResponse(Block block);
 

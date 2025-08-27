@@ -60,12 +60,30 @@ public class TypeConversionUtil {
   /**
    * 将 byte[] 类型转换为 String 类型
    *
-   * @param value 要转换的 Integer 值
-   * @return 转换后的 String 值，如果输入为 null 则返回 null
+   * @param value 要转换的字节数组
+   * @return 转换后的 String 值，如果输入为 null 则返回 null；去除左边所有的'0'字符后返回
    */
   @Named("byteToString(Value)")
   public static String byteToString(byte[] value) {
-    return value != null ? Numeric.toHexStringNoPrefix(value) : null;
+    if (value == null) {
+      return null;
+    }
+    var data = Numeric.toHexStringNoPrefix(value);
+    // 去除左边所有的'0'字符
+    if (data != null && !data.isEmpty()) {
+      // 查找第一个非'0'字符的位置
+      int firstNonZeroIndex = 0;
+      while (firstNonZeroIndex < data.length() && data.charAt(firstNonZeroIndex) == '0') {
+        firstNonZeroIndex++;
+      }
+      // 如果全部是'0'，则返回"0"
+      if (firstNonZeroIndex == data.length()) {
+        return "0";
+      }
+      // 否则返回去除左边'0'后的字符串
+      return data.substring(firstNonZeroIndex);
+    }
+    return data;
   }
 
   /**
