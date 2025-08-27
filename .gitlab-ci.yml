@@ -44,7 +44,7 @@ image-build:
     - develop
     - master
   tags:
-    - shell-executor
+    - docker_maven-3.6.2_k8s01
 
 k8s-deploy-dev:
   stage: k8s-deploy
@@ -61,7 +61,7 @@ k8s-deploy-dev:
   only:
     - develop
   tags:
-    - shell-executor
+    - docker_maven-3.6.2_k8s01
 
 # 代码质量检查
 code-quality-audit:
@@ -73,4 +73,4 @@ code-quality-audit:
     - /^sonar.*$/
     - master
   tags:
-    - shell-executor
+    - docker_maven-3.6.2_k8s01
