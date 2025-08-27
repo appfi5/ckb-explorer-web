@@ -29,7 +29,7 @@ build-mvn-package:
     paths:
       - target/ckb-explorer-web.jar
   tags:
-    - shell-executor
+    - docker_maven-3.6.2_k8s01
 
 image-build:
   stage: image-build
