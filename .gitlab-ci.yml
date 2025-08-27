@@ -22,7 +22,7 @@ build-mvn-package:
   script:
     - echo "=============== mvn package  ==============="
     - rm -rf ~/.m2/repository/com/ckb/explorer
-    - make package
+    - mvn clean package -DskipTests
   artifacts:
     name: jar
     expire_in: 30 mins
