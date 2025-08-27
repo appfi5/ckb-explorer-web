@@ -59,7 +59,8 @@ logging:
     org.springframework: DEBUG
     com.baomidou: DEBUG
 ckb:
-  netWork: 2
+  nodeUrl: https://testnet.ckb.dev
+  netWork: 2 # 1:mainnet 2:testnet
   default-hash-prefix: 0x
   default-with-prefix-hash-length: 66
 statistic:
