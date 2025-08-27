@@ -11,9 +11,11 @@ spring:
 #    password: rivtower
 #    virtual-host: /
   datasource:
-    url: jdbc:postgresql://localhost:5432/ckbexplorer
+    url: jdbc:postgresql://192.168.160.20:5432/ckb-rich-indexer
+    #url: jdbc:postgresql://localhost:5432/ckbexplorer
     username: postgres
-    password: postgres
+    password: 123456
+    #password: postgres
     driver-class-name: org.postgresql.Driver
   data:
     redis:
@@ -60,3 +62,6 @@ ckb:
   netWork: 2
   default-hash-prefix: 0x
   default-with-prefix-hash-length: 66
+statistic:
+  averageBlockTimeInterval: 100
+  hashRateStatisticalInterval: 100
