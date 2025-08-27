@@ -18,6 +18,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionResponse extends BaseResponse<Long> {
 
+  private String type = "ckb_transactions";
+
   private Boolean isCellbase;
 
   private String txStatus = TxStatus.committed.getStatus(); // TODO 第一版没有其他状态的交易

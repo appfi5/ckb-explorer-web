@@ -10,12 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BlockListResponse extends BaseResponse<Long> {
-  private String type = "block_list";
-  private String minerHash;
-  private Long number;
-  private Long timestamp;
-  private Long reward;
-  private Integer transactionsCount;
-  private Integer liveCellChanges;
+public class AddressResponse extends BaseResponse<Long> {
+  private String type = "block";
 }

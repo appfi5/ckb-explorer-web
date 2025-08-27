@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BlockResponse extends BaseResponse<Long> {
 
+  private String type = "block";
   private String blockHash;
   private List<String> uncleBlockHashes;
   private String minerHash;

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TypeScriptResponse {
 
+  private String type = "type_script";
   private String args;
   private String codeHash;
   private String hashType;

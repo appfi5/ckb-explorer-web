@@ -14,10 +14,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CellOutputDataResponse {
 
-    @JsonProperty("data")
-    private String data;
+  private String type = "data";
+
+  private String data;
+
+  public CellOutputDataResponse(String data){
+    this.data = data;
+  }
 
 }

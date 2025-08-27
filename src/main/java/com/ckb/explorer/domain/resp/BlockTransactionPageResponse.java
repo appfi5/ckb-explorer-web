@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BlockTransactionPageResponse extends BaseResponse<Long> {
+  private String type = "ckb_transactions";
+
   private Boolean isCellbase;
 
   private String transactionHash;

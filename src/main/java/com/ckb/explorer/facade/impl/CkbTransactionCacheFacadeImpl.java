@@ -9,8 +9,6 @@ import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
 import com.ckb.explorer.service.CkbTransactionService;
-import com.ckb.explorer.util.I18n;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
@@ -36,9 +34,6 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
 
   @Autowired
   private CkbTransactionService ckbTransactionService;
-
-  @Resource
-  private I18n i18n;
 
   private static final String TRANSACTION_CACHE_PREFIX = "transaction:";
   private static final String TRANSACTIONS_LIST_CACHE_PREFIX = "transactions:page:";

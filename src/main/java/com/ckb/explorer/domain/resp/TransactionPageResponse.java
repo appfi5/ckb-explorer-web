@@ -19,6 +19,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionPageResponse extends BaseResponse<Long> {
 
+  private String type = "ckb_transaction_list";
   private String transactionHash;
   private Long blockNumber;
   private Long blockTimestamp;
