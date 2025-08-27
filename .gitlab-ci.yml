@@ -22,7 +22,12 @@ build-mvn-package:
   script:
     - echo "=============== mvn package  ==============="
     - rm -rf ~/.m2/repository/com/ckb/explorer
-    - mvn clean package -DskipTests
+    - mvn clean package -DskipTests --no-transfer-progress
+  cache:
+    key: $CI_PROJECT_NAME-maven
+    paths:
+      - ~/.m2/repository
+    policy: pull-push
   artifacts:
     name: jar
     expire_in: 30 mins
@@ -33,7 +38,12 @@ build-mvn-package:
 
 image-build:
   stage: image-build
+  dependencies:
+  - build-mvn-package
   script:
+    - echo "=============== 验证文件是否存在 ==============="
+    - ls -la
+    - ls -la target || echo "target目录不存在"
     - echo "=============== docker build image  ==============="
     - echo ${IMAGE_NAME}
     - docker login -u $RIVTOWER_REGISTRY_USERNAME -p $RIVTOWER_REGISTRY_PASSWORD ${IMAGE_NAME}
@@ -68,7 +78,12 @@ code-quality-audit:
   stage: code-quality-audit
   image: $MAVEM_IMAGE
   script:
-    - mvn verify sonar:sonar -Dsonar.qualitygate.wait=true -Dmaven.test.skip=true
+    - mvn verify sonar:sonar -Dsonar.qualitygate.wait=true -Dmaven.test.skip=true --no-transfer-progress
+  cache:
+    key: $CI_PROJECT_NAME-maven
+    paths:
+      - ~/.m2/repository
+    policy: pull
   only:
     - /^sonar.*$/
     - master
