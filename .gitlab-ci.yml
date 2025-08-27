@@ -10,7 +10,7 @@ stages:
 
 # 全局变量设置
 variables:
-  MAVEM_IMAGE: docker.io/library/maven:3.9.11-eclipse-temurin-21-alpine
+  MAVEM_IMAGE: docker pull registry.devops.rivtower.com/library/maven:3.9.11-eclipse-temurin-21-alpine
   IMAGE_NAME: ${RIVTOWER_REGISTRY_ADDRESS}/ckb-explorer/${CI_PROJECT_PATH}:${CI_COMMIT_REF_NAME}
   K8S_IMAGE: ${RIVTOWER_REGISTRY_ADDRESS}/library/kubectl:1.24.10 # k8s 部署使用的镜像
   NAME_SPACE: app-ckb-explorer
