@@ -21,7 +21,8 @@ build-mvn-package:
   image: $MAVEM_IMAGE
   script:
     - echo "=============== mvn package  ==============="
-    - mvn clean package -DskipTests
+    - rm -rf ~/.m2/repository/com/ckb/explorer
+    - make package
   artifacts:
     name: jar
     expire_in: 30 mins
