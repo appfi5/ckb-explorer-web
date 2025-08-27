@@ -22,13 +22,13 @@ build-mvn-package:
   script:
     - echo "=============== mvn package  ==============="
     - mkdir -p .m2/repository
-    - rm -rf .m2/repository/com/ckb/explorer
-    - mvn clean package -DskipTests -Dmaven.repo.local=.m2/repository
+    - "rm -rf .m2/repository/com/ckb/explorer"
+    - "mvn clean package -DskipTests -Dmaven.repo.local=.m2/repository"
     - echo "=============== 验证JAR文件生成 ==============="
-    - ls -la target || echo "target目录不存在"
-    - ls -la target/ckb-explorer-web.jar || echo "JAR文件不存在"
+    - "ls -la target || echo \"target目录不存在\""
+    - "ls -la target/ckb-explorer-web.jar || echo \"JAR文件不存在\""
     # 复制JAR文件到根目录，确保在image-build阶段能够可靠获取
-    - cp -f target/ckb-explorer-web.jar . || echo "无法复制JAR文件到根目录"
+    - "cp -f target/ckb-explorer-web.jar . || echo \"无法复制JAR文件到根目录\""
   cache:
     key: $CI_PROJECT_NAME-maven
     paths:
@@ -40,8 +40,6 @@ build-mvn-package:
     paths:
       - target/ckb-explorer-web.jar
       - ckb-explorer-web.jar
-    reports:
-      dotenv: build.env
   tags:
     - docker_maven-3.6.2_k8s01
 
@@ -54,14 +52,14 @@ image-build:
     - ls -la
     # 创建target目录并确保JAR文件存在
     - mkdir -p target
-    - if [ -f ckb-explorer-web.jar ]; then mv ckb-explorer-web.jar target/; fi
-    - if [ -f target/ckb-explorer-web.jar ]; then echo "JAR文件已找到"; else echo "错误: JAR文件不存在" && exit 1; fi
+    - "if [ -f ckb-explorer-web.jar ]; then mv ckb-explorer-web.jar target/; fi"
+    - "if [ -f target/ckb-explorer-web.jar ]; then echo \"JAR文件已找到\"; else echo \"错误: JAR文件不存在\" && exit 1; fi"
     - ls -la target/
     - echo "=============== docker build image  ==============="
-    - echo ${IMAGE_NAME}
-    - docker login -u $RIVTOWER_REGISTRY_USERNAME -p $RIVTOWER_REGISTRY_PASSWORD ${RIVTOWER_REGISTRY_ADDRESS}
-    - docker build -t ${IMAGE_NAME} .
-    - docker push ${IMAGE_NAME}
+    - echo "${IMAGE_NAME}"
+    - "docker login -u ${RIVTOWER_REGISTRY_USERNAME} -p ${RIVTOWER_REGISTRY_PASSWORD} ${RIVTOWER_REGISTRY_ADDRESS}"
+    - "docker build -t ${IMAGE_NAME} ."
+    - "docker push ${IMAGE_NAME}"
   only:
     - tags
     - develop
@@ -77,10 +75,10 @@ k8s-deploy-dev:
     - sed -i "s#IMAGE_NAME#${IMAGE_NAME}#g" deployment.yml
     - sed -i "s/NAME_SPACE/$NAME_SPACE/g" deployment.yml
   script:
-    - cat deployment.yml|sed 's/ENV/dev/g' > tmp.yml
-    - kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE pods -l app=ckb-explorer-web
-    - kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE ingress -l app=ckb-explorer-web
-    - kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} apply -f tmp.yml
+    - "cat deployment.yml|sed 's/ENV/dev/g' > tmp.yml"
+    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE pods -l app=ckb-explorer-web"
+    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE ingress -l app=ckb-explorer-web"
+    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} apply -f tmp.yml"
   only:
     - develop
   tags:
@@ -92,7 +90,7 @@ code-quality-audit:
   image: $MAVEM_IMAGE
   script:
     - mkdir -p .m2/repository
-    - mvn verify sonar:sonar -Dsonar.qualitygate.wait=true -Dmaven.test.skip=true --no-transfer-progress -Dmaven.repo.local=.m2/repository
+    - "mvn verify sonar:sonar -Dsonar.qualitygate.wait=true -Dmaven.test.skip=true --no-transfer-progress -Dmaven.repo.local=.m2/repository"
   cache:
     key: $CI_PROJECT_NAME-maven
     paths:
