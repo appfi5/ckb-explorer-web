@@ -4,6 +4,7 @@ import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import java.math.BigInteger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.util.List;
@@ -44,7 +45,7 @@ public class BlockResponse extends BaseResponse<Long> {
   private String epoch;
   private Long blockIndexInEpoch;
   private String nonce;
-  private String difficulty;
+  private BigInteger difficulty;
   private Long minerReward; // 原(object.received_tx_fee + object.reward).to_s 现11个块之后的reward值
   private Integer size; // 原异步更新UpdateBlockSizeWorker.perform_async 现blockSize
   private Long largestBlockInEpoch; // TODO from object.epoch_statistic&.largest_block_size
