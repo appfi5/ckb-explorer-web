@@ -1,0 +1,75 @@
+# GitLab CI/CD 配置文件样例
+image: registry.devops.rivtower.com/library/docker:stable
+# 定义 stages（阶段），按顺序执行
+stages:
+  - build
+  - code-quality-audit
+  - image-build
+  - k8s-deploy
+
+
+# 全局变量设置
+variables:
+  MAVEM_IMAGE: docker.io/library/maven:3.9.11-eclipse-temurin-21-alpine
+  IMAGE_NAME: ${RIVTOWER_REGISTRY_ADDRESS}/ckb-explorer/${CI_PROJECT_PATH}:${CI_COMMIT_REF_NAME}
+  K8S_IMAGE: ${RIVTOWER_REGISTRY_ADDRESS}/library/kubectl:1.24.10 # k8s 部署使用的镜像
+  NAME_SPACE: app-ckb-explorer
+
+# 构建阶段
+build-mvn-package:
+  stage: build
+  image: $MAVEM_IMAGE
+  script:
+    - echo "=============== mvn package  ==============="
+    - mvn clean package -DskipTests
+  artifacts:
+    name: jar
+    expire_in: 30 mins
+    paths:
+      - target/ckb-explorer-web.jar
+  tags:
+    - shell-executor
+
+image-build:
+  stage: image-build
+  script:
+    - echo "=============== docker build image  ==============="
+    - echo ${IMAGE_NAME}
+    - docker login -u $RIVTOWER_REGISTRY_USERNAME -p $RIVTOWER_REGISTRY_PASSWORD ${IMAGE_NAME}
+    - docker build -t ${IMAGE_NAME} .
+    - docker push ${IMAGE_NAME}
+  only:
+    - tags
+    - develop
+    - master
+  tags:
+    - shell-executor
+
+k8s-deploy-dev:
+  stage: k8s-deploy
+  image: $K8S_IMAGE
+  before_script:
+    - echo "imageName:"${IMAGE_NAME}
+    - sed -i "s#IMAGE_NAME#${IMAGE_NAME}#g" deployment.yml
+    - sed -i "s/NAME_SPACE/$NAME_SPACE/g" deployment.yml
+  script:
+    - cat deployment.yml|sed 's/ENV/dev/g' > tmp.yml
+    - kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE pods -l app=ckb-explorer-web
+    - kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE ingress -l app=ckb-explorer-web
+    - kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} apply -f tmp.yml
+  only:
+    - develop
+  tags:
+    - shell-executor
+
+# 代码质量检查
+code-quality-audit:
+  stage: code-quality-audit
+  image: $MAVEM_IMAGE
+  script:
+    - mvn verify sonar:sonar -Dsonar.qualitygate.wait=true -Dmaven.test.skip=true
+  only:
+    - /^sonar.*$/
+    - master
+  tags:
+    - shell-executor

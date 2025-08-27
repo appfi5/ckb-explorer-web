@@ -99,7 +99,7 @@ public class StatisticServiceImpl implements StatisticService {
     }
 
     // 计算总块时间（用入参timestamp减去查到的startBlock的时间）
-    double totalBlockTime = (timestamp - startBlock.getTimestamp()) / 1000.0; // 转换为秒
+    double totalBlockTime = timestamp - startBlock.getTimestamp(); // 毫秒级
 
     // 计算块的数量
     int blocksCount = blocksCount(tipBlockNumber);
