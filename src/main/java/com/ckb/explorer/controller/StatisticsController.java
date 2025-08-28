@@ -30,8 +30,6 @@ public class StatisticsController {
     @GetMapping
     @Operation(summary = "获取统计信息索引")
     public ResponseInfo<IndexStatisticResponse> index() {
-        // 设置缓存控制头
-        // 注意：在实际项目中，可能需要根据Spring版本和配置调整缓存策略
         return ResponseInfo.SUCCESS(statisticCacheFacade.getIndexStatistic());
     }
 
