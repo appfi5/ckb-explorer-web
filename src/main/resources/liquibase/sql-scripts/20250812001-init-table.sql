@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS uncle_block(
                                           compact_target BYTEA,
                                           parent_hash BYTEA,
                                           nonce BYTEA,
+                                          difficulty BYTEA,
                                           timestamp BIGINT,
                                           version BYTEA,
                                           transactions_root BYTEA,

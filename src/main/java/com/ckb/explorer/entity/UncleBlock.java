@@ -24,6 +24,8 @@ public class UncleBlock {
 
   private byte[] nonce;
 
+  private byte[] difficulty;
+
   private Long timestamp;
 
   private byte[] version;

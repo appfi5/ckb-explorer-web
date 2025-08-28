@@ -2,7 +2,9 @@ package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ckb.explorer.entity.Block;
+import com.ckb.explorer.entity.UncleBlock;
 import com.ckb.explorer.mapper.BlockMapper;
+import com.ckb.explorer.mapper.UncleBlockMapper;
 import com.ckb.explorer.service.StatisticService;
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
@@ -26,6 +28,9 @@ public class StatisticServiceImpl implements StatisticService {
 
   @Resource
   private BlockMapper blockMapper;
+
+  @Resource
+  private UncleBlockMapper uncleBlockMapper;
 
 
   @Override
@@ -53,17 +58,17 @@ public class StatisticServiceImpl implements StatisticService {
       }
     }
 
-    // TODO 加上这些区块对应的所有叔块的难度总和
-//    LambdaQueryWrapper<UncleBlock> uncleBlockQueryWrapper = new LambdaQueryWrapper<>();
-//    uncleBlockQueryWrapper.select(UncleBlock::getDifficulty)
-//                         .in(UncleBlock::getBlockId, blocks.stream().map(Block::getId).toArray());
-//
-//    List<UncleBlock> uncleBlocks = uncleBlockMapper.selectList(uncleBlockQueryWrapper);
-//    for (UncleBlock uncleBlock : uncleBlocks) {
-//      if (uncleBlock.getDifficulty() != null) {
-//        totalDifficulties = totalDifficulties.add(new BigDecimal(uncleBlock.getDifficulty()));
-//      }
-//    }
+    // 加上这些区块对应的所有叔块的难度总和
+    LambdaQueryWrapper<UncleBlock> uncleBlockQueryWrapper = new LambdaQueryWrapper<>();
+    uncleBlockQueryWrapper.select(UncleBlock::getDifficulty)
+                         .in(UncleBlock::getBlockNumber, blocks.stream().map(Block::getBlockNumber).toArray());
+
+    List<UncleBlock> uncleBlocks = uncleBlockMapper.selectList(uncleBlockQueryWrapper);
+    for (UncleBlock uncleBlock : uncleBlocks) {
+      if (uncleBlock.getDifficulty() != null) {
+        totalDifficulties = totalDifficulties.add(new BigDecimal(Numeric.toBigInt(uncleBlock.getDifficulty()).longValue()));
+      }
+    }
 
     // 计算时间差（最新区块的时间减去最旧区块的时间）
     // 由于我们是按降序排列的，所以blocks.get(0)是最新的区块，blocks.get(blocks.size() - 1)是最旧的区块
