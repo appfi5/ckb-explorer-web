@@ -61,11 +61,11 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   // private BitcoinTransactionService bitcoinTransactionService;
 
   @Override
-  public Object find(String queryKey, String filterBy) {
+  public Object find(String queryKey, Integer filterBy) {
     // 初始化查询参数
     queryKey = processQueryKey(queryKey);
 
-    if (StringUtils.isNotBlank(filterBy) && filterBy.equals("0")) {
+    if ( filterBy!= null && filterBy == 0) {
       return aggregateQuery(queryKey);
     } else {
       return singleQuery(queryKey);

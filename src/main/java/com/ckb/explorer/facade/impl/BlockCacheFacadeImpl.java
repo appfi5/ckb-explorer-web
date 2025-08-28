@@ -1,18 +1,12 @@
 package com.ckb.explorer.facade.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ckb.explorer.config.ServerException;
-import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.mapstruct.BlockConvert;
 import com.ckb.explorer.service.BlockService;
-import com.ckb.explorer.util.I18n;
-import com.ckb.explorer.util.QueryKeyUtils;
-import jakarta.annotation.Resource;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
@@ -32,9 +26,6 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
 
   @Autowired
   private BlockService blockService;
-
-  @Resource
-  private I18n i18n;
 
   // 缓存 TTL：5 秒
   private static final long TTL_SECONDS = 5;

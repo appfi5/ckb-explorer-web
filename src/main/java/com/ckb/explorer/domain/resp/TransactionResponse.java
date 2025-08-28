@@ -52,7 +52,7 @@ public class TransactionResponse extends BaseResponse<Long> {
 
   private Long maxCyclesInEpoch; // TODO object.block&.epoch_statistic&.max_tx_cycles
 
-  private Long max_cycles; // TODO EpochStatistic.max_tx_cycles
+  private Long maxCycles; // TODO EpochStatistic.max_tx_cycles
 
   private Boolean isRgbTransaction; // TODO object.rgb_transaction?
 

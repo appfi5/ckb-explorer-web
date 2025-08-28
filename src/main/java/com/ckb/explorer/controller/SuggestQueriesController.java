@@ -16,7 +16,7 @@ public class SuggestQueriesController {
     private SuggestQueryService suggestQueryService;
 
     @GetMapping
-    public ResponseInfo<?> index(@RequestParam String q, @RequestParam(required = false) String filter_by) {
+    public ResponseInfo<?> index(@RequestParam String q, @RequestParam(required = false) Integer filter_by) {
 
         Object response = suggestQueryService.find(q, filter_by);
         return ResponseInfo.SUCCESS(response);
