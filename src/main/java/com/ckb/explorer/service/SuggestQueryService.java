@@ -8,5 +8,5 @@ public interface SuggestQueryService {
      * @param filterBy 过滤条件
      * @return 查询结果
      */
-    Object find(String queryKey, String filterBy);
+    Object find(String queryKey, Integer filterBy);
 }

@@ -3,7 +3,6 @@ package com.ckb.explorer.facade.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
-import com.ckb.explorer.domain.resp.BlockchainInfoResponse;
 import com.ckb.explorer.domain.resp.EpochInfoResponse;
 import com.ckb.explorer.domain.resp.IndexStatisticResponse;
 import com.ckb.explorer.domain.resp.StatisticResponse;

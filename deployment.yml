@@ -19,7 +19,7 @@ spec:
         - name: ckb-explorer-web
           image: IMAGE_NAME
           imagePullPolicy: Always
-          command: [ "java", "-jar", "-Dspring.profiles.active=ENV", "/app.jar" ]
+          command: [ "java", "-jar", "/app.jar" ]
           resources:
             requests:
               cpu: "1"
@@ -28,7 +28,17 @@ spec:
               cpu: "1"
               memory: 2Gi
           ports:
-            - containerPort: 80
+            - containerPort: 18080
+          volumeMounts:
+            - name: ckb-explorer-web
+              mountPath: "/config"
+      volumes:
+        - name: ckb-explorer-web
+          configMap:
+            name: ckb-explorer-web
+            items:
+              - path: application.yml
+                key: application.yml
       imagePullSecrets:
         - name: rivtower-docker-registry
 
@@ -40,9 +50,9 @@ metadata:
   namespace: NAME_SPACE
 spec:
   ports:
-    - port: 80
+    - port: 18080
       protocol: TCP
-      targetPort: http
+      targetPort: 18080
       name: http
 #      nodePort: 31088
   selector:
@@ -54,8 +64,10 @@ kind: Ingress
 metadata:
   name: ckb-explorer-web
   namespace: NAME_SPACE
-  annotations: {}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
 spec:
+  ingressClassName: rivdap
   rules:
     - host: ckb-explorer-api.rivtower.cc
       http:
@@ -64,6 +76,99 @@ spec:
               service:
                 name: ckb-explorer-web
                 port:
-                  number: 80
-            path: /api
-            pathType: Prefix
+                  number: 18080
+            path: /
+            pathType: ImplementationSpecific
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ckb-explorer-web
+data:
+  application.yml: |
+    spring:
+      application:
+        name: ckb-explorer-web
+      threads:
+        virtual:
+          enabled: true
+      datasource:
+        url: jdbc:postgresql://192.168.160.20:5432/ckb-rich-indexer
+        #url: jdbc:postgresql://localhost:5432/ckbexplorer
+        username: postgres
+        password: 123456
+        #password: postgres
+        driver-class-name: org.postgresql.Driver
+      data:
+        redis:
+          #host: localhost
+          host: 192.168.10.143
+          #port: 6379
+          port: 6350
+          database: 4
+            # lettuce:
+            #   pool:
+            # 虚拟线程下建议关闭连接池（每个请求短平快）
+          #     max-active: 200
+          #password: abcdefg
+          redisson:
+            config: |
+              singleServerConfig:
+                #address: redis://localhost:6379
+                #password: abcdefg
+                address: redis://192.168.10.143:6350
+                database: 4
+                idleConnectionTimeout: 10000
+                connectTimeout: 10000
+                timeout: 3000
+                retryAttempts: 3
+                retryInterval: 1500
+                subscriptionsPerConnection: 5
+                clientName: ckb-explorer-web
+                # 降低连接池
+                connectionMinimumIdleSize: 4
+                connectionPoolSize: 16
+                dnsMonitoringInterval: 5000
+                codec: !<org.redisson.codec.JsonJacksonCodec> {}
+      liquibase:
+        enabled: false
+        change-log: classpath:liquibase/changelog.yml
+        database-change-log-lock-table: liquibase-lock
+        database-change-log-table: liquibase-changelog
+    logging:
+      level:
+        com.ckb.explorer.mapper: info
+    
+    ckb:
+      nodeUrl: https://testnet.ckb.dev
+      netWork: 2 # 1:mainnet 2:testnet
+      default-hash-prefix: 0x
+      default-with-prefix-hash-length: 66
+    statistic:
+      averageBlockTimeInterval: 100
+      hashRateStatisticalInterval: 100
+    # Server configuration
+    server:
+      port: 18080
+      servlet:
+        context-path:
+    # Swagger/OpenAPI configuration
+    springdoc:
+      openapi:
+        paths-to-match: /api/**
+      swagger-ui:
+        path: /api/swagger-ui.html
+        operationsSorter: method
+        tagsSorter: alpha
+      api-docs:
+        path: /v3/api-docs
+
+    # Redisson configuration
+
+    # MyBatis-plus configuration
+    mybatis-plus:
+      mapper-locations: classpath:mapper/**/*.xml
+      configuration:
+        map-underscore-to-camel-case: true
+    
+
