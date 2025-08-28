@@ -77,9 +77,9 @@ k8s-deploy-dev:
   script:
     - "cat deployment.yml|sed 's/ENV/dev/g' > tmp.yml"
     # 添加错误处理，即使删除命令失败也继续执行
-    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE pod -l app=ckb-explorer-web || echo '没有找到匹配的pod，继续部署'"
-    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} delete -n $NAME_SPACE ingress -l app=ckb-explorer-web || echo '没有找到匹配的ingress，继续部署'"
-    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_STAGING_253_CCE} apply -f tmp.yml"
+    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_DEVELOPING_120} delete -n $NAME_SPACE pod -l app=ckb-explorer-web || echo '没有找到匹配的pod，继续部署'"
+    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_DEVELOPING_120} delete -n $NAME_SPACE ingress -l app=ckb-explorer-web || echo '没有找到匹配的ingress，继续部署'"
+    - "kubectl --kubeconfig ${KUBERNETES_RIVTOWER_DEVELOPING_120} apply -f tmp.yml"
   only:
     - develop
   tags:
