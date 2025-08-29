@@ -12,14 +12,12 @@ import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
 import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
-import com.ckb.explorer.entity.AccountBook;
-import com.ckb.explorer.entity.Address;
 import com.ckb.explorer.entity.CkbTransaction;
-import com.ckb.explorer.mapper.AccountBookMapper;
-import com.ckb.explorer.mapper.AddressMapper;
+import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
 import com.ckb.explorer.mapper.InputMapper;
 import com.ckb.explorer.mapper.OutputMapper;
+import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.BlockTransactionConvert;
 import com.ckb.explorer.mapstruct.CellInputConvert;
 import com.ckb.explorer.mapstruct.CellOutputConvert;
@@ -32,10 +30,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
+import org.nervos.ckb.utils.address.Address;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,12 +51,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   private OutputMapper outputMapper;
 
   @Resource
-  private AddressMapper addressMapper;
-
-  @Resource
-  private AccountBookMapper accountBookMapper;
-
-  @Resource
   private CkbTransactionMapper ckbTransactionMapper;
 
   // 有效的排序字段
@@ -68,6 +61,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       add("capacityInvolved");
     }
   };
+  @Autowired
+  private ScriptMapper scriptMapper;
 
   @Override
   public Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
@@ -296,20 +291,23 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     // TODO 如果指定地址
     if (addressHash != null && !addressHash.isEmpty()) {
       // 查找地址
-      Address address = addressMapper.selectOne(new LambdaQueryWrapper<Address>().eq(Address::getAddress, Numeric.hexStringToByteArray(addressHash)));
-      if (address == null) {
+      // 计算地址的哈希
+      var addressScriptHash = Address.decode(addressHash).getScript().computeHash();
+      LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+      queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+      var script = scriptMapper.selectOne(queryScriptWrapper);
+      if(script == null){
         throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
       }
-
-      // 查询该地址相关的交易ID
-      List<Long> transactionIds = accountBookMapper.selectList(
-              new LambdaQueryWrapper<AccountBook>().eq(AccountBook::getAddressId, address.getId()))
-          .stream()
-          .map(AccountBook::getTransactionId)
-          .filter(Objects::nonNull)
-          .distinct()
-          .toList();
-
+      // TODO 查询该地址相关的交易ID相关的统计表
+//      List<Long> transactionIds = accountBookMapper.selectList(
+//              new LambdaQueryWrapper<AccountBook>().eq(AccountBook::getAddressId, address.getId()))
+//          .stream()
+//          .map(AccountBook::getTransactionId)
+//          .filter(Objects::nonNull)
+//          .distinct()
+//          .toList();
+      List<Long> transactionIds = new ArrayList<>();
       if (!transactionIds.isEmpty()) {
         queryWrapper.in(CkbTransaction::getId, transactionIds);
       }
