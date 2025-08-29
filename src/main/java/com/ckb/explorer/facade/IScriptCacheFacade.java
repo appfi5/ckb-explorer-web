@@ -1,10 +1,8 @@
-package com.ckb.explorer.service;
+package com.ckb.explorer.facade;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.ckb.explorer.domain.resp.AddressResponse;
-import com.ckb.explorer.entity.Script;
 
-public interface ScriptService extends IService<Script> {
+public interface IScriptCacheFacade {
   /**
    * 根据地址或锁哈希获取地址详情
    * @param address 地址或哈希

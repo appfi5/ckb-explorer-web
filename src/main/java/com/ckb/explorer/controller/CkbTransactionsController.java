@@ -10,7 +10,6 @@ import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
-import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
@@ -38,10 +37,6 @@ public class CkbTransactionsController {
 
   @Resource
   private I18n i18n;
-
-  private CkbTransaction ckbTransaction;
-  private Integer page = 1;
-  private Integer pageSize = 20;
 
   /**
    * 查询交易列表

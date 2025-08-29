@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LockScriptResponse {
+
     private String type = "lock_script";
     private String args;
     private String codeHash;

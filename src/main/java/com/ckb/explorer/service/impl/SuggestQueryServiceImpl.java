@@ -1,6 +1,5 @@
 package com.ckb.explorer.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.AddressResponse;
@@ -8,17 +7,14 @@ import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.domain.resp.LockScriptResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.domain.resp.TypeScriptResponse;
-import com.ckb.explorer.entity.Address;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
-import com.ckb.explorer.service.AddressService;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.SuggestQueryService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

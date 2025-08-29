@@ -16,6 +16,6 @@ public class BlockTransactionPageReq extends BasePageReq {
   /**
    * 地址哈希
    */
-  @Schema(description = "地址哈希")
+  @Schema(description = "地址")
   private String addressHash;
 }
