@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AddressResponse extends BaseResponse<Long> {
-  private String type = "block";
+  private String type = "address";
 }

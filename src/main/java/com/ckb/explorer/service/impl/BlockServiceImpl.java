@@ -13,6 +13,7 @@ import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
+import java.util.List;
 import java.util.Set;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,71 +45,88 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
    */
   public Page<Block> getBlocksByPage(int pageNum, int pageSize, String sort) {
 
-    // 设置默认排序
-    if (sort == null || sort.isEmpty()) {
-      sort = "blockNumber.desc";
-    }
-
-    // 解析排序参数
-    String[] sortParts = sort.split("\\.", 2);
-    String orderBy = sortParts[0];
-    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
-
-    // 字段映射
-    orderBy = switch (orderBy) {
-      case "height" -> "blockNumber";
-      case "transactions" -> "transactionsCount";
-      default -> orderBy;
-    };
-
-    if (!VALID_SORT_FIELDS.contains(orderBy)) {
-      throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
-    }
+//    // 设置默认排序
+//    if (sort == null || sort.isEmpty()) {
+//      sort = "blockNumber.desc";
+//    }
+//
+//    // 解析排序参数
+//    String[] sortParts = sort.split("\\.", 2);
+//    String orderBy = sortParts[0];
+//    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+//
+//    // 字段映射
+//    orderBy = switch (orderBy) {
+//      case "height" -> "blockNumber";
+//      case "transactions" -> "transactionsCount";
+//      default -> orderBy;
+//    };
+//
+//    if (!VALID_SORT_FIELDS.contains(orderBy)) {
+//      throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
+//    }
 
     // 创建分页对象
     Page<Block> page = new Page<>(pageNum, pageSize);
     // 创建查询条件
     LambdaQueryWrapper<Block> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.orderByDesc(Block::getBlockNumber);
     // 添加排序条件
-    boolean isAsc = "asc".equals(ascOrDesc);
-    switch (orderBy) {
-      case "blockNumber":
-        if (isAsc) {
-          queryWrapper.orderByAsc(Block::getBlockNumber);
-        } else {
-          queryWrapper.orderByDesc(Block::getBlockNumber);
-        }
-        break;
-      case "reward":
-        if (isAsc) {
-          queryWrapper.orderByAsc(Block::getReward);
-        } else {
-          queryWrapper.orderByDesc(Block::getReward);
-        }
-        break;
-      case "timestamp":
-        if (isAsc) {
-          queryWrapper.orderByAsc(Block::getTimestamp);
-        } else {
-          queryWrapper.orderByDesc(Block::getTimestamp);
-        }
-        break;
-      case "transactionsCount":
-        if (isAsc) {
-          queryWrapper.orderByAsc(Block::getTransactionsCount);
-        } else {
-          queryWrapper.orderByDesc(Block::getTransactionsCount);
-        }
-        break;
-    }
+//    boolean isAsc = "asc".equals(ascOrDesc);
+//    switch (orderBy) {
+//      case "blockNumber":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(Block::getBlockNumber);
+//        } else {
+//          queryWrapper.orderByDesc(Block::getBlockNumber);
+//        }
+//        break;
+//      case "reward":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(Block::getReward);
+//        } else {
+//          queryWrapper.orderByDesc(Block::getReward);
+//        }
+//        break;
+//      case "timestamp":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(Block::getTimestamp);
+//        } else {
+//          queryWrapper.orderByDesc(Block::getTimestamp);
+//        }
+//        break;
+//      case "transactionsCount":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(Block::getTransactionsCount);
+//        } else {
+//          queryWrapper.orderByDesc(Block::getTransactionsCount);
+//        }
+//        break;
+//    }
+//
+//    if(!orderBy.equals("blockNumber")){
+//      // 始终按blockNumber降序排序作为第二排序条件
+//      queryWrapper.orderByDesc(Block::getBlockNumber);
+//    }
 
-    if(!orderBy.equals("blockNumber")){
-      // 始终按blockNumber降序排序作为第二排序条件
-      queryWrapper.orderByDesc(Block::getBlockNumber);
-    }
+    var blocks = baseMapper.selectPage(page, queryWrapper);
+    List<Long> blockNumbers  = blocks.getRecords().stream().map(Block::getBlockNumber).toList();
+    // 每个number加11
+    var afterNumbers = blockNumbers.stream().map(number -> number+11).toList();
+    // 查11个块之后的块的奖励
+    var afterBlocks = baseMapper.selectList(new LambdaQueryWrapper<Block>().in(Block::getBlockNumber, afterNumbers));
 
+    blocks.getRecords().forEach(block -> {
+      var afterBlock = afterBlocks.stream().filter(block1 -> block1.getBlockNumber() == block.getBlockNumber()+11).findFirst().orElse(null);
+      // 块奖励展示为11个块之后的奖励
+      if(afterBlock != null){
+        block.setReward(afterBlock.getReward());
+      } else {
+        block.setReward(0L);
+      }
+    });
     // 执行分页查询
-    return baseMapper.selectPage(page, queryWrapper);
+    return blocks;
   }
 
   @Override

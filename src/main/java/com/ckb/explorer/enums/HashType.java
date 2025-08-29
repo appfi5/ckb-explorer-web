@@ -27,4 +27,17 @@ public enum HashType {
     }
     return "unknown";
   }
+
+  public static HashType getByCode(Short code){
+    if(code == null){
+      return null;
+    }
+    HashType[] hashTypes = HashType.values();
+    for (HashType hashType : hashTypes) {
+      if(hashType.getCode() == code.intValue()){
+        return hashType;
+      }
+    }
+    return null;
+  }
 }

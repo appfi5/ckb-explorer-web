@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -73,52 +72,52 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Override
   public Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
     // 解析排序参数
-    String[] sortParts = sort.split("\\.", 2);
-    String orderBy = sortParts[0];
-    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
-
-    // 字段映射
-    orderBy = switch (orderBy) {
-      case "height" -> "blockNumber";
-      case "capacity" -> "capacityInvolved";
-      default -> orderBy;
-    };
-
-    // 验证排序字段
-    if (!VALID_SORT_FIELDS.contains(orderBy)) {
-      throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
-    }
+//    String[] sortParts = sort.split("\\.", 2);
+//    String orderBy = sortParts[0];
+//    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+//
+//    // 字段映射
+//    orderBy = switch (orderBy) {
+//      case "height" -> "blockNumber";
+//      case "capacity" -> "capacityInvolved";
+//      default -> orderBy;
+//    };
+//
+//    // 验证排序字段
+//    if (!VALID_SORT_FIELDS.contains(orderBy)) {
+//      throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
+//    }
 
     // 创建分页对象
     Page<CkbTransaction> pageResult = new Page<>(pageNum, pageSize);
     // 创建查询条件
     LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
-
+    queryWrapper.orderByDesc(CkbTransaction::getId);
     // 添加排序条件
-    boolean isAsc = "asc".equals(ascOrDesc);
-    switch (orderBy) {
-      case "id":
-        if (isAsc) {
-          queryWrapper.orderByAsc(CkbTransaction::getId);
-        } else {
-          queryWrapper.orderByDesc(CkbTransaction::getId);
-        }
-        break;
-      case "blockNumber":
-        if (isAsc) {
-          queryWrapper.orderByAsc(CkbTransaction::getBlockNumber);
-        } else {
-          queryWrapper.orderByDesc(CkbTransaction::getBlockNumber);
-        }
-        break;
-      case "capacityInvolved":
-        if (isAsc) {
-          queryWrapper.orderByAsc(CkbTransaction::getCapacityInvolved);
-        } else {
-          queryWrapper.orderByDesc(CkbTransaction::getCapacityInvolved);
-        }
-        break;
-    }
+//    boolean isAsc = "asc".equals(ascOrDesc);
+//    switch (orderBy) {
+//      case "id":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(CkbTransaction::getId);
+//        } else {
+//          queryWrapper.orderByDesc(CkbTransaction::getId);
+//        }
+//        break;
+//      case "blockNumber":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(CkbTransaction::getBlockNumber);
+//        } else {
+//          queryWrapper.orderByDesc(CkbTransaction::getBlockNumber);
+//        }
+//        break;
+//      case "capacityInvolved":
+//        if (isAsc) {
+//          queryWrapper.orderByAsc(CkbTransaction::getCapacityInvolved);
+//        } else {
+//          queryWrapper.orderByDesc(CkbTransaction::getCapacityInvolved);
+//        }
+//        break;
+//    }
 
     // 执行分页查询
     return baseMapper.selectPage(pageResult, queryWrapper);
