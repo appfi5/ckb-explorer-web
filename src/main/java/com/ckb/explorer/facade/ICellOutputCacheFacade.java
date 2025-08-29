@@ -1,11 +1,9 @@
-package com.ckb.explorer.service;
+package com.ckb.explorer.facade;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.ckb.explorer.domain.resp.AddressLiveCellsResponse;
-import com.ckb.explorer.entity.Output;
 
-public interface OutputService extends IService<Output> {
+public interface ICellOutputCacheFacade {
 
   Page<AddressLiveCellsResponse> getAddressLiveCellsByAddress(String address, String tag, String sort, Boolean boundStatus, int page, int pageSize);
 }

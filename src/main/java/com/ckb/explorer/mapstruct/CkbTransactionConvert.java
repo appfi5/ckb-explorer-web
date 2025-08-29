@@ -16,7 +16,7 @@ public interface CkbTransactionConvert {
   CkbTransactionConvert INSTANCE = Mappers.getMapper(CkbTransactionConvert.class);
 
   @Mapping(source = "txHash", target = "transactionHash", qualifiedByName = "byteToStringHash(Value)")
-  @Mapping(expression = "java(ckbTransaction.getOutputCount() - ckbTransaction.getInputCount())", target = "liveCellChanges")
+  @Mapping(expression = "java(ckbTransaction.getTxIndex()==0? 1: ckbTransaction.getOutputCount() - ckbTransaction.getInputCount())", target = "liveCellChanges")
   TransactionPageResponse toConvert(CkbTransaction ckbTransaction);
 
   List<TransactionPageResponse> toConvertTransactionResponseList(List<CkbTransaction> ckbTransactions);

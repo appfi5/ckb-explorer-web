@@ -18,7 +18,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionResponse extends BaseResponse<Long> {
 
-  private String type = "ckb_transactions";
+  private String type = "ckb_transaction";
 
   private Boolean isCellbase;
 
