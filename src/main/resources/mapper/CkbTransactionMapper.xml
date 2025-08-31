@@ -67,5 +67,23 @@
     order by dep_id
   </select>
 
+  <select id="selectPageByAddressScriptId"
+    resultType="com.ckb.explorer.domain.resp.AddressTransactionPageResponse">
+    SELECT ct.id,
+           ct.tx_index = 0 as is_cellbase,
+           '0x' || encode(ct.tx_hash, 'hex') as transaction_hash,
+           ct.block_number,
+           ct.block_timestamp,
+           ct.display_inputs_count,
+           ct.display_outputs_count
+    FROM ckb_transaction ct
+    WHERE ct.tx_hash IN (
+      SELECT tx_hash FROM output WHERE lock_script_id = #{addressScriptId}
+      UNION
+      SELECT consumed_tx_hash FROM output WHERE lock_script_id = #{addressScriptId}
+    )
+    order by ${orderByStr} ${ascOrDesc}, tx_index desc
+
+    </select>
 
 </mapper>

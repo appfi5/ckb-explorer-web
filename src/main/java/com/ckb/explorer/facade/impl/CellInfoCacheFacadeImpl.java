@@ -33,8 +33,6 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
   @Resource
   private ScriptService scriptService;
 
-  private static final int MAXIMUM_DOWNLOADABLE_SIZE = 64000;
-
   private static final String Cell_INFO_CACHE_PREFIX = "cellInfo:";
   private static final String CACHE_VERSION = "v1";
 
@@ -111,12 +109,7 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
       return null;
     }
 
-    // 检查数据大小是否超过限制
-    if (cellOutput.getData() != null && cellOutput.getData().length > MAXIMUM_DOWNLOADABLE_SIZE) {
-      response.setData(null);
-    }else{
-      response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
-    }
+    response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
 
     // 获取lock_script
     Script lockScript = scriptService.getById(cellOutput.getLockScriptId());

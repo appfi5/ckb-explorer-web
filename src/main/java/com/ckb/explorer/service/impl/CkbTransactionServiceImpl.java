@@ -8,6 +8,7 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.dto.CellOutputDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
+import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
 import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
 import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
@@ -321,24 +322,32 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     var result = BlockTransactionConvert.INSTANCE.toConvertPage(resultPage);
 
     var transactions = result.getRecords();
+    // 分开处理cellbase和普通交易
     var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(BlockTransactionPageResponse::getId).collect(Collectors.toList());
     var normalTransactionsIds = transactions.stream().filter(transaction-> !transaction.getIsCellbase()).map(BlockTransactionPageResponse::getId).collect(Collectors.toList());
 
     Map<Long,List<CellOutputDto>>  cellbaseOutputsWithTrans;
-    Map<Long,List<CellInputDto>> normalInputsWithTrans = new HashMap<>();
-    Map<Long,List<CellOutputDto>>  normalOutputsWithTrans= new HashMap<>();
+    Map<Long,List<CellInputDto>> normalInputsWithTrans ;
+    Map<Long,List<CellOutputDto>>  normalOutputsWithTrans;
+
+    // cellbase获取output
     if(cellbaseTransactionsIds.size() > 0){
       cellbaseOutputsWithTrans = outputMapper.getCellbaseDisplayOutputsByTransactionIds(cellbaseTransactionsIds).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
     } else {
       cellbaseOutputsWithTrans = new HashMap<>();
     }
+
+    // 普通交易获取input和output
     if(normalTransactionsIds.size() > 0){
       normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
       normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else{
+      normalInputsWithTrans = new HashMap<>();
+      normalOutputsWithTrans = new HashMap<>();
     }
-    Map<Long, List<CellInputDto>> finalNormalInputsWithTrans = normalInputsWithTrans;
-    Map<Long, List<CellOutputDto>> finalNormalOutputsWithTrans = normalOutputsWithTrans;
+
     transactions.stream().forEach(transaction -> {
+      // 组装cellbase交易
       if(transaction.getIsCellbase()){
         Long targetBlockNumber = transaction.getBlockNumber()< 11 ?0:transaction.getBlockNumber()-11;
         List<CellInputResponse> records = new ArrayList<>();
@@ -356,12 +365,94 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
 
         transaction.setDisplayOutputs(cellbaseOutput);
+        // 组装普通交易
       }else{
         transaction.setDisplayInputs(CellInputConvert.INSTANCE.toConvertList(
-            finalNormalInputsWithTrans.get(transaction.getId())));
+            normalInputsWithTrans.get(transaction.getId())));
 
         transaction.setDisplayOutputs(CellOutputConvert.INSTANCE.INSTANCE.toConvertList(
-            finalNormalOutputsWithTrans.get(transaction.getId())));
+            normalOutputsWithTrans.get(transaction.getId())));
+      }
+    });
+
+    return result;
+  }
+
+  @Override
+  public Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort,
+      int page, int pageSize) {
+
+    String[] sortParts = sort.split("\\.", 2);
+    String orderBy = sortParts[0];
+    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+
+    orderBy = switch (orderBy) {
+      case "time" -> "block_timestamp";
+      default -> throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
+    };
+
+    // 判断地址是否存在
+    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+    var addressScriptHash = Address.decode(address).getScript().computeHash();
+    queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+    var script = scriptMapper.selectOne(queryScriptWrapper);
+    if(script == null){
+      throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+    }
+
+    Page<AddressTransactionPageResponse> transactionPage = new Page<>(page, pageSize);
+    Page<AddressTransactionPageResponse> result = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId());
+
+    var transactions = result.getRecords();
+    // 分开处理cellbase和普通交易
+    var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
+    var normalTransactionsIds = transactions.stream().filter(transaction-> !transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
+
+    Map<Long,List<CellOutputDto>>  cellbaseOutputsWithTrans;
+    Map<Long,List<CellInputDto>> normalInputsWithTrans ;
+    Map<Long,List<CellOutputDto>>  normalOutputsWithTrans;
+    // cellbase获取output
+    if(cellbaseTransactionsIds.size() > 0){
+      cellbaseOutputsWithTrans = outputMapper.getCellbaseDisplayOutputsByTransactionIds(cellbaseTransactionsIds).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else{
+      cellbaseOutputsWithTrans = new HashMap<>();
+    }
+
+    // 普通交易获取input和output
+    if(normalTransactionsIds.size() > 0){
+      normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else{
+      normalInputsWithTrans = new HashMap<>();
+      normalOutputsWithTrans = new HashMap<>();
+    }
+
+    transactions.stream().forEach(transaction -> {
+      // 组装cellbase交易
+      if(transaction.getIsCellbase()){
+        Long targetBlockNumber = transaction.getBlockNumber()< 11 ?0:transaction.getBlockNumber()-11;
+        List<CellInputResponse> records = new ArrayList<>();
+
+        // Cellbase交易只有一个特殊的输入
+        CellInputResponse cellInput = new CellInputResponse();
+        cellInput.setFromCellbase(true);
+        cellInput.setTargetBlockNumber(targetBlockNumber);
+        cellInput.setGeneratedTxHash(transaction.getTransactionHash());
+
+        records.add(cellInput);
+        transaction.setDisplayInputs(records);
+
+        List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
+        cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+
+        transaction.setDisplayOutputs(cellbaseOutput);
+        // 组装普通交易
+      }else{
+        transaction.setDisplayInputs(CellInputConvert.INSTANCE.toConvertList(
+            normalInputsWithTrans.get(transaction.getId())));
+
+        transaction.setDisplayOutputs(CellOutputConvert.INSTANCE.INSTANCE.toConvertList(
+            normalOutputsWithTrans.get(transaction.getId())));
       }
     });
 

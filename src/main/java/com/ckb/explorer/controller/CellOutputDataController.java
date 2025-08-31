@@ -33,8 +33,6 @@ public class CellOutputDataController {
     @Resource
     private I18n i18n;
 
-    private static final int MAXIMUM_DOWNLOADABLE_SIZE = 64000;
-
     /**
      * 获取CellOutput的数据
      * @param id CellOutput的ID
@@ -50,11 +48,6 @@ public class CellOutputDataController {
         Output cellOutput = outputService.getById(Long.parseLong(id));
         if (cellOutput == null) {
             throw new ServerException(I18nKey.CELL_OUTPUT_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CELL_OUTPUT_NOT_FOUND_MESSAGE));
-        }
-
-        // 检查数据大小是否超过限制
-        if (cellOutput.getData() != null && cellOutput.getData().length > MAXIMUM_DOWNLOADABLE_SIZE) {
-            throw new ServerException(I18nKey.CELL_OUTPUT_DATA_SIZE_EXCEEDS_LIMIT_CODE, i18n.getMessage(I18nKey.CELL_OUTPUT_DATA_SIZE_EXCEEDS_LIMIT_MESSAGE));
         }
 
         // 序列化并返回
