@@ -16,8 +16,39 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class CellInfoResponse {
+  /**
+   * 容量
+   */
+  @JsonSerialize(using = ToStringSerializer.class)
+  private Long capacity;
+
+  /**
+   * 占用的容量
+   */
+  @JsonSerialize(using = ToStringSerializer.class)
+  private Long occupiedCapacity;
+
+  /**
+   * 状态
+   */
+  private String status;
+
+  /**
+   * 单元格索引
+   */
+  private Integer cellIndex;
+
+  /**
+   * 生成的交易哈希
+   */
+  private String generatedTxHash;
+
+  /**
+   * 消耗的交易哈希
+   */
+  private String consumedTxHash;
+
   private LockScriptResponse lockScript;
 
   private TypeScriptResponse typeScript;

@@ -44,5 +44,5 @@ public class AddressLiveCellsResponse extends BaseResponse<Long> {
 
   private ScriptResponse lockScript;
 
-  private ExtraInfoResponse extraInfo;
+  private ExtraInfoResponse extraInfo; // TODO 根据不同资产显示不同的信息
 }

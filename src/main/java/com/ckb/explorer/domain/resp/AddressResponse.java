@@ -33,7 +33,11 @@ public class AddressResponse extends BaseResponse<Long> {
   @JsonSerialize(using = ToStringSerializer.class)
   private BigInteger daoDeposit = new BigInteger("0"); // TODO 现在没有
 
-  private String interest; // TODO 现在没有
+  /**
+   * 利息
+   */
+  @JsonSerialize(using = ToStringSerializer.class)
+  private BigInteger interest; // TODO 现在没有
 
   private Long liveCellsCount=0L; // TODO 统计表取
 
