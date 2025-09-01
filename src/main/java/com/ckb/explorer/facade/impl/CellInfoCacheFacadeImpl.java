@@ -108,6 +108,12 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
     if (cellOutput == null) {
       return null;
     }
+    response.setCapacity(cellOutput.getCapacity());
+    response.setOccupiedCapacity(cellOutput.getOccupiedCapacity());
+    response.setStatus(cellOutput.getIsSpent() == 1 ? "dead" : "live");
+    response.setCellIndex(cellOutput.getOutputIndex());
+    response.setGeneratedTxHash(cellOutput.getTxHash() != null? Numeric.toHexString(cellOutput.getTxHash()) : null);
+    response.setConsumedTxHash(cellOutput.getConsumedTxHash() != null && cellOutput.getConsumedTxHash().length > 0? Numeric.toHexString(cellOutput.getConsumedTxHash()) : null);
 
     response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
 
