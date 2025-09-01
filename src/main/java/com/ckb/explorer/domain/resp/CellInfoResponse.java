@@ -51,6 +51,8 @@ public class CellInfoResponse {
 
   private LockScriptResponse lockScript;
 
+  private String address;
+
   private TypeScriptResponse typeScript;
 
   private String data;
