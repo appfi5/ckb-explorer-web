@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS uncle_block(
                                           compact_target BYTEA,
                                           parent_hash BYTEA,
                                           nonce BYTEA,
-                                          difficulty BYTEA,
                                           timestamp BIGINT,
                                           version BYTEA,
                                           transactions_root BYTEA,
@@ -50,7 +49,8 @@ CREATE TABLE IF NOT EXISTS uncle_block(
                                           proposals_hash BYTEA,
                                           extra_hash BYTEA,
                                           extension BYTEA,
-                                          proposals BYTEA
+                                          proposals BYTEA,
+                                          difficulty BYTEA
 );
 
 CREATE TABLE IF NOT EXISTS ckb_transaction(
@@ -97,10 +97,20 @@ CREATE TABLE IF NOT EXISTS output(
                                      lock_script_id BIGINT,
                                      type_script_id BIGINT,
                                      data BYTEA,
+                                     data_size INTEGER,
+                                     data_hash BYTEA,
                                      occupied_capacity BIGINT,
                                      is_spent INTEGER DEFAULT 0,
                                      consumed_tx_hash BYTEA,
-                                     input_index INTEGER
+                                     input_index INTEGER,
+                                     block_number BIGINT NOT NULL,
+                                     block_timestamp BIGINT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS output_data(
+                                          id BIGSERIAL PRIMARY KEY,
+                                          output_id BIGINT NOT NULL,
+                                          data BYTEA
 );
 
 CREATE TABLE IF NOT EXISTS input(

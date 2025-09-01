@@ -27,6 +27,10 @@ public class Output {
 
   private byte[] data;
 
+  private Integer dataSize;
+
+  private byte[] dataHash;
+
   private Integer isSpent;
 
   private byte[] consumedTxHash;
@@ -34,4 +38,8 @@ public class Output {
   private Integer inputIndex;
 
   private Long occupiedCapacity;
+
+  private Long blockNumber;
+
+  private Long blockTimestamp;
 }
