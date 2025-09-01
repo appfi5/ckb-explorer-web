@@ -8,6 +8,7 @@ import com.ckb.explorer.mapstruct.LockScriptConvert;
 import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.service.OutputService;
 import com.ckb.explorer.service.ScriptService;
+import com.ckb.explorer.util.TypeConversionUtil;
 import jakarta.annotation.Resource;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -121,8 +122,13 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
     Script lockScript = scriptService.getById(cellOutput.getLockScriptId());
     if(lockScript == null){
       response.setLockScript(null);
+    }else{
+      response.setLockScript(LockScriptConvert.INSTANCE.toConvert(lockScript));
+      response.setAddress(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),
+          lockScript.getArgs(),
+          lockScript.getHashType()));
     }
-    response.setLockScript(LockScriptConvert.INSTANCE.toConvert(lockScript));
+
 
     // 获取type_script
     Script typeScript = scriptService.getById(cellOutput.getTypeScriptId());
