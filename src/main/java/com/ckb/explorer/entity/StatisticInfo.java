@@ -44,7 +44,7 @@ public class StatisticInfo {
   /**
    * 哈希率（算力）
    */
-  private Double hashRate;
+  private BigDecimal hashRate;
 
   /**
    * 区块链基本信息

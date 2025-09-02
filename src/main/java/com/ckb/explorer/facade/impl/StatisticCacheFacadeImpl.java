@@ -10,6 +10,8 @@ import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapstruct.BlockchainInfoConvert;
 import com.ckb.explorer.service.StatisticInfoService;
 import jakarta.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -127,14 +129,13 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
     if (statisticInfo == null) {
       return response;
     }
-    response.setAverageBlockTime(
-        String.format("%.2f", statisticInfo.getAverageBlockTime())); // 保留两位小数
+    response.setAverageBlockTime(statisticInfo.getAverageBlockTime()); // 保留两位小数
     var hashRate = statisticInfo.getHashRate();
-    response.setHashRate(String.format("%.6f", hashRate));
-    var estimatedEpochTime =
-        currentEpochDifficulty.longValue() * tipBlock.getEpochLength() / hashRate;
-    response.setEstimatedEpochTime(String.format("%.6f",
-        estimatedEpochTime));
+    response.setHashRate(hashRate);
+    BigDecimal estimatedEpochTime = new BigDecimal(currentEpochDifficulty)
+            .multiply(new BigDecimal(tipBlock.getEpochLength()))
+        .divide(hashRate,6, RoundingMode.HALF_UP);
+    response.setEstimatedEpochTime(estimatedEpochTime);
     response.setTransactionsLast24hrs(statisticInfo.getTransactionsLast24hrs());
     response.setTransactionsCountPerMinute(statisticInfo.getTransactionsCountPerMinute());
     return response;
@@ -212,7 +213,6 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
     if ("tip_block_number".equals(fieldName)) {
       response.setTipBlockNumber(tipBlock.getBlockNumber());
     } else if ("blockchain_info".equals(fieldName)) {
-
       BlockchainInfo data = statisticInfoService.getBlockchainInfo();
       response.setBlockchainInfo(data == null? null : BlockchainInfoConvert.INSTANCE.toConvert(data));
     } else if ("address_balance_ranking".equals(fieldName)) {
