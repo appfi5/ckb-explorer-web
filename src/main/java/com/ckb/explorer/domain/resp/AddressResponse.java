@@ -22,27 +22,27 @@ public class AddressResponse extends BaseResponse<Long> {
   private String addressHash;
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long balance = 0L;  // TODO 后面从统计表取
+  private Long balance = 0L;
 
-  private Long transactionsCount = 0L; // TODO 统计表取
+  private Long transactionsCount = 0L;
 
   /**
    * DAO 押金
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long daoDeposit = 0L; // TODO 现在没有
+  private Long daoDeposit = 0L; // 一期不做DAO相关
 
   /**
    * 利息
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long interest = 0L; // TODO 现在没有
+  private Long interest = 0L; // 一期不做DAO相关
 
-  private Long liveCellsCount=0L; // TODO 统计表取
+  private Long liveCellsCount=0L;
 
-  private Long minedBlocksCount=0L; // TODO 统计表取
+  // private Long minedBlocksCount=0L; // 去掉
 
-  private Long averageDepositTime; // TODO 也是dao相关的，现在没有
+  private Long averageDepositTime; // 一期不做DAO相关
 
   private List<UdtAccountResponse> udtAccounts;// TODO 现在还没有
 
@@ -52,11 +52,11 @@ public class AddressResponse extends BaseResponse<Long> {
    * DAO 补偿
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long daoCompensation = 0L;// TODO 也是dao相关的，现在没有
+  private Long daoCompensation = 0L;// 一期不做DAO相关
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long balanceOccupied = 0L; // TODO 统计表取
+  private Long balanceOccupied = 0L; //
 
-  private String bitcoinAddressHash; // TODO rgb++相关，现在没有
+  private String bitcoinAddressHash; // 一期不做rgb++ 比特币相关
 
 }
