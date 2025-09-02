@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ckb.explorer.domain.resp.AddressBalanceRanking;
 import com.ckb.explorer.entity.StatisticInfo;
 import java.util.List;
+import org.nervos.ckb.type.BlockchainInfo;
 
 /**
  * StatisticInfoService 统计信息服务接口
@@ -12,4 +13,16 @@ import java.util.List;
 public interface StatisticInfoService extends IService<StatisticInfo> {
 
   List<AddressBalanceRanking> getAddressBalanceRanking();
+
+  BlockchainInfo getBlockchainInfo();
+
+  StatisticInfo getStatisticInfo();
+
+  double hashRate(Long tipBlockNumber);
+
+  double getAverageBlockTime(Long tipBlockNumber, Long timestamp);
+
+  Long getTransactionsLast24hrs(Long timestamp);
+
+  Long getTransactionsCountPerMinute(Long tipBlockNumber);
 }

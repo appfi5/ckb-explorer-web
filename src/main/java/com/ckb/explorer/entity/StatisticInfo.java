@@ -28,6 +28,7 @@ public class StatisticInfo {
   /**
    * 过去24小时的交易数量
    */
+  @TableField(value = "transactions_last_24hrs")
   private Long transactionsLast24hrs;
 
   /**
@@ -43,7 +44,7 @@ public class StatisticInfo {
   /**
    * 哈希率（算力）
    */
-  private BigDecimal hashRate;
+  private Double hashRate;
 
   /**
    * 区块链基本信息
