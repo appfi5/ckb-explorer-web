@@ -8,9 +8,12 @@ import com.ckb.explorer.domain.resp.AddressResponse;
 import com.ckb.explorer.domain.resp.LockScriptResponse;
 import com.ckb.explorer.domain.resp.TypeScriptResponse;
 import com.ckb.explorer.entity.Script;
+import com.ckb.explorer.entity.StatisticAddress;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
+import com.ckb.explorer.service.OutputService;
 import com.ckb.explorer.service.ScriptService;
+import com.ckb.explorer.service.StatisticAddressService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
@@ -27,6 +30,12 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
 
   @Resource
   private I18n i18n;
+  
+  @Resource
+  private StatisticAddressService statisticAddressService;
+  
+  @Resource
+  private OutputService outputService;
 
   @Override
   public AddressResponse getAddressInfo(String address) {
@@ -55,9 +64,26 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
       throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
 
-    // TODO 待地址的统计信息出来，查统计信息
+    // 获取地址响应对象
+    AddressResponse addressResponse = LockScriptConvert.INSTANCE.toConvertAddressResponse(script);
 
-    return LockScriptConvert.INSTANCE.toConvertAddressResponse(script);
+    // 查询地址统计信息
+    var addressStatistics = statisticAddressService.getOne(
+        new LambdaQueryWrapper<StatisticAddress>()
+            .eq(StatisticAddress::getLockScriptId, script.getId()));
+    // 设置地址统计信息
+    if (addressStatistics != null) {
+      addressResponse.setBalance(addressStatistics.getBalance());
+      addressResponse.setLiveCellsCount(addressStatistics.getLiveCellsCount());
+      addressResponse.setBalanceOccupied(addressStatistics.getBalanceOccupied());
+    }
+
+    // 查询地址的交易总数
+    // 注意：这里使用1作为page，1作为pageSize只是为了获取总数，不实际加载数据
+    var transactionCount = outputService.countAddressTransactions(script.getId());
+    addressResponse.setTransactionsCount(transactionCount);
+    
+    return addressResponse;
   }
 
   @Override

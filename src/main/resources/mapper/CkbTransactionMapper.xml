@@ -79,13 +79,20 @@
            ct.input_count                    as display_inputs_count,
            ct.output_count                   as display_outputs_count
     FROM ckb_transaction ct
-    WHERE ct.tx_hash IN (SELECT tx_hash
-                         FROM output
-                         WHERE lock_script_id = #{addressScriptId}
-                         UNION
-                         SELECT consumed_tx_hash
-                         FROM output
-                         WHERE lock_script_id = #{addressScriptId})
+    WHERE EXISTS(
+      -- lock_script_id 创建 cell的交易
+      SELECT 1
+      FROM output o1
+      WHERE o1.tx_hash = ct.tx_hash
+        AND o1.lock_script_id = #{addressScriptId}
+    )
+       OR EXISTS(
+      -- lock_script_id 消费了 cell的交易
+      SELECT 1
+      FROM output o2
+      WHERE o2.consumed_tx_hash = ct.tx_hash
+        AND o2.lock_script_id = #{addressScriptId}
+    )
     order by ${orderByStr} ${ascOrDesc}, tx_index desc
 
   </select>

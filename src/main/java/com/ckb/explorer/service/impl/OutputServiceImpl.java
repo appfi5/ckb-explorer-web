@@ -86,4 +86,9 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
     var resultPage = baseMapper.getLiveCellsByLockScriptId(pageResult, lockScriptId, filteredIds, orderBy, ascOrDesc);
     return resultPage;
   }
+
+  @Override
+  public Long countAddressTransactions(Long scriptId) {
+    return baseMapper.countAddressTransactions(scriptId);
+  }
 }

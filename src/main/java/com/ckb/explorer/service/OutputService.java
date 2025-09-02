@@ -8,4 +8,6 @@ import com.ckb.explorer.entity.Output;
 public interface OutputService extends IService<Output> {
 
   Page<AddressLiveCellsResponse> getAddressLiveCellsByAddress(String address, String tag, String sort, Boolean boundStatus, int page, int pageSize);
+
+  Long countAddressTransactions(Long scriptId);
 }
