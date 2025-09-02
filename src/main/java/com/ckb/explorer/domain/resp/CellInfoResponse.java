@@ -30,9 +30,9 @@ public class CellInfoResponse {
   private Long occupiedCapacity;
 
   /**
-   * 状态
+   * 状态 0-live;1-dead
    */
-  private String status;
+  private Integer status;
 
   /**
    * 单元格索引

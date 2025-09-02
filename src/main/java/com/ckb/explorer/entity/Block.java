@@ -58,7 +58,7 @@ public class Block {
 
   private byte[] minerScript;
 
-  private String minerMessage;
+  private byte[] minerMessage;
 
   private Long reward; // 是11个块之前的奖励
 

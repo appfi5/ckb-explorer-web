@@ -14,6 +14,7 @@
     <result property="transactionFee" column="transaction_fee"/>
     <result property="blockNumber" column="block_number"/>
     <result property="version" column="version"/>
+    <result property="blockTimestamp" column="block_timestamp"/>
     <result property="cycles" column="cycles"/>
     <result property="bytes" column="bytes"/>
 
@@ -43,6 +44,7 @@
            ct.transaction_fee,
            ct.block_number,
            COALESCE(NULLIF(ltrim(encode(ct.version, 'hex'), '0'), ''), '0') AS version,
+           ct.block_timestamp,
            ct.cycles,
            ct.bytes,
            acd.id as dep_id,

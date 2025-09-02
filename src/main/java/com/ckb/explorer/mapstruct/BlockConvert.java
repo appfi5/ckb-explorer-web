@@ -36,6 +36,7 @@ public interface BlockConvert {
   @Mapping(source = "nonce", target = "nonce", qualifiedByName = "byteToString(Value)")
   @Mapping(target = "difficulty", expression = "java(org.nervos.ckb.utils.Numeric.toBigInt(block.getDifficulty()))")
   @Mapping(source = "blockSize", target = "size")
+  @Mapping(source = "minerMessage", target = "minerMessage", qualifiedByName = "byteToStringHash(Value)")
   BlockResponse toConvertBlockResponse(Block block);
 
 }
