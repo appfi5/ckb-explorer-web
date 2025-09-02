@@ -18,7 +18,7 @@ import java.util.List;
 public class AddressLiveCellsResponse extends BaseResponse<Long> {
   private String type = "cell_output";
   
-  private String cellType;
+  private String cellType;// TODO 根据不同资产 cellType 显示不同的信息
 
   private String txHash;
 
@@ -44,5 +44,5 @@ public class AddressLiveCellsResponse extends BaseResponse<Long> {
 
   private ScriptResponse lockScript;
 
-  private ExtraInfoResponse extraInfo; // TODO 根据不同资产显示不同的信息
+  private ExtraInfoResponse extraInfo; // TODO 根据不同资产 cellType 显示不同的信息
 }

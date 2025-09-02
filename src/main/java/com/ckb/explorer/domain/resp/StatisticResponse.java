@@ -1,6 +1,7 @@
 package com.ckb.explorer.domain.resp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,7 +55,7 @@ public class StatisticResponse {
   /**
    * 地址余额排名
    */
-  private Object addressBalanceRanking;
+  private List<AddressBalanceRanking> addressBalanceRanking;
 
   /**
    * 维护信息

@@ -64,7 +64,7 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
     Page<AddressLiveCellsResponse> pageResult = new Page<>(pageIndex, pageSize);
     Long lockScriptId = 0L;
-    // TODO 比特币的逻辑后面补
+    // 比特币的逻辑后面补 一期不做比特币
     if (boundStatus) {
 //      vout_ids = BitcoinVout.where(address_id: address_ids, status: bound_status).pluck(:cell_output_id)
 //      CellOutput.live.where(id: vout_ids)

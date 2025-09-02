@@ -44,21 +44,21 @@ public class TransactionResponse extends BaseResponse<Long> {
 
   private Long bytes;
 
-  private Long largestTxInEpoch;// TODO object.block&.epoch_statistic&.largest_tx_bytes
+  private Long largestTxInEpoch;// object.block&.epoch_statistic&.largest_tx_bytes 一期不做epoch统计
 
-  private Long largestTx; // TODO EpochStatistic.largest_tx_bytes
+  private Long largestTx; // EpochStatistic.largest_tx_bytes  一期不做epoch统计
 
   private Long cycles;
 
-  private Long maxCyclesInEpoch; // TODO object.block&.epoch_statistic&.max_tx_cycles
+  private Long maxCyclesInEpoch; // object.block&.epoch_statistic&.max_tx_cycles  一期不做epoch统计
 
-  private Long maxCycles; // TODO EpochStatistic.max_tx_cycles
+  private Long maxCycles; // EpochStatistic.max_tx_cycles  一期不做epoch统计
 
-  private Boolean isRgbTransaction; // TODO object.rgb_transaction?
+  private Boolean isRgbTransaction; // object.rgb_transaction? 一期不做rgb++
 
-  private Boolean isBtcTimeLock; // TODO object.btc_time_transaction?
+  private Boolean isBtcTimeLock; // object.btc_time_transaction? 一期不做比特币
 
-  private String rgbTxid; // TODO object.rgb_txid
+  private String rgbTxid; //  object.rgb_txid 一期不做rgb++
 
-  private String rgbTransferStep; // TODO object.transfer_step
+  private String rgbTransferStep; // object.transfer_step 一期不做rgb++
 }

@@ -51,7 +51,7 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
       queryWrapper.eq(Script::getScriptHash, addressScriptHash);
 
 
-    } // TODO 比特币地址
+    } // 比特币地址 一期不做比特币
 //    else if(address){
 //
 //    }

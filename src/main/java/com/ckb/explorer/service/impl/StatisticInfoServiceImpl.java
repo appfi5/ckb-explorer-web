@@ -1,24 +1,31 @@
 package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.domain.resp.AddressBalanceRanking;
 import com.ckb.explorer.entity.Block;
+import com.ckb.explorer.entity.StatisticInfo;
 import com.ckb.explorer.entity.UncleBlock;
 import com.ckb.explorer.mapper.BlockMapper;
+import com.ckb.explorer.mapper.StatisticInfoMapper;
 import com.ckb.explorer.mapper.UncleBlockMapper;
-import com.ckb.explorer.service.StatisticService;
+import com.ckb.explorer.service.StatisticInfoService;
+import com.ckb.explorer.util.JsonUtil;
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import org.nervos.ckb.type.BlockchainInfo;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
 /**
- * 统计服务实现类
+ * StatisticInfoServiceImpl 统计信息服务实现类
+ * 实现statistic_infos表相关的业务逻辑
  */
 @Service
-public class StatisticServiceImpl implements StatisticService {
+public class StatisticInfoServiceImpl extends ServiceImpl<StatisticInfoMapper, StatisticInfo> implements StatisticInfoService {
 
   @Value("${statistic.hashRateStatisticalInterval}")
   private int hashRateStatisticalInterval = 100;
@@ -32,6 +39,34 @@ public class StatisticServiceImpl implements StatisticService {
   @Resource
   private UncleBlockMapper uncleBlockMapper;
 
+  @Override
+  public List<AddressBalanceRanking> getAddressBalanceRanking() {
+    LambdaQueryWrapper<StatisticInfo> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.select(StatisticInfo::getAddressBalanceRanking);
+    queryWrapper.last("limit 1");
+    StatisticInfo result = baseMapper.selectOne(queryWrapper);
+
+    return result == null ? new ArrayList<>() : result.getAddressBalanceRanking();
+  }
+
+  @Override
+  public BlockchainInfo getBlockchainInfo() {
+    LambdaQueryWrapper<StatisticInfo> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.select(StatisticInfo::getBlockchainInfo)
+        .last("LIMIT 1");
+
+    StatisticInfo result = baseMapper.selectOne(queryWrapper);
+    String blockchainInfo = result != null ? result.getBlockchainInfo() : null;
+    return JsonUtil.parseObject(blockchainInfo, BlockchainInfo.class);
+  }
+
+  @Override
+  public StatisticInfo getStatisticInfo() {
+    LambdaQueryWrapper<StatisticInfo> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.last("limit 1");
+    StatisticInfo statisticInfo = baseMapper.selectOne(queryWrapper);
+    return statisticInfo;
+  }
 
   @Override
   public double hashRate(Long tipBlockNumber){
@@ -61,7 +96,7 @@ public class StatisticServiceImpl implements StatisticService {
     // 加上这些区块对应的所有叔块的难度总和
     LambdaQueryWrapper<UncleBlock> uncleBlockQueryWrapper = new LambdaQueryWrapper<>();
     uncleBlockQueryWrapper.select(UncleBlock::getDifficulty)
-                         .in(UncleBlock::getBlockNumber, blocks.stream().map(Block::getBlockNumber).toArray());
+        .in(UncleBlock::getBlockNumber, blocks.stream().map(Block::getBlockNumber).toArray());
 
     List<UncleBlock> uncleBlocks = uncleBlockMapper.selectList(uncleBlockQueryWrapper);
     for (UncleBlock uncleBlock : uncleBlocks) {

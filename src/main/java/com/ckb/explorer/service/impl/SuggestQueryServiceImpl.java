@@ -346,7 +346,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据TXID查询比特币交易 TODO 第一版不支持
+   * 根据TXID查询比特币交易 一期不做比特币
    */
   private Object findBitcoinTransactionByTxid(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -360,7 +360,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 查询比特币地址 TODO 第一版不支持
+   * 查询比特币地址 一期不做比特币
    */
   private Object findBitcoinAddress(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整

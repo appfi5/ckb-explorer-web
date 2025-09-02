@@ -34,13 +34,13 @@ public class AddressTransactionPageResponse extends BaseResponse<Long> {
 
   private List<CellOutputResponse> displayOutputs;
 
-  private BigDecimal income; // TODO 需关联account_books查询
+  // private BigDecimal income; // 不展示
 
-  private Boolean isRgbTransaction; // TODO object.rgb_transaction?
+  // private Boolean isRgbTransaction; // object.rgb_transaction 一期不做rgb++
 
-  private Boolean isBtcTimeLock; // TODO object.btc_time_transaction?
+  // private Boolean isBtcTimeLock; // object.btc_time_transaction 一期不做比特币
 
-  private String rgbTxid; // TODO object.rgb_txid
+  // private String rgbTxid; // object.rgb_txid 一期不做rgb++
 
-  private String rgbTransferStep; // TODO object.transfer_step
+  // private String rgbTransferStep; // object.transfer_step 一期不做rgb++
 }

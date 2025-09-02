@@ -1,8 +1,6 @@
 package com.ckb.explorer.facade.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.ckb.explorer.config.ServerException;
-import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.EpochInfoResponse;
 import com.ckb.explorer.domain.resp.IndexStatisticResponse;
 import com.ckb.explorer.domain.resp.StatisticResponse;
@@ -10,13 +8,11 @@ import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.facade.IStatisticCacheFacade;
 import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapstruct.BlockchainInfoConvert;
-import com.ckb.explorer.service.StatisticService;
+import com.ckb.explorer.service.StatisticInfoService;
 import jakarta.annotation.Resource;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.nervos.ckb.CkbRpcApi;
 import org.nervos.ckb.type.BlockchainInfo;
 import org.nervos.ckb.utils.Numeric;
 import org.redisson.api.RBucket;
@@ -37,10 +33,7 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
   private BlockMapper blockMapper;
 
   @Resource
-  private StatisticService statisticService;
-
-  @Resource
-  private CkbRpcApi ckbRpcApi;
+  private StatisticInfoService statisticInfoService;
 
 
   private static final String STATISTIC_CACHE_PREFIX = "statistic:";
@@ -129,17 +122,21 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
     response.setTipBlockNumber(tipBlockNumber);
     var currentEpochDifficulty = Numeric.toBigInt(tipBlock.getDifficulty());
     response.setCurrentEpochDifficulty(currentEpochDifficulty);
-    var averageBlockTime = statisticService.getAverageBlockTime(tipBlock.getBlockNumber(),
-        tipBlock.getTimestamp());// TODO 后面考虑从统计表取，不临时计算
-    response.setAverageBlockTime(String.format("%.2f", averageBlockTime)); // 保留两位小数
-    var hashRate = statisticService.hashRate(tipBlockNumber);
+
+    var statisticInfo = statisticInfoService.getStatisticInfo();
+    if (statisticInfo == null) {
+      return response;
+    }
+    response.setAverageBlockTime(
+        String.format("%.2f", statisticInfo.getAverageBlockTime())); // 保留两位小数
+    var hashRate = statisticInfo.getHashRate();
     response.setHashRate(String.format("%.6f", hashRate));
     var estimatedEpochTime =
         currentEpochDifficulty.longValue() * tipBlock.getEpochLength() / hashRate;
     response.setEstimatedEpochTime(String.format("%.6f",
         estimatedEpochTime));
-    response.setTransactionsLast24hrs(statisticService.getTransactionsLast24hrs(tipBlock.getTimestamp()));
-    response.setTransactionsCountPerMinute(statisticService.getTransactionsCountPerMinute(tipBlockNumber));
+    response.setTransactionsLast24hrs(statisticInfo.getTransactionsLast24hrs());
+    response.setTransactionsCountPerMinute(statisticInfo.getTransactionsCountPerMinute());
     return response;
   }
 
@@ -147,7 +144,8 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
   @Override
   public StatisticResponse getStatisticByFieldName(String fieldName) {
     // 创建缓存键
-    String cacheKey = String.format("%s%s:fieldName:%s", STATISTIC_CACHE_PREFIX, CACHE_VERSION, fieldName);
+    String cacheKey = String.format("%s%s:fieldName:%s", STATISTIC_CACHE_PREFIX, CACHE_VERSION,
+        fieldName);
 
     RBucket<StatisticResponse> bucket = redissonClient.getBucket(cacheKey);
 
@@ -203,33 +201,27 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
 
   private StatisticResponse loadFromDatabase(String fieldName) {
     StatisticResponse response = new StatisticResponse();
-    
+
     // 获取最新区块信息
     LambdaQueryWrapper<Block> wrapper = new LambdaQueryWrapper<Block>().orderByDesc(Block::getId)
         .last("LIMIT 1");
-    
+
     Block tipBlock = blockMapper.selectOne(wrapper);
-    
+
     // 根据fieldName设置对应的统计信息
     if ("tip_block_number".equals(fieldName)) {
       response.setTipBlockNumber(tipBlock.getBlockNumber());
     } else if ("blockchain_info".equals(fieldName)) {
-      try {
-        BlockchainInfo data = ckbRpcApi.getBlockchainInfo(); // TODO 后面考虑从统计表取，不实时查API，原逻辑是1h更新一次统计表
-        response.setBlockchainInfo(BlockchainInfoConvert.INSTANCE.toConvert(data));
-      } catch (IOException e) {
-        throw new ServerException(I18nKey.BLOCK_CHAIN_INFO_NOT_FOUND_CODE, I18nKey.BLOCK_CHAIN_INFO_NOT_FOUND_MESSAGE);
-      }
 
-    }else if("flush_cache_info".equals(fieldName)){
-      // response.setFlushCacheInfo(new FlushCacheInfoResponse()); TODO 待完善
-    }else if("address_balance_ranking".equals(fieldName)){
-      // response.setAddressBalanceRanking(new AddressBalanceRankingResponse()); TODO 待完善 需查address表
+      BlockchainInfo data = statisticInfoService.getBlockchainInfo();
+      response.setBlockchainInfo(data == null? null : BlockchainInfoConvert.INSTANCE.toConvert(data));
+    } else if ("address_balance_ranking".equals(fieldName)) {
+      response.setAddressBalanceRanking(statisticInfoService.getAddressBalanceRanking());
     }
-    
+
     // 设置创建时间戳
     response.setCreatedAtUnixtimestamp(tipBlock.getTimestamp());
-    
+
     return response;
   }
 }

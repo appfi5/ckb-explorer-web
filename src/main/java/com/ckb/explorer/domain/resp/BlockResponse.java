@@ -48,9 +48,9 @@ public class BlockResponse extends BaseResponse<Long> {
   private BigInteger difficulty;
   private Long minerReward; // 原(object.received_tx_fee + object.reward).to_s 现11个块之后的reward值
   private Integer size; // 原异步更新UpdateBlockSizeWorker.perform_async 现blockSize
-  private Long largestBlockInEpoch; // TODO from object.epoch_statistic&.largest_block_size
-  private Long largestBlock; // TODO from EpochStatistic.largest_block_size
+  private Long largestBlockInEpoch; // from object.epoch_statistic&.largest_block_size 不做epoch统计
+  private Long largestBlock; // from EpochStatistic.largest_block_size 不做epoch统计
   private Long cycles;
-  private Long maxCyclesInEpoch; // TODO from object.epoch_statistic&.max_block_cycles
-  private Long maxCycles; // TODO from EpochStatistic.max_block_cycles
+  private Long maxCyclesInEpoch; // from object.epoch_statistic&.max_block_cycles 不做epoch统计
+  private Long maxCycles; // from EpochStatistic.max_block_cycles 不做epoch统计
 }
