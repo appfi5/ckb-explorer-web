@@ -44,7 +44,7 @@ public class CellOutputResponse extends BaseResponse<Long> {
   /**
    * 状态
    */
-  private String status;
+  private Integer status;
   
   /**
    * 消耗的交易哈希

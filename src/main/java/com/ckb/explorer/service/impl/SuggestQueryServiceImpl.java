@@ -9,12 +9,14 @@ import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.domain.resp.TypeScriptResponse;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
+import com.ckb.explorer.facade.IScriptCacheFacade;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.SuggestQueryService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,11 +42,14 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   @Resource
   private ICkbTransactionCacheFacade ckbTransactionCacheFacade;
 
-//  @Resource
-//  private AddressCacheFacade addressCacheFacade;
+  @Resource
+  private IScriptCacheFacade scriptCacheFacade;
 
   @Resource
   private ScriptService scriptService;
+
+//  @Value("ckb.typeIdCodeHash")
+//  private String typeIdCodeHash;
 
   // 假设的服务，实际项目中可能需要创建或调整
   // @Resource
@@ -61,7 +66,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
     // 初始化查询参数
     queryKey = processQueryKey(queryKey);
 
-    if ( filterBy!= null && filterBy == 0) {
+    if (filterBy != null && filterBy == 0) {
       return aggregateQuery(queryKey);
     } else {
       return singleQuery(queryKey);
@@ -98,21 +103,22 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   private Object singleQuery(String queryKey) {
     Object result = null;
 
+    // 第一版只支持按高度查区块，按哈希查交易，按地址字符串查地址
     if (queryKeyUtils.isIntegerString(queryKey)) {
       // 查询区块
       result = findCachedBlock(queryKey);
     } else if (queryKeyUtils.isValidHex(queryKey)) {
       // 尝试多种查询方法
       List<Supplier<Object>> queryMethods = Arrays.asList(
-          () -> findCachedBlock(queryKey),
-          () -> findCkbTransactionByHash(queryKey),
-          () -> findAddressByLockHash(queryKey),
-          () -> findUdtByTypeHash(queryKey),
-          () -> findTypeScriptByTypeId(queryKey),
-          () -> findTypeScriptByCodeHash(queryKey),
-          () -> findLockScriptByCodeHash(queryKey),
-          () -> findBitcoinTransactionByTxid(queryKey),
-          () -> findNftCollectionsBySn(queryKey)
+//          () -> findCachedBlock(queryKey),
+          () -> findCkbTransactionByHash(queryKey)
+//          () -> findAddressByLockHash(queryKey),
+//          () -> findUdtByTypeHash(queryKey),
+//          () -> findTypeScriptByTypeId(queryKey),
+//          () -> findTypeScriptByCodeHash(queryKey),
+//          () -> findLockScriptByCodeHash(queryKey),
+//          () -> findBitcoinTransactionByTxid(queryKey),
+//          () -> findNftCollectionsBySn(queryKey)
       );
 
       // 并行执行所有查询方法
@@ -151,7 +157,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
    */
   private List<Object> aggregateQuery(String queryKey) {
     List<Object> dataList = new ArrayList<>();
-
+    // 第一版只支持按高度查区块，按哈希查交易，按地址字符串查地址
     // 如果是纯数字，查询区块
     if (queryKeyUtils.isIntegerString(queryKey)) {
       BlockResponse block = findCachedBlock(queryKey);
@@ -172,15 +178,15 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
       if (queryKeyUtils.isValidHex(queryKey)) {
         // 执行各种hex查询
         List<Supplier<Object>> hexQueryMethods = Arrays.asList(
-            () -> findCachedBlock(queryKey),
-            () -> findCkbTransactionByHash(queryKey),
-            () -> findAddressByLockHash(queryKey),
-            () -> findUdtByTypeHash(queryKey),
-            () -> findTypeScriptByTypeId(queryKey),
-            () -> findTypeScriptByCodeHash(queryKey),
-            () -> findLockScriptByCodeHash(queryKey),
-            () -> findBitcoinTransactionByTxid(queryKey),
-            () -> findNftCollectionsBySn(queryKey)
+//            () -> findCachedBlock(queryKey),
+            () -> findCkbTransactionByHash(queryKey)
+//            () -> findAddressByLockHash(queryKey),
+//            () -> findUdtByTypeHash(queryKey),
+//            () -> findTypeScriptByTypeId(queryKey),
+//            () -> findTypeScriptByCodeHash(queryKey),
+//            () -> findLockScriptByCodeHash(queryKey),
+//            () -> findBitcoinTransactionByTxid(queryKey),
+//            () -> findNftCollectionsBySn(queryKey)
         );
 
         hexQueryMethods.forEach(method -> {
@@ -212,52 +218,52 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
       }
 
       // 查询比特币地址
-      try {
-        Object bitcoinAddress = findBitcoinAddress(queryKey);
-        if (bitcoinAddress != null) {
-          synchronized (dataList) {
-            dataList.add(bitcoinAddress);
-          }
-        }
-      } catch (Exception e) {
-        // 忽略异常
-      }
+//      try {
+//        Object bitcoinAddress = findBitcoinAddress(queryKey);
+//        if (bitcoinAddress != null) {
+//          synchronized (dataList) {
+//            dataList.add(bitcoinAddress);
+//          }
+//        }
+//      } catch (Exception e) {
+//        // 忽略异常
+//      }
 
       // 查询UDT
-      try {
-        List<Object> udts = findUdtsByNameOrSymbol(queryKey);
-        if (udts != null) {
-          synchronized (dataList) {
-            dataList.addAll(udts);
-          }
-        }
-      } catch (Exception e) {
-        // 忽略异常
-      }
+//      try {
+//        List<Object> udts = findUdtsByNameOrSymbol(queryKey);
+//        if (udts != null) {
+//          synchronized (dataList) {
+//            dataList.addAll(udts);
+//          }
+//        }
+//      } catch (Exception e) {
+//        // 忽略异常
+//      }
 
       // 查询NFT集合
-      try {
-        List<Object> collections = findNftCollectionsByName(queryKey);
-        if (collections != null) {
-          synchronized (dataList) {
-            dataList.addAll(collections);
-          }
-        }
-      } catch (Exception e) {
-        // 忽略异常
-      }
+//      try {
+//        List<Object> collections = findNftCollectionsByName(queryKey);
+//        if (collections != null) {
+//          synchronized (dataList) {
+//            dataList.addAll(collections);
+//          }
+//        }
+//      } catch (Exception e) {
+//        // 忽略异常
+//      }
 
       // 查询Fiber图节点
-      try {
-        List<Object> nodes = findFiberGraphNodes(queryKey);
-        if (nodes != null) {
-          synchronized (dataList) {
-            dataList.addAll(nodes);
-          }
-        }
-      } catch (Exception e) {
-        // 忽略异常
-      }
+//      try {
+//        List<Object> nodes = findFiberGraphNodes(queryKey);
+//        if (nodes != null) {
+//          synchronized (dataList) {
+//            dataList.addAll(nodes);
+//          }
+//        }
+//      } catch (Exception e) {
+//        // 忽略异常
+//      }
     });
 
     // 等待所有查询完成
@@ -282,41 +288,27 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
    * 根据哈希查询CKB交易
    */
   private TransactionResponse findCkbTransactionByHash(String queryKey) {
-    try {
-      return ckbTransactionCacheFacade.getTransactionByHash(queryKey);
-    } catch (ServerException e) {
-      return null;
-    }
+    return ckbTransactionCacheFacade.getTransactionByHash(queryKey);
   }
 
   /**
-   * 根据锁哈希查询地址 TODO
+   * 根据Script哈希查询地址
    */
   private AddressResponse findAddressByLockHash(String queryKey) {
-//    try {
-//      // 假设AddressService有findByLockHash方法
-//      return addressCacheFacade.getAddressByHash(queryKey);
-//    } catch (Exception e) {
-//      return null;
-//    }
-    return null; // 占位实现
+
+    return scriptCacheFacade.getAddressInfo(queryKey);
   }
 
   /**
-   * 查询缓存的地址 TODO
+   * 根据地址查询
    */
   private AddressResponse findCachedAddress(String queryKey) {
-//    try {
-//      // 假设AddressService有findByAddress方法
-//      return addressCacheFacade.getAddressByAddress(queryKey);
-//    } catch (Exception e) {
-//      return null;
-//    }
-    return null; // 占位实现
+
+    return scriptCacheFacade.getAddressInfo(queryKey);
   }
 
   /**
-   * 根据类型哈希查询UDT
+   * 根据类型哈希查询UDT TODO
    */
   private Object findUdtByTypeHash(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -329,31 +321,32 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据args查询类型脚本
+   * 根据args查询类型脚本 第一版不支持
    */
   private TypeScriptResponse findTypeScriptByTypeId(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    return null; // 占位实现
+
+    return null;
+
   }
 
   /**
-   * 根据代码哈希查询类型脚本
+   * 根据代码哈希查询类型脚本 第一版不支持
    */
   private TypeScriptResponse findTypeScriptByCodeHash(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    return null; // 占位实现
+
+    return scriptService.findTypeScriptByCodeHash(queryKey);
   }
 
   /**
-   * 根据代码哈希查询锁脚本
+   * 根据代码哈希查询Lock脚本 第一版不支持
    */
   private LockScriptResponse findLockScriptByCodeHash(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    return null; // 占位实现
+    return scriptService.findLockScriptByCodeHash(queryKey);
   }
 
   /**
-   * 根据TXID查询比特币交易
+   * 根据TXID查询比特币交易 TODO 第一版不支持
    */
   private Object findBitcoinTransactionByTxid(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -367,7 +360,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 查询比特币地址
+   * 查询比特币地址 TODO 第一版不支持
    */
   private Object findBitcoinAddress(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -375,7 +368,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据名称或符号查询UDT
+   * 根据名称或符号查询UDT TODO
    */
   private List<Object> findUdtsByNameOrSymbol(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -388,7 +381,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据SN查询NFT集合
+   * 根据SN查询NFT集合 TODO
    */
   private List<Object> findNftCollectionsBySn(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -401,7 +394,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据名称查询NFT集合
+   * 根据名称查询NFT集合 TODO
    */
   private List<Object> findNftCollectionsByName(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -414,7 +407,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 查询Fiber图节点
+   * 查询Fiber图节点 TODO
    */
   private List<Object> findFiberGraphNodes(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整

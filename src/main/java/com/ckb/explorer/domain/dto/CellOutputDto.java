@@ -22,7 +22,7 @@ public class CellOutputDto {
 
   private Short lockHashType;
 
-  private String status;
+  private Integer status;
 
   private String consumedTxHash;
 

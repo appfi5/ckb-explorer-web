@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.AddressResponse;
+import com.ckb.explorer.domain.resp.LockScriptResponse;
+import com.ckb.explorer.domain.resp.TypeScriptResponse;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
@@ -56,5 +58,24 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     // TODO 待地址的统计信息出来，查统计信息
 
     return LockScriptConvert.INSTANCE.toConvertAddressResponse(script);
+  }
+
+  @Override
+  public TypeScriptResponse findTypeScriptByTypeId(String args, String typeIdCodeHash) {
+//    LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
+//    queryWrapper.eq(Script::getCodeHash, typeIdCodeHash);
+//    queryWrapper.eq(Script::getArgs, args);
+//    var script = baseMapper.selectOne(queryWrapper);
+    return null;
+  }
+
+  @Override
+  public TypeScriptResponse findTypeScriptByCodeHash(String codeHash) {
+    return null;
+  }
+
+  @Override
+  public LockScriptResponse findLockScriptByCodeHash(String codeHash) {
+    return null;
   }
 }

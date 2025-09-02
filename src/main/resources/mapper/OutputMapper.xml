@@ -53,7 +53,7 @@
       -- b.proposal_reward,
       -- b.secondary_reward,
       -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
-      CASE WHEN o.is_spent = 1 THEN 'dead' ELSE 'live' END AS status,
+      o.is_spent                             AS status,
       -- 消耗的交易哈希
       CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
       -- 生成的交易哈希
@@ -89,7 +89,7 @@
       -- b.proposal_reward,
       -- b.secondary_reward,
       -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
-      CASE WHEN o.is_spent = 1 THEN 'dead' ELSE 'live' END AS status,
+      o.is_spent                            AS status,
       -- 消耗的交易哈希
       CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
       -- 生成的交易哈希
@@ -113,30 +113,28 @@
 
   <select id="getCellbaseDisplayOutputsByTransactionIds"
     resultType="com.ckb.explorer.domain.dto.CellOutputDto">
-    SELECT
-        o.id,
-        o.capacity,
-        o.occupied_capacity ,
-        -- 从script表获取地址信息
-        s.code_hash as lock_code_hash,
-        s.args as lock_args,
-        s.hash_type as lock_hash_type,
-        -- Cellbase奖励相关字段
-        -- t.block_number - 11 as target_block_number,
-        -- b.base_reward,
-        -- b.commit_reward,
-        -- b.proposal_reward,
-        -- b.secondary_reward,
-        -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
-        CASE WHEN o.is_spent = 1 THEN 'dead' ELSE 'live' END AS status,
-        -- 消耗的交易哈希
-        CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
-        -- 生成的交易哈希
-        '0x' || encode(o.tx_hash, 'hex') AS generated_tx_hash,
-        o.output_index AS cell_index,
-        o.tx_id as transaction_id
-    FROM
-    output o
+    SELECT o.id,
+    o.capacity,
+    o.occupied_capacity,
+    -- 从script表获取地址信息
+    s.code_hash                                                                 as lock_code_hash,
+    s.args                                                                      as lock_args,
+    s.hash_type                                                                 as lock_hash_type,
+    -- Cellbase奖励相关字段
+    -- t.block_number - 11 as target_block_number,
+    -- b.base_reward,
+    -- b.commit_reward,
+    -- b.proposal_reward,
+    -- b.secondary_reward,
+    -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+    o.is_spent                                                                  AS status,
+    -- 消耗的交易哈希
+    CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
+    -- 生成的交易哈希
+    '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+    o.output_index                                                              AS cell_index,
+    o.tx_id                                                                     as transaction_id
+    FROM output o
     left join script s ON o.lock_script_id = s.id
     -- JOIN
     -- block b ON t.block_id = b.id
@@ -180,7 +178,7 @@
                  -- b.proposal_reward,
                  -- b.secondary_reward,
                  -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
-                 CASE WHEN o.is_spent = 1 THEN 'dead' ELSE 'live' END                        AS status,
+                 o.is_spent                                                                  AS status,
                  -- 消耗的交易哈希
                  CASE
                    WHEN o.is_spent = 1
@@ -242,7 +240,7 @@
               WHEN ls.hash_type = 2 THEN 'data1'
               WHEN ls.hash_type = 4 THEN 'data2'
               ELSE null
-            END                          as lock_hash_type,
+            END                                  as lock_hash_type,
            'ckb'                                 as type
     from output o
            left join script ts on o.type_script_id = ts.id
