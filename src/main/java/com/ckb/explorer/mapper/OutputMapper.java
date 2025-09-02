@@ -25,4 +25,6 @@ public interface OutputMapper extends BaseMapper<Output> {
   List<CellOutputDto> getNormalTxDisplayOutputsByTransactionIds(@Param("transactionIds") List<Long> transactionIds, @Param("size")int size);
 
   Page<AddressLiveCellsResponse> getLiveCellsByLockScriptId(Page page, @Param("lockScriptId") Long lockScriptId, @Param("filteredIds") List<Long> filteredIds, @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
+
+  Long countAddressTransactions(@Param("lockScriptId") Long lockScriptId);
 }

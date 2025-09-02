@@ -4,7 +4,6 @@ import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import java.math.BigInteger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +22,7 @@ public class AddressResponse extends BaseResponse<Long> {
   private String addressHash;
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private BigInteger balance = new BigInteger("0");  // TODO 后面从统计表取
+  private Long balance = 0L;  // TODO 后面从统计表取
 
   private Long transactionsCount = 0L; // TODO 统计表取
 
@@ -31,13 +30,13 @@ public class AddressResponse extends BaseResponse<Long> {
    * DAO 押金
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private BigInteger daoDeposit = new BigInteger("0"); // TODO 现在没有
+  private Long daoDeposit = 0L; // TODO 现在没有
 
   /**
    * 利息
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private BigInteger interest; // TODO 现在没有
+  private Long interest = 0L; // TODO 现在没有
 
   private Long liveCellsCount=0L; // TODO 统计表取
 
@@ -53,10 +52,10 @@ public class AddressResponse extends BaseResponse<Long> {
    * DAO 补偿
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private BigInteger daoCompensation = new BigInteger("0");// TODO 也是dao相关的，现在没有
+  private Long daoCompensation = 0L;// TODO 也是dao相关的，现在没有
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private BigInteger balanceOccupied = new BigInteger("0"); // TODO 统计表取
+  private Long balanceOccupied = 0L; // TODO 统计表取
 
   private String bitcoinAddressHash; // TODO rgb++相关，现在没有
 

@@ -259,4 +259,18 @@
     </if>
   </select>
 
+  <select id="countAddressTransactions"
+    resultType="java.lang.Long">
+    SELECT COUNT(DISTINCT tx_hash) AS transaction_count
+    FROM (
+           SELECT tx_hash
+           FROM output
+           WHERE lock_script_id = #{lockScriptId} AND tx_hash IS NOT NULL
+           UNION ALL
+           SELECT consumed_tx_hash AS tx_hash
+           FROM output
+           WHERE lock_script_id = #{lockScriptId} AND consumed_tx_hash IS NOT NULL
+         ) AS combined;
+  </select>
+
 </mapper>
