@@ -10,6 +10,7 @@ import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.facade.IStatisticCacheFacade;
 import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapstruct.BlockchainInfoConvert;
+import com.ckb.explorer.service.StatisticInfoService;
 import com.ckb.explorer.service.StatisticService;
 import jakarta.annotation.Resource;
 import java.io.IOException;
@@ -52,6 +53,8 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
   // 防击穿锁等待时间
   private static final long LOCK_WAIT_TIME = 1;
   private static final long LOCK_LEASE_TIME = 8;
+  @Resource
+  private StatisticInfoService statisticInfoService;
 
   @Override
   public IndexStatisticResponse getIndexStatistic() {
@@ -221,10 +224,8 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
         throw new ServerException(I18nKey.BLOCK_CHAIN_INFO_NOT_FOUND_CODE, I18nKey.BLOCK_CHAIN_INFO_NOT_FOUND_MESSAGE);
       }
 
-    }else if("flush_cache_info".equals(fieldName)){
-      // response.setFlushCacheInfo(new FlushCacheInfoResponse()); TODO 待完善
-    }else if("address_balance_ranking".equals(fieldName)){
-      // response.setAddressBalanceRanking(new AddressBalanceRankingResponse()); TODO 待完善 需查address表
+    } else if("address_balance_ranking".equals(fieldName)){
+      response.setAddressBalanceRanking(statisticInfoService.getAddressBalanceRanking());
     }
     
     // 设置创建时间戳
