@@ -42,7 +42,7 @@ public class BlockResponse extends BaseResponse<Long> {
   @JsonSerialize(using = ToStringSerializer.class)
   private Long totalCellCapacity;
   private Long receivedTxFee;// TODO 待定先不要
-  private String epoch;
+  private Long epoch; // 对应表里的epochNumber
   private Long blockIndexInEpoch;
   private String nonce;
   private BigInteger difficulty;

@@ -401,6 +401,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     }
 
     Page<AddressTransactionPageResponse> transactionPage = new Page<>(page, pageSize);
+    // TODO 待确认，有可能改成从24小时历史交易里查
     Page<AddressTransactionPageResponse> result = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId());
 
     var transactions = result.getRecords();
