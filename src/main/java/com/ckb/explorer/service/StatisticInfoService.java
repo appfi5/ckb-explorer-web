@@ -17,12 +17,4 @@ public interface StatisticInfoService extends IService<StatisticInfo> {
   BlockchainInfo getBlockchainInfo();
 
   StatisticInfo getStatisticInfo();
-
-  double hashRate(Long tipBlockNumber);
-
-  double getAverageBlockTime(Long tipBlockNumber, Long timestamp);
-
-  Long getTransactionsLast24hrs(Long timestamp);
-
-  Long getTransactionsCountPerMinute(Long tipBlockNumber);
 }

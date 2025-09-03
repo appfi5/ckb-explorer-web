@@ -28,7 +28,7 @@ public class TransactionDto {
 
   private Long blockTimestamp;
 
-  private Integer cycles;
+  private Long cycles;
 
   private Long bytes;
 
