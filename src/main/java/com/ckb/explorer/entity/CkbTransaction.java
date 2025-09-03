@@ -34,7 +34,7 @@ public class CkbTransaction {
 
   private byte[] headerDeps;
 
-  private Integer cycles;
+  private Long cycles;
 
   private Long transactionFee;
 
