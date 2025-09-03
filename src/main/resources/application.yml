@@ -27,6 +27,7 @@ springdoc:
 # MyBatis-plus configuration
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
+  type-handlers-package: com.ckb.explorer.config.mybatis
   configuration:
     map-underscore-to-camel-case: true
 

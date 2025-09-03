@@ -2,7 +2,9 @@ package com.ckb.explorer.domain.resp;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.Data;
 
+@Data
 public class AddressBalanceRanking {
 
   private String address;

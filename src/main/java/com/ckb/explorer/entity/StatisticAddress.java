@@ -3,6 +3,7 @@ package com.ckb.explorer.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.math.BigInteger;
 import lombok.Data;
 
 /**
@@ -31,7 +32,7 @@ public class StatisticAddress {
   /**
    * 地址余额
    */
-  private Long balance;
+  private BigInteger balance;
 
   /**
    * 存活Cell数量
@@ -41,5 +42,5 @@ public class StatisticAddress {
   /**
    * 占用的余额
    */
-  private Long balanceOccupied;
+  private BigInteger balanceOccupied;
 }

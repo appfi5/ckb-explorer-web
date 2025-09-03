@@ -18,6 +18,8 @@ CREATE INDEX IF NOT EXISTS idx_statistic_address_lock_script_id ON statistic_add
 -- 为script_hash添加索引，支持根据脚本哈希查询
 CREATE INDEX IF NOT EXISTS idx_statistic_address_script_hash ON statistic_address (script_hash);
 
+CREATE INDEX IF NOT EXISTS idx_stat_addr_balance_id ON statistic_address (balance DESC, lock_script_id);
+
 
 CREATE TABLE IF NOT EXISTS statistic_infos
 (
