@@ -4,6 +4,7 @@ import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import java.math.BigInteger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class AddressResponse extends BaseResponse<Long> {
   private String addressHash;
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long balance = 0L;
+  private BigInteger balance = BigInteger.ZERO;
 
   private Long transactionsCount = 0L;
 
@@ -55,7 +56,7 @@ public class AddressResponse extends BaseResponse<Long> {
   private Long daoCompensation = 0L;// 一期不做DAO相关
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long balanceOccupied = 0L; //
+  private BigInteger balanceOccupied = BigInteger.ZERO; //
 
   private String bitcoinAddressHash; // 一期不做rgb++ 比特币相关
 
