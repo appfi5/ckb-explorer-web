@@ -2,14 +2,15 @@ package com.ckb.explorer.util;
 
 import com.ckb.explorer.enums.NetWorkEnums;
 import jakarta.annotation.PostConstruct;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.mapstruct.Named;
-import org.nervos.ckb.Network;
 import org.nervos.ckb.type.Script;
 import org.nervos.ckb.type.Script.HashType;
 import org.nervos.ckb.type.concrete.Byte32Vec;
 import org.nervos.ckb.type.concrete.BytesVec;
+import org.nervos.ckb.type.concrete.Uint256;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.beans.factory.annotation.Value;
@@ -169,5 +170,12 @@ public class TypeConversionUtil {
         args,
         HashType.unpack(hashType.byteValue()));
     return new Address(script, net).encode();
+  }
+
+  @Named("byteConvertToUInt256(Value)")
+  public static BigInteger byteConvertToUInt256(byte[] bytes)
+  {
+    var uint256 = Uint256.builder( bytes).build();
+    return new BigInteger(uint256.getItems());
   }
 }
