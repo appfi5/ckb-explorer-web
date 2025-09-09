@@ -2,15 +2,13 @@ package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.domain.resp.DailyStatisticResponse;
 import com.ckb.explorer.entity.DailyStatistics;
 import com.ckb.explorer.mapper.DailyStatisticsMapper;
 import com.ckb.explorer.mapstruct.DailyStatisticsConvert;
 import com.ckb.explorer.service.DailyStatisticsService;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
@@ -21,17 +19,9 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 @Service
 public class DailyStatisticsServiceImpl extends
     ServiceImpl<DailyStatisticsMapper, DailyStatistics> implements DailyStatisticsService {
-  
-  private static final Logger log = LoggerFactory.getLogger(DailyStatisticsServiceImpl.class);
-
-  public static final Set<String> SPECIAL_INDICATORS = Set.of(
-      "address_balance_distribution",
-      "block_time_distribution",
-      "epoch_time_distribution"
-  );
 
   @Override
-  public Object getByIndicator(String indicator) {
+  public List<DailyStatisticResponse> getByIndicator(String indicator) {
     LambdaQueryWrapper<DailyStatistics> queryWrapper = new LambdaQueryWrapper<>();
     
     // 创建一个List来收集所有需要查询的字段
@@ -81,15 +71,6 @@ public class DailyStatisticsServiceImpl extends
         case "activity_address_contract_distribution":
           fields.add(DailyStatistics::getActivityAddressContractDistribution);
           break;
-        case "address_balance_distribution":
-          fields.add(DailyStatistics::getAddressBalanceDistribution);
-          break;
-        case "block_time_distribution":
-          fields.add(DailyStatistics::getBlockTimeDistribution);
-          break;
-        case "epoch_time_distribution":
-          fields.add(DailyStatistics::getEpochTimeDistribution);
-          break;
         default:
           break;
       }
@@ -97,19 +78,12 @@ public class DailyStatisticsServiceImpl extends
     
     // 将所有字段设置到查询条件中
     queryWrapper.select(fields.toArray(new SFunction[0]));
-    
-    if (SPECIAL_INDICATORS.contains(indicator)) {
-      // 设置排序
-      queryWrapper.orderByDesc(DailyStatistics::getCreatedAtUnixtimestamp);
-      queryWrapper.last("limit 1");
-      var result = baseMapper.selectOne(queryWrapper);
-      return DailyStatisticsConvert.INSTANCE.toConvert(result);
-    } else {
-      // 设置排序
-      queryWrapper.orderByAsc(DailyStatistics::getCreatedAtUnixtimestamp);
-      var result = baseMapper.selectList(queryWrapper);
-      // 根据不同的指标名称实现不同的查询逻辑
-      return DailyStatisticsConvert.INSTANCE.toConvertList(result);
-    }
+
+    // 设置排序
+    queryWrapper.orderByAsc(DailyStatistics::getCreatedAtUnixtimestamp);
+    var result = baseMapper.selectList(queryWrapper);
+    // 根据不同的指标名称实现不同的查询逻辑
+    return DailyStatisticsConvert.INSTANCE.toConvertList(result);
+
   }
 }
