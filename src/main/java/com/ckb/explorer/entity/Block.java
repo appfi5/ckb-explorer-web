@@ -73,4 +73,6 @@ public class Block {
   private Long cycles;
 
   private Integer liveCellChanges;
+
+  private Long blockInterval;
 }

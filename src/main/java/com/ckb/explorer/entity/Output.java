@@ -42,4 +42,8 @@ public class Output {
   private Long blockNumber;
 
   private Long blockTimestamp;
+
+  private Long consumedBlockNumber;
+
+  private Long consumedTimestamp;
 }

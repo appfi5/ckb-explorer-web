@@ -50,3 +50,65 @@ CREATE TABLE IF NOT EXISTS statistic_infos
     -- 系统字段：更新时间
     updated_at                    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+
+-- DailyStatistics 表创建SQL语句 - PostgreSQL版本
+CREATE TABLE IF NOT EXISTS daily_statistics
+(
+    id                                     BIGSERIAL PRIMARY KEY,
+
+    -- 基础统计字段
+    transactions_count                     BIGINT       NULL     DEFAULT NULL,
+    addresses_count                        BIGINT       NULL     DEFAULT NULL,
+    total_dao_deposit                      VARCHAR(255) NULL     DEFAULT NULL,
+    block_timestamp                        BIGINT       NULL     DEFAULT NULL,
+    created_at_unixtimestamp               BIGINT       NULL     DEFAULT NULL,
+    created_at                             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- DAO相关字段
+    dao_depositors_count                   VARCHAR(255) NULL     DEFAULT NULL,
+    unclaimed_compensation                 VARCHAR(255) NULL     DEFAULT NULL,
+    claimed_compensation                   VARCHAR(255) NULL     DEFAULT NULL,
+    average_deposit_time                   VARCHAR(255) NULL     DEFAULT NULL,
+    estimated_apc                          VARCHAR(255) NULL     DEFAULT NULL,
+    mining_reward                          VARCHAR(255) NULL     DEFAULT NULL,
+    deposit_compensation                   VARCHAR(255) NULL     DEFAULT NULL,
+    treasury_amount                        VARCHAR(255) NULL     DEFAULT NULL,
+
+    -- 区块和细胞相关字段
+    live_cells_count                       VARCHAR(255) NULL     DEFAULT NULL,
+    dead_cells_count                       VARCHAR(255) NULL     DEFAULT NULL,
+    avg_hash_rate                          VARCHAR(255) NULL     DEFAULT NULL,
+    avg_difficulty                         VARCHAR(255) NULL     DEFAULT NULL,
+    uncle_rate                             VARCHAR(255) NULL     DEFAULT NULL,
+    total_depositors_count                 VARCHAR(255) NULL     DEFAULT NULL,
+
+    -- 交易费用和容量相关
+    total_tx_fee                           NUMERIC(40)  NULL     DEFAULT NULL,
+    occupied_capacity                      NUMERIC(40)  NULL     DEFAULT NULL,
+    daily_dao_deposit                      NUMERIC(40)  NULL     DEFAULT NULL,
+    daily_dao_depositors_count             INTEGER      NULL     DEFAULT NULL,
+    daily_dao_withdraw                     NUMERIC(40)  NULL     DEFAULT NULL,
+    circulation_ratio                      NUMERIC(40)  NULL     DEFAULT NULL,
+    total_supply                           NUMERIC(40)  NULL     DEFAULT NULL,
+    circulating_supply                     NUMERIC(40)  NULL     DEFAULT NULL,
+    locked_capacity                        NUMERIC(40)  NULL     DEFAULT NULL,
+
+    -- 分布和统计字段(JSON格式)
+    address_balance_distribution           JSONB        NULL     DEFAULT NULL,
+    block_time_distribution                JSONB        NULL     DEFAULT NULL,
+    epoch_time_distribution                JSONB        NULL     DEFAULT NULL,
+    epoch_length_distribution              JSONB        NULL     DEFAULT NULL,
+    average_block_time                     JSONB        NULL     DEFAULT NULL,
+    nodes_distribution                     JSONB        NULL     DEFAULT NULL,
+    ckb_hodl_wave                          JSONB        NULL     DEFAULT NULL,
+    activity_address_contract_distribution JSONB        NULL     DEFAULT NULL,
+
+    -- 其他统计字段
+    nodes_count                            INTEGER      NULL     DEFAULT NULL,
+    holder_count                           BIGINT       NULL     DEFAULT NULL,
+    knowledge_size                         BIGINT       NULL     DEFAULT NULL
+    );
+
+-- 创建索引以提高查询性能
+CREATE INDEX IF NOT EXISTS idx_daily_statistics_created_at_unixtimestamp ON daily_statistics (created_at_unixtimestamp);
