@@ -19,4 +19,8 @@ public class Script {
   private byte[] args;
 
   private byte[] scriptHash;
+
+  private Long timestamp;
+
+  private int isTypescript;
 }

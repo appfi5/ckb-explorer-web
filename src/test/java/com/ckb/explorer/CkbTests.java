@@ -1,6 +1,7 @@
 package com.ckb.explorer;
 
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.nervos.ckb.Network;
@@ -8,6 +9,7 @@ import org.nervos.ckb.type.Script;
 import org.nervos.ckb.type.Script.HashType;
 import org.nervos.ckb.type.concrete.Byte32Vec;
 import org.nervos.ckb.type.concrete.BytesVec;
+import org.nervos.ckb.type.concrete.Uint256;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 
@@ -17,7 +19,9 @@ public class CkbTests {
 
     //testWitness();
     //byteToHeaderDeps();
-    System.out.println(scriptHAshToAddress());
+    //System.out.println(scriptHAshToAddress());
+
+    System.out.println(ConvertToUInt256(Numeric.hexStringToByteArray("0x00000000000000000000000000000000000000000000000000000000029BFB50")));
   }
   private static void testWitness(){
     var witnesses = "4d000000080000004100000055f49d7979ba246aa2f05a6e9afd25a23dc39ed9085a0b1e33b6b3bb80d34dbd4031a04ea389d6d8ff5604828889aa06a827e930a7e89411b80f6c3e1404951f00";
@@ -57,5 +61,11 @@ public class CkbTests {
         HashType.unpack(script.getHashType()));
     var addrResult = new Address(scriptNew, Network.TESTNET);
     return addrResult.encode();
+  }
+
+  public static BigInteger ConvertToUInt256(byte[] bytes)
+  {
+    var uint256 = Uint256.builder( bytes).build();
+    return new BigInteger(uint256.getItems());
   }
 }
