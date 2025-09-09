@@ -1,8 +1,10 @@
 package com.ckb.explorer.facade.impl;
 
+import com.ckb.explorer.domain.resp.DailyStatisticResponse;
 import com.ckb.explorer.facade.DailyStatisticsCacheFacade;
 import com.ckb.explorer.service.DailyStatisticsService;
 import jakarta.annotation.Resource;
+import java.util.List;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -36,15 +38,15 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
   private static final long LOCK_LEASE_TIME = 8;
 
   @Override
-  public Object getDailyStatisticsByIndicator(String indicator) {
+  public List<DailyStatisticResponse> getDailyStatisticsByIndicator(String indicator) {
     // 创建缓存键
     String cacheKey = String.format("%s%s:indicator:%s", DAILY_STATISTICS_CACHE_PREFIX,
         CACHE_VERSION, indicator);
 
-    RBucket<Object> bucket = redissonClient.getBucket(cacheKey);
+    RBucket<List<DailyStatisticResponse>> bucket = redissonClient.getBucket(cacheKey);
 
     // 1. 先尝试读缓存
-    Object cached = bucket.get();
+    List<DailyStatisticResponse> cached = bucket.get();
     if (cached != null) {
       return cached;
     }
@@ -69,7 +71,7 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
           }
 
           // 真正加载数据
-          Object result = loadFromDatabase(indicator);
+          List<DailyStatisticResponse> result = loadFromDatabase(indicator);
 
           // 写入缓存
           bucket.set(result, Duration.ofMillis(TTL_MILLIS));
@@ -82,7 +84,7 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
         }
       } else {
         // 获取锁失败，降级：直接查库
-        Object result = loadFromDatabase(indicator);
+        List<DailyStatisticResponse> result = loadFromDatabase(indicator);
         bucket.set(result, Duration.ofMillis(TTL_MILLIS));
         return result;
       }
@@ -93,7 +95,7 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
     }
   }
 
-  private Object loadFromDatabase(String indicator) {
+  private List<DailyStatisticResponse> loadFromDatabase(String indicator) {
     // 根据指标名称从数据库加载数据
     return dailyStatisticsService.getByIndicator(indicator);
   }

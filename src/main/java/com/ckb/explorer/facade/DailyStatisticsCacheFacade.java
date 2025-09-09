@@ -1,5 +1,6 @@
 package com.ckb.explorer.facade;
 
+import com.ckb.explorer.domain.resp.DailyStatisticResponse;
 import java.util.List;
 
 /**
@@ -12,5 +13,5 @@ public interface DailyStatisticsCacheFacade {
      * @param indicator 指标名称
      * @return 统计数据列表
      */
-    Object getDailyStatisticsByIndicator(String indicator);
+    List<DailyStatisticResponse> getDailyStatisticsByIndicator(String indicator);
 }
