@@ -104,4 +104,13 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
   public LockScriptResponse findLockScriptByCodeHash(String codeHash) {
     return null;
   }
+
+
+  @Override
+  public Script findByScriptHash(String scriptHash){
+    LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.eq(Script::getScriptHash, Numeric.hexStringToByteArray(scriptHash));
+    Script script = baseMapper.selectOne(queryWrapper);
+    return script;
+  }
 }
