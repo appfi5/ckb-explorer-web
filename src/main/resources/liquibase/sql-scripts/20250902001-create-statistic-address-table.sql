@@ -136,4 +136,25 @@ refresh materialized view average_block_time_by_hour;
 
 refresh materialized view rolling_avg_block_time;
 
+CREATE TABLE epoch_statistics
+(
+    -- 主键ID，自增
+    id                   BIGSERIAL PRIMARY KEY,
+    -- Epoch编号（区块链中的纪元编号，唯一且非空）
+    epoch_number         BIGINT NOT NULL UNIQUE,
+    difficulty           character varying,
+    uncle_rate           character varying,
+    hash_rate            character varying,
+    epoch_time           BIGINT,
+    epoch_length         INTEGER,
+    largest_tx_hash      bytea,
+    largest_tx_bytes     BIGINT,
+    max_tx_cycles        BIGINT,
+    max_block_cycles     BIGINT,
+    largest_block_number BIGINT,
+    largest_block_size   BIGINT,
+    created_at           TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
 
+CREATE INDEX idx_epoch_statistics_number ON epoch_statistics (epoch_number);
