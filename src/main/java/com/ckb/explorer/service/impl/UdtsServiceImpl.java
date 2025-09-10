@@ -8,9 +8,11 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.req.UdtsPageReq;
 import com.ckb.explorer.domain.resp.ScriptResponse;
 import com.ckb.explorer.domain.resp.UdtDetailResponse;
+import com.ckb.explorer.domain.resp.XudtsPageResponse;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.entity.Udts;
 import com.ckb.explorer.enums.HashType;
+import com.ckb.explorer.enums.UdtType;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapper.UdtHolderAllocationsMapper;
 import com.ckb.explorer.mapstruct.UdtsConvert;
@@ -25,8 +27,12 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.ckb.explorer.constants.TokenType.TOKEN_TYPE_SUDT;
+import static com.ckb.explorer.constants.TokenType.TOKEN_TYPE_XUDT;
 
 /**
 * @author dell
@@ -46,6 +52,9 @@ public class UdtsServiceImpl extends ServiceImpl<UdtsMapper, Udts>
     @Resource
     UdtHolderAllocationsMapper udtHolderAllocationsMapper;
 
+
+
+
     @Override
     public Page<Udts> getUdtsPageBy(UdtsPageReq req){
 
@@ -60,6 +69,7 @@ public class UdtsServiceImpl extends ServiceImpl<UdtsMapper, Udts>
 
 
     private QueryWrapper<Udts> condition(UdtsPageReq req){
+        List<Integer> udtTypes = Arrays.asList(UdtType.XUDT.getCode(),UdtType.XUDT_COMPATIBLE.getCode(),UdtType.SUDT.getCode(),UdtType.SSRI.getCode());
 
         QueryWrapper<Udts> udtsQueryWrapper = new QueryWrapper<>();
         log.info("haslenth {}",StringUtils.hasLength(req.getTags()));
@@ -73,8 +83,13 @@ public class UdtsServiceImpl extends ServiceImpl<UdtsMapper, Udts>
                         .collect(Collectors.joining(","))+"]::varchar[] ");
             }
         }
+        if(TOKEN_TYPE_XUDT.equals(req.getTokenType())){
+            udtTypes = Arrays.asList(UdtType.XUDT.getCode(),UdtType.XUDT_COMPATIBLE.getCode());
+        }else if(TOKEN_TYPE_SUDT.equals(req.getTokenType())){
+            udtTypes = Arrays.asList(UdtType.SUDT.getCode());
+        }
 
-        udtsQueryWrapper.in(!CollectionUtils.isEmpty(req.getUdtType()),"udt_type",req.getUdtType());
+        udtsQueryWrapper.in("udt_type",udtTypes);
 
         if(req.getPublished()!=null){
             udtsQueryWrapper.eq("published",req.getPublished());

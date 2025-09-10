@@ -26,5 +26,6 @@ public class XudtsPageResponse extends BaseResponse<Long> {
   private String symbol;
   private Long h24CkbTransactionsCount;
   private Long addressesCount;
+  private String tokenType;
 
 }
