@@ -21,4 +21,6 @@ public class UdtsPageReq extends BasePageReq {
     private List<Integer> udtType;
 
     private  Boolean published;
+
+    private String tokenType;
 }
