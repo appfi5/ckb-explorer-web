@@ -12,7 +12,6 @@ import org.mapstruct.factory.Mappers;
 public interface DailyStatisticsConvert {
   DailyStatisticsConvert INSTANCE = Mappers.getMapper(DailyStatisticsConvert.class);
 
-  @Mapping(target = "addressBalanceDistribution", expression = "java(dailyStatistics.getAddressBalanceDistribution() == null ? null : dailyStatistics.getAddressBalanceDistribution().getData())")
   DailyStatisticResponse toConvert(DailyStatistics dailyStatistics);
 
   List<DailyStatisticResponse> toConvertList(List<DailyStatistics> dailyStatisticsList);

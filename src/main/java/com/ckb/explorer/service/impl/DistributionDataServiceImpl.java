@@ -54,7 +54,7 @@ public class DistributionDataServiceImpl implements DistributionDataService {
           result.setBlockTimeDistribution(dailyStatistics.getBlockTimeDistribution());
           break;
         case "epoch_time_distribution":
-          result.setEpochTimeDistribution(dailyStatistics.getEpochTimeDistribution());
+          result.setEpochTimeDistribution(dailyStatistics.getEpochTimeDistribution().getData());
           break;
 //              case "epoch_length_distribution":
 //              result.setEpochLengthDistribution(dailyStatistics.getEpochLengthDistribution());

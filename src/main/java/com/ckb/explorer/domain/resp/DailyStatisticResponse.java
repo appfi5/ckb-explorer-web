@@ -38,16 +38,6 @@ public class DailyStatisticResponse extends BaseResponse<Long> {
 
   private BigInteger totalTxFee;// 1
 
-  private List<AddressBalanceDistributionDto> addressBalanceDistribution; // 1
-
-  private LinkedHashMap<String, String> blockTimeDistribution; // 1
-
-  private Object epochTimeDistribution; // 1
-
-  private Object epochLengthDistribution;
-
-  private Object averageBlockTime; // 在别的表查
-
   private Map<String, String> ckbHodlWave; // 1
 
   private Long holderCount; // 1
