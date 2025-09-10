@@ -35,4 +35,6 @@ public interface ScriptService extends IService<Script> {
    * @return
    */
   LockScriptResponse findLockScriptByCodeHash(String codeHash);
+
+    Script findByScriptHash(String scriptHash);
 }

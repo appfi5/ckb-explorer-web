@@ -1,6 +1,7 @@
 package com.ckb.explorer.util;
 
 import com.ckb.explorer.enums.NetWorkEnums;
+import com.ckb.explorer.enums.UdtType;
 import jakarta.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -15,6 +16,9 @@ import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import static com.ckb.explorer.constants.TokenType.TOKEN_TYPE_SUDT;
+import static com.ckb.explorer.constants.TokenType.TOKEN_TYPE_XUDT;
 
 @Component
 public class TypeConversionUtil {
@@ -177,5 +181,16 @@ public class TypeConversionUtil {
   {
     var uint256 = Uint256.builder( bytes).build();
     return new BigInteger(uint256.getItems());
+  }
+
+
+  @Named("udtTypeConvertToTokenType(Value)")
+  public static String udtTypeConvertToTokenType(Integer udtType){
+     if(UdtType.XUDT.getCode()==udtType||UdtType.XUDT_COMPATIBLE.getCode()==udtType){
+         return TOKEN_TYPE_XUDT;
+     }else if (UdtType.SUDT.getCode()==udtType){
+       return TOKEN_TYPE_SUDT;
+     }
+     return "";
   }
 }
