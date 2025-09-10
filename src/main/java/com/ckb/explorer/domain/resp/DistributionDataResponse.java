@@ -2,6 +2,7 @@ package com.ckb.explorer.domain.resp;
 
 import com.ckb.explorer.domain.dto.AddressBalanceDistributionDto;
 import com.ckb.explorer.domain.resp.base.BaseResponse;
+import com.ckb.explorer.entity.RollingAvgBlockTime;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +23,7 @@ public class DistributionDataResponse extends BaseResponse<Long> {
 
   private Object epochTimeDistribution;
 
-  private Object averageBlockTime;
+  private List<RollingAvgBlockTime> averageBlockTime;
 
   private Object minerAddressDistribution;
 }
