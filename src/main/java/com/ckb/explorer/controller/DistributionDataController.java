@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.redisson.api.RedissonClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,7 @@ public class DistributionDataController {
   @Resource
   private IDistributionDataCacheFacade distributionDataCacheFacade;
 
+
   /**
    * 获取分布数据
    *
@@ -49,8 +51,13 @@ public class DistributionDataController {
   public ResponseInfo<DistributionDataResponse> show(@PathVariable("indicator") String indicator) {
     // 验证查询参数
     validateQueryParams(indicator.trim());
-
-    DistributionDataResponse data = distributionDataCacheFacade.getDistributionDataByIndicator(indicator.trim());
+    DistributionDataResponse data;
+    // 如果指标是平均区块时间，使用特定的方法
+    if ("average_block_time".equals(indicator.trim())) {
+      data = distributionDataCacheFacade.getAverageBlockTime();
+    } else{
+      data = distributionDataCacheFacade.getDistributionDataByIndicator(indicator.trim());
+    }
 
     // 构建响应
     ResponseInfo response = ResponseInfo.SUCCESS(data);

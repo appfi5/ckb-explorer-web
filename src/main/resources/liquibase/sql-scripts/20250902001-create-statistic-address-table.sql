@@ -112,3 +112,28 @@ CREATE TABLE IF NOT EXISTS daily_statistics
 
 -- 创建索引以提高查询性能
 CREATE INDEX IF NOT EXISTS idx_daily_statistics_created_at_unixtimestamp ON daily_statistics (created_at_unixtimestamp);
+
+CREATE MATERIALIZED VIEW public.average_block_time_by_hour AS
+SELECT (block."timestamp" / 3600000) AS hour,
+    avg(block.block_interval) AS avg_block_time_per_hour
+FROM public.block where block_number > 1
+GROUP BY (block."timestamp" / 3600000)
+WITH NO DATA;
+
+CREATE UNIQUE INDEX index_average_block_time_by_hour_on_hour ON public.average_block_time_by_hour USING btree (hour);
+
+
+CREATE MATERIALIZED VIEW rolling_avg_block_time AS
+SELECT (average_block_time_by_hour.hour * 3600) AS "timestamp",
+       avg(average_block_time_by_hour.avg_block_time_per_hour) OVER (ORDER BY average_block_time_by_hour.hour ROWS BETWEEN 24 PRECEDING AND CURRENT ROW) AS avg_block_time_daily,
+    avg(average_block_time_by_hour.avg_block_time_per_hour) OVER (ORDER BY average_block_time_by_hour.hour ROWS BETWEEN (7 * 24) PRECEDING AND CURRENT ROW) AS avg_block_time_weekly
+FROM public.average_block_time_by_hour
+    WITH NO DATA;
+
+CREATE UNIQUE INDEX index_rolling_avg_block_time_on_timestamp ON public.rolling_avg_block_time USING btree ("timestamp");
+
+refresh materialized view average_block_time_by_hour;
+
+refresh materialized view rolling_avg_block_time;
+
+
