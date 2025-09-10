@@ -13,4 +13,6 @@ public interface IDistributionDataCacheFacade {
      * @return 分布数据
      */
     DistributionDataResponse getDistributionDataByIndicator(String indicator);
+
+    DistributionDataResponse getAverageBlockTime();
 }

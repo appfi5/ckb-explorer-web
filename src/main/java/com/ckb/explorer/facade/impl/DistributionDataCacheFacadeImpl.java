@@ -1,8 +1,13 @@
 package com.ckb.explorer.facade.impl;
 
 import com.ckb.explorer.domain.resp.DistributionDataResponse;
+import com.ckb.explorer.entity.RollingAvgBlockTime;
 import com.ckb.explorer.facade.IDistributionDataCacheFacade;
 import com.ckb.explorer.service.DistributionDataService;
+import com.ckb.explorer.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -31,7 +36,7 @@ public class DistributionDataCacheFacadeImpl implements IDistributionDataCacheFa
 
     private static final String CACHE_PREFIX = "distribution_data:";
     private static final String CACHE_VERSION = "v1";
-
+    private static final String CACHE_KEY = "average_block_time";
     // 缓存 TTL: 1小时
     private static final long TTL_HOURS = 1;
     private static final long TTL_MILLIS = TimeUnit.HOURS.toMillis(TTL_HOURS);
@@ -96,12 +101,19 @@ public class DistributionDataCacheFacadeImpl implements IDistributionDataCacheFa
         }
     }
 
-    private DistributionDataResponse loadFromDatabase(String indicator) {
-        // 如果指标是平均区块时间，使用特定的方法
-        if ("average_block_time".equals(indicator)) {
-            return distributionDataService.getAverageBlockTime();
-        }
-        // 其他指标使用通用方法
+  @Override
+  public DistributionDataResponse getAverageBlockTime() {
+
+    RBucket<String> bucket = redissonClient.getBucket(CACHE_KEY);
+    if(bucket==null || StringUtils.isEmpty(bucket.get())){
+      DistributionDataResponse response = new DistributionDataResponse();
+      response.setAverageBlockTime(new ArrayList<>());
+      return response;
+    }
+    return JsonUtil.parseObject(bucket.get(), DistributionDataResponse.class);
+  }
+
+  private DistributionDataResponse loadFromDatabase(String indicator) {
         return distributionDataService.getDistributionDataByIndicator(indicator);
     }
 }
