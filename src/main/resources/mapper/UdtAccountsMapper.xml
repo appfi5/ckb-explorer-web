@@ -18,6 +18,7 @@
     </sql>
 
   <resultMap id="accountUdtBalance" type="com.ckb.explorer.domain.dto.AccountUdtBalanceDto">
+    <result property="fullName" column="full_name" />
     <result property="symbol" column="symbol" />
     <result property="decimal" column="decimal" />
     <result property="amount" column="amount" />
@@ -33,7 +34,8 @@
   </resultMap>
 
     <select id="getUdtBalanceByLockScriptId" resultMap="accountUdtBalance">
-      select u.symbol,
+      select u.full_name,
+             u.symbol,
              u.decimal,
              ua.amount,
              u.icon_file                           as udt_icon_file,

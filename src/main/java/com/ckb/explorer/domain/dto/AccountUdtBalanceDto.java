@@ -6,6 +6,8 @@ import lombok.Data;
 
 @Data
 public class AccountUdtBalanceDto {
+  private String fullName;
+
   private String symbol;
 
   private Integer decimal;
