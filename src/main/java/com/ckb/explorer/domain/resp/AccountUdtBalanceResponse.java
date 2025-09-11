@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AccountUdtBalanceResponse {
+  private String fullName;
+
   private String symbol;
 
   private Integer decimal;
