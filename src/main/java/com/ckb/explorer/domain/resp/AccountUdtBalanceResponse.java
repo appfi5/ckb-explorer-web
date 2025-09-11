@@ -23,7 +23,7 @@ public class AccountUdtBalanceResponse {
 
   private String udtIconFile;
 
-  private String udtType;
+  private Integer udtType;
 
   private ScriptResponse udtTypeScript;
 
