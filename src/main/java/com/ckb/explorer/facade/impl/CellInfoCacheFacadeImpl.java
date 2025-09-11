@@ -47,7 +47,7 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
   @Override
   public CellInfoResponse findByOutputId(String id) {
     // 创建缓存键
-    String cacheKey = String.format("%s%s:id:%d", Cell_INFO_CACHE_PREFIX, CACHE_VERSION, id);
+    String cacheKey = String.format("%s%s:id:%s", Cell_INFO_CACHE_PREFIX, CACHE_VERSION, id);
 
     RBucket<CellInfoResponse> bucket = redissonClient.getBucket(cacheKey);
 
