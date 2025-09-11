@@ -18,5 +18,7 @@ public class AccountUdtBalanceDto {
 
   private ScriptResponse udtTypeScript;
 
+  private String typeScriptHash;
+
   private Long totalAmount;
 }
