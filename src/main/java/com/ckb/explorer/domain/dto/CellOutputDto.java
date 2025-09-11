@@ -39,7 +39,7 @@ public class CellOutputDto {
   /**
    * 单元格类型
    */
-  private String cellType;
+  private Integer cellType;
 
   /**
    * 标签列表

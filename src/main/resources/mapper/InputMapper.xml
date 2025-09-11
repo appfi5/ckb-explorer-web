@@ -15,7 +15,9 @@
            s.hash_type                           as lock_hash_type,
            '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
            o.output_index                        as cell_index,
-           'normal'                              as cell_type,
+           CASE
+             WHEN oe.cell_type is null THEN 0
+             ELSE oe.cell_type END               as cell_type,
            '0x' || encode(i.since, 'hex')        as since_raw,
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
@@ -24,6 +26,7 @@
            left join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
+           left join output_extend oe ON o.id = oe.output_id
     where consumed_tx_id = #{transactionId}
     order by id asc
   </select>
@@ -54,7 +57,9 @@
            s.hash_type                           as lock_hash_type,
            '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
            o.output_index                        as cell_index,
-           'normal'                              as cell_type,
+           CASE
+            WHEN oe.cell_type is null THEN 0
+                ELSE oe.cell_type END            as cell_type,
            '0x' || encode(i.since, 'hex')        as since_raw,
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
@@ -65,6 +70,7 @@
            left join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
+           left join output_extend oe ON o.id = oe.output_id
     where
     <if test="null != transactionIds">
       i.consumed_tx_id in
