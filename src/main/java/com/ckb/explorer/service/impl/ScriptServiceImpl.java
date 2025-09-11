@@ -79,7 +79,6 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     }
 
     // 查询地址的交易总数
-    // 注意：这里使用1作为page，1作为pageSize只是为了获取总数，不实际加载数据
     var transactionCount = outputService.countAddressTransactions(script.getId());
     addressResponse.setTransactionsCount(transactionCount);
     

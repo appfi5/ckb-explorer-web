@@ -45,8 +45,6 @@ public class AddressResponse extends BaseResponse<Long> {
 
   private Long averageDepositTime; // 一期不做DAO相关
 
-  private List<UdtAccountResponse> udtAccounts;// TODO 现在还没有
-
   private LockScriptResponse lockScript;
 
   /**
