@@ -20,6 +20,7 @@ public interface CellOutputConvert {
 
   @Mapping(target = "addressHash", ignore = true)
   @Mapping(target = "typeScript", ignore = true)
+  @Mapping(target = "cellType",expression = "java(cellOutput.getCellType() == null? null :com.ckb.explorer.enums.CellType.getNameByValue(cellOutput.getCellType().intValue()))")
   CellOutputResponse toConvert(CellOutputDto cellOutput);
 
   List<CellOutputResponse> toConvertList(List<CellOutputDto> list);

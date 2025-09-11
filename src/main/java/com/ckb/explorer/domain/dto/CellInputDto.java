@@ -37,7 +37,7 @@ public class CellInputDto {
   /**
    * 单元格类型
    */
-  private String cellType;
+  private Integer cellType;
 
   /**
    * since信息
