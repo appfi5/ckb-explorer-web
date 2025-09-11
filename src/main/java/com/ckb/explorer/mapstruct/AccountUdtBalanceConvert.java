@@ -15,7 +15,6 @@ import org.mapstruct.factory.Mappers;
 public interface AccountUdtBalanceConvert {
   AccountUdtBalanceConvert INSTANCE = Mappers.getMapper(AccountUdtBalanceConvert.class);
 
-  @Mapping(target = "udtType", expression = "java(accountUdtBalanceDto.getUdtType() == null? null :com.ckb.explorer.enums.UdtType.getNameByValue(accountUdtBalanceDto.getUdtType().intValue()))")
   AccountUdtBalanceResponse toConvert(AccountUdtBalanceDto accountUdtBalanceDto);
 
   List<AccountUdtBalanceResponse> toConvert(List<AccountUdtBalanceDto> accountUdtBalanceDtos);
