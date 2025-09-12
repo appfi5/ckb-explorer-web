@@ -282,14 +282,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 创建分页对象
     Page<CkbTransaction> transactionPage = new Page<>(page, pageSize);
-    LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
-    queryWrapper.eq(CkbTransaction::getBlockHash, Numeric.hexStringToByteArray(blockHash));
 
-    if (txHash != null && !txHash.isEmpty()) {
-      queryWrapper.eq(CkbTransaction::getTxHash, Numeric.hexStringToByteArray(txHash));
-    }
-
-    // TODO 如果指定地址
+    Long lockScriptId = null;
+    // 如果指定地址
     if (addressHash != null && !addressHash.isEmpty()) {
       // 查找地址
       // 计算地址的哈希
@@ -300,24 +295,11 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       if(script == null){
         throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
       }
-      // TODO 查询该地址相关的交易ID相关的统计表
-//      List<Long> transactionIds = accountBookMapper.selectList(
-//              new LambdaQueryWrapper<AccountBook>().eq(AccountBook::getAddressId, address.getId()))
-//          .stream()
-//          .map(AccountBook::getTransactionId)
-//          .filter(Objects::nonNull)
-//          .distinct()
-//          .toList();
-      List<Long> transactionIds = new ArrayList<>();
-      if (!transactionIds.isEmpty()) {
-        queryWrapper.in(CkbTransaction::getId, transactionIds);
-      }
+      lockScriptId = script.getId();
     }
 
-    queryWrapper.orderByAsc(CkbTransaction::getTxIndex);
-
     // 执行分页查询
-    Page<CkbTransaction> resultPage = ckbTransactionMapper.selectPage(transactionPage, queryWrapper);
+    Page<CkbTransaction> resultPage = ckbTransactionMapper.selectPageByBlockHash(transactionPage, Numeric.hexStringToByteArray(blockHash), txHash != null && !txHash.isEmpty() ?Numeric.hexStringToByteArray(txHash): null, lockScriptId);
 
     var result = BlockTransactionConvert.INSTANCE.toConvertPage(resultPage);
 
@@ -378,6 +360,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     return result;
   }
 
+
   @Override
   public Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort,
       int page, int pageSize) {
@@ -401,7 +384,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     }
 
     Page<AddressTransactionPageResponse> transactionPage = new Page<>(page, pageSize);
-    // TODO 待确认，有可能改成从24小时历史交易里查
+
     Page<AddressTransactionPageResponse> result = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId());
 
     var transactions = result.getRecords();

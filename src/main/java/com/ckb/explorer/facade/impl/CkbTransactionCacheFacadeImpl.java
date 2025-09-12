@@ -197,8 +197,8 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
   @Override
   public Page<CellInputResponse> getDisplayInputs(String txHash,Integer page, Integer size) {
     // 创建缓存键
-    String cacheKey = String.format("%s%s:page:%d:size:%d",
-        TRANSACTIONS_INPUT_CACHE_PREFIX, CACHE_VERSION, page, size);
+    String cacheKey = String.format("%s%s:txHash:%s:page:%d:size:%d",
+        TRANSACTIONS_INPUT_CACHE_PREFIX, CACHE_VERSION, txHash,page, size);
 
     RBucket<Page<CellInputResponse>> bucket = redissonClient.getBucket(cacheKey);
 
@@ -259,8 +259,8 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
   @Override
   public Page<CellOutputResponse> getDisplayOutputs(String txHash,Integer page, Integer size) {
     // 创建缓存键
-    String cacheKey = String.format("%s%s:page:%d:size:%d",
-        TRANSACTIONS_OUTPUT_CACHE_PREFIX, CACHE_VERSION, page, size);
+    String cacheKey = String.format("%s%s:txHash:%s:page:%d:size:%d",
+        TRANSACTIONS_OUTPUT_CACHE_PREFIX, CACHE_VERSION, txHash, page, size);
 
     RBucket<Page<CellOutputResponse>> bucket = redissonClient.getBucket(cacheKey);
 
