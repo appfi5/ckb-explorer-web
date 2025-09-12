@@ -4,6 +4,33 @@
 
 <mapper namespace="com.ckb.explorer.mapper.CkbTransactionMapper">
 
+  <resultMap id="BaseResultMap" type="com.ckb.explorer.entity.CkbTransaction">
+    <id property="id" column="id" jdbcType="BIGINT"/>
+    <result property="txHash" column="tx_hash" jdbcType="OTHER"/>
+    <result property="version" column="version" jdbcType="OTHER"/>
+    <result property="inputCount" column="input_count" jdbcType="INTEGER"/>
+    <result property="outputCount" column="output_count" jdbcType="INTEGER"/>
+    <result property="witnesses" column="witnesses" jdbcType="OTHER"/>
+    <result property="blockId" column="block_id" jdbcType="BIGINT"/>
+    <result property="blockNumber" column="block_number" jdbcType="BIGINT"/>
+    <result property="blockHash" column="block_hash" jdbcType="OTHER"/>
+    <result property="blockTimestamp" column="block_timestamp" jdbcType="BIGINT"/>
+    <result property="txIndex" column="tx_index" jdbcType="INTEGER"/>
+    <result property="headerDeps" column="header_deps" jdbcType="OTHER"/>
+    <result property="cycles" column="cycles" jdbcType="INTEGER"/>
+    <result property="transactionFee" column="transaction_fee" jdbcType="BIGINT"/>
+    <result property="bytes" column="bytes" jdbcType="BIGINT"/>
+    <result property="capacityInvolved" column="capacity_involved" jdbcType="BIGINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id,tx_hash,version,
+        input_count,output_count,witnesses,
+        block_id,block_number,block_hash, block_timestamp,
+        tx_index,header_deps,cycles,
+        transaction_fee,bytes, capacity_involved
+  </sql>
+
   <!-- 定义 resultMap 支持一对多映射 -->
   <resultMap id="transactionDtoResultMap" type="com.ckb.explorer.domain.dto.TransactionDto">
     <id property="id" column="id"/>
@@ -95,6 +122,31 @@
     )
     order by ${orderByStr} ${ascOrDesc}, tx_index desc
 
+  </select>
+  <select id="selectPageByBlockHash"
+    resultType="com.ckb.explorer.entity.CkbTransaction">
+    SELECT
+        <include refid="Base_Column_List"></include>
+        FROM ckb_transaction ct
+    WHERE ct.block_hash = #{blockHash}
+    <if test="txHash != null">
+      AND ct.tx_hash = #{txHash}
+    </if>
+    <if test="lockScriptId != null">
+      AND (EXISTS(
+        SELECT 1
+        FROM output o1
+        WHERE o1.tx_hash = ct.tx_hash
+          AND o1.lock_script_id = #{lockScriptId}
+      )
+      OR EXISTS(
+        SELECT 1
+        FROM output o2
+        WHERE o2.consumed_tx_hash = ct.tx_hash
+        AND o2.lock_script_id = #{lockScriptId}
+      ))
+    </if>
+    order by tx_index asc
   </select>
 
 </mapper>

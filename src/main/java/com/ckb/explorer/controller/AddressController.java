@@ -50,7 +50,7 @@ public class AddressController {
   @GetMapping("/{address}/udts")
   @Operation(summary = "获取地址UDT的余额")
   public ResponseInfo<List<AccountUdtBalanceResponse>> udts(@PathVariable @NotNull String address) {
-    validAddress( address);
+    validAddress(address);
     List<AccountUdtBalanceResponse> udtBalanceResponses = udtAccountsCacheFacade.getUdtBalance(address);
     return ResponseInfo.SUCCESS(udtBalanceResponses);
   }
@@ -59,8 +59,8 @@ public class AddressController {
   private boolean validAddress(String address) {
     // 检查是否为有效的十六进制字符串
     if (!queryKeyUtils.isValidHex(address) && !queryKeyUtils.isValidAddress(address)) {
-      throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE,
-          i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+      throw new ServerException(I18nKey.ADDRESS_HASH_INVALID_CODE,
+          i18n.getMessage(I18nKey.ADDRESS_HASH_INVALID_MESSAGE));
     }
     return true;
   }
