@@ -339,7 +339,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
         if(cellbaseOutput != null && cellbaseOutput.size() > 0){
           cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        } else{
+          cellbaseOutput = new ArrayList<>();
         }
+
 
         transaction.setDisplayOutputs(cellbaseOutput);
         // 组装普通交易
@@ -433,6 +436,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
         if(cellbaseOutput != null && cellbaseOutput.size() > 0){
           cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        }else{
+          cellbaseOutput = new ArrayList<>();
         }
 
         transaction.setDisplayOutputs(cellbaseOutput);
