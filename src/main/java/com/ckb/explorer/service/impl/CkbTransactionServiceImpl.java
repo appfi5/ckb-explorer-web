@@ -15,6 +15,7 @@ import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.entity.Script;
+import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
 import com.ckb.explorer.mapper.InputMapper;
 import com.ckb.explorer.mapper.OutputMapper;
@@ -28,14 +29,11 @@ import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,15 +52,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Resource
   private CkbTransactionMapper ckbTransactionMapper;
 
-  // 有效的排序字段
-  private static final Set<String> VALID_SORT_FIELDS = new HashSet<String>() {
-    {
-      add("id");
-      add("blockNumber");
-      add("capacityInvolved");
-    }
-  };
-  @Autowired
+  @Resource
+  private Address24hTransactionMapper address24hTransactionMapper;
+
+  @Resource
   private ScriptMapper scriptMapper;
 
   @Override
@@ -379,15 +372,24 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     var addressScriptHash = Address.decode(address).getScript().computeHash();
     queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
     var script = scriptMapper.selectOne(queryScriptWrapper);
-    if(script == null){
-      throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+    if (script == null) {
+      throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE,
+          i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
 
-    Page<AddressTransactionPageResponse> transactionPage = new Page<>(page, pageSize);
+    // 从24小时表里获取翻页的交易id
+    Page<Long> transactionIdsPage = new Page<>(page, pageSize);
+    Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
+        transactionIdsPage, script.getId(), orderBy, ascOrDesc);
 
-    Page<AddressTransactionPageResponse> result = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId());
+    List<Long> transactionIds = transactionIdPage.getRecords();
+    if (transactionIds.isEmpty()){
+      return Page.of(page, pageSize, 0);
+    }
 
-    var transactions = result.getRecords();
+    // 根据交易id查询交易详情
+    List<AddressTransactionPageResponse> transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
+
     // 分开处理cellbase和普通交易
     var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
     var normalTransactionsIds = transactions.stream().filter(transaction-> !transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
@@ -440,6 +442,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       }
     });
 
+    var result = new Page<AddressTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), transactionIdPage.getTotal());
+    result.setRecords(transactions);
     return result;
   }
 
