@@ -148,5 +148,24 @@
     </if>
     order by tx_index asc
   </select>
+  <select id="selectByTransactionIds"
+    resultType="com.ckb.explorer.domain.resp.AddressTransactionPageResponse">
+    SELECT id,
+           tx_index = 0                   as is_cellbase,
+           '0x' || encode(tx_hash, 'hex') as transaction_hash,
+           block_number,
+           block_timestamp,
+           input_count                    as display_inputs_count,
+           output_count                   as display_outputs_count
+    FROM ckb_transaction
+    WHERE
+    <if test="null != transactionIds">
+      id in
+      <foreach  item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    order by ${orderByStr} ${ascOrDesc}, tx_index desc
 
+  </select>
 </mapper>
