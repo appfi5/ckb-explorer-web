@@ -1,19 +1,12 @@
 package com.ckb.explorer.facade.impl;
 
 import com.ckb.explorer.domain.resp.CellInfoResponse;
-import com.ckb.explorer.entity.Output;
-import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.facade.ICellInfoCacheFacade;
-import com.ckb.explorer.mapstruct.LockScriptConvert;
-import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.service.OutputService;
-import com.ckb.explorer.service.ScriptService;
-import com.ckb.explorer.util.TypeConversionUtil;
 import jakarta.annotation.Resource;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.nervos.ckb.utils.Numeric;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -30,9 +23,6 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
 
   @Resource
   private OutputService outputService;
-
-  @Resource
-  private ScriptService scriptService;
 
   private static final String Cell_INFO_CACHE_PREFIX = "cellInfo:";
   private static final String CACHE_VERSION = "v1";
@@ -103,41 +93,6 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
 
   private CellInfoResponse loadFromDatabase(String id){
 
-    CellInfoResponse response = new CellInfoResponse();
-    // 根据ID查询CellOutput
-    Output cellOutput = outputService.getById(Long.parseLong(id));
-    if (cellOutput == null) {
-      return null;
-    }
-    response.setCapacity(cellOutput.getCapacity());
-    response.setOccupiedCapacity(cellOutput.getOccupiedCapacity());
-    response.setStatus(cellOutput.getIsSpent());
-    response.setCellIndex(cellOutput.getOutputIndex());
-    response.setGeneratedTxHash(cellOutput.getTxHash() != null? Numeric.toHexString(cellOutput.getTxHash()) : null);
-    response.setConsumedTxHash(cellOutput.getConsumedTxHash() != null && cellOutput.getConsumedTxHash().length > 0? Numeric.toHexString(cellOutput.getConsumedTxHash()) : null);
-
-    response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
-
-    // 获取lock_script
-    Script lockScript = scriptService.getById(cellOutput.getLockScriptId());
-    if(lockScript == null){
-      response.setLockScript(null);
-    }else{
-      response.setLockScript(LockScriptConvert.INSTANCE.toConvert(lockScript));
-      response.setAddress(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),
-          lockScript.getArgs(),
-          lockScript.getHashType()));
-    }
-
-
-    // 获取type_script
-    Script typeScript = scriptService.getById(cellOutput.getTypeScriptId());
-    if (typeScript == null) {
-      response.setTypeScript(null);
-    }else{
-      response.setTypeScript(TypeScriptConvert.INSTANCE.toConvert(typeScript));
-    }
-
-    return response;
+    return outputService.getCellInfo(Long.parseLong(id));
   }
 }
