@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.LiveCellsResponse;
 import com.ckb.explorer.entity.LiveCells;
+import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -16,6 +17,8 @@ public interface LiveCellsMapper extends BaseMapper<LiveCells> {
 
 
   Page<LiveCellsResponse> getLiveCellsByLockScriptIdWithTypeScriptId(Page page,  @Param("lockScriptId") Long lockScriptId,@Param("typeScriptId")  Long typeScriptId);
+
+  Page<LiveCellsResponse> getOthersLiveCellsByLockScriptId(Page page,  @Param("lockScriptId") Long lockScriptId,@Param("udtAndNormalCellType") Set<Integer> udtAndNormalCellType);
 }
 
 
