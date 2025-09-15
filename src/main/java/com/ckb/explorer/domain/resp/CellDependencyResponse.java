@@ -19,5 +19,5 @@ public class CellDependencyResponse {
 
   private String depType;
 
-  private Script script;
+  private Script script; // TODO 后面根据outPoint的信息查
 }

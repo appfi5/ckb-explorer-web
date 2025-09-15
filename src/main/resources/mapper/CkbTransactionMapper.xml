@@ -54,9 +54,12 @@
         <result property="txHash" column="outpoint_tx_hash"/>
         <result property="index" column="outpoint_index"/>
       </association>
-      <!--<association property="outPoint" javaType="com.ckb.explorer.domain.resp.Script">
+      <!--<association property="script" javaType="com.ckb.explorer.domain.resp.Script">
+        <result property="name" column="name"/>
         <result property="codeHash" column="code_hash"/>
         <result property="hashType" column="hash_type"/>
+        <result property="isLockScript" column="is_lock_script"/>
+        <result property="isTypeScript" column="is_type_script"/>
       </association>-->
     </collection>
   </resultMap>
@@ -81,15 +84,6 @@
              WHEN acd.dep_type = 0 THEN 'code'
              WHEN acd.dep_type = 1 THEN 'dep_group'
              END           AS dep_type
-           /*,
-           '0x' || encode(s.code_hash, 'hex') as code_hash,
-           CASE
-             WHEN s.hash_type = 0 THEN 'data'
-             WHEN s.hash_type = 1 THEN 'type'
-             WHEN s.hash_type = 2 THEN 'data1'
-             WHEN s.hash_type = 4 THEN 'data2'
-             ELSE null
-             END           AS hash_type*/
     FROM ckb_transaction ct
            LEFT JOIN tx_association_cell_dep acd on ct.id = acd.tx_id
     WHERE ct.tx_hash = #{txHash}
