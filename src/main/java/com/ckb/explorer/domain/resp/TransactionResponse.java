@@ -22,7 +22,7 @@ public class TransactionResponse extends BaseResponse<Long> {
 
   private Boolean isCellbase;
 
-  private String txStatus = TxStatus.committed.getStatus(); // TODO 第一版没有其他状态的交易
+  private String txStatus = TxStatus.committed.getStatus(); //  第一版没有其他状态的交易
 
   private List<String> witnesses;
 
@@ -30,7 +30,7 @@ public class TransactionResponse extends BaseResponse<Long> {
 
   private List<String> headerDeps;
 
-  private String detailedMessage;// TODO if object.tx_status.to_s == "rejected" object.detailed_message
+  private String detailedMessage;//  if object.tx_status.to_s == "rejected" object.detailed_message
 
   private String transactionHash;
 
