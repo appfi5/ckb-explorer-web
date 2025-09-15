@@ -2,6 +2,7 @@ package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.domain.resp.CellInfoResponse;
 import com.ckb.explorer.entity.Output;
 import com.ckb.explorer.entity.OutputExtend;
@@ -26,6 +27,9 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
   @Resource
   private ScriptMapper scriptMapper;
+
+  @Resource
+  private ScriptConfig scriptConfig;
 
   @Override
   public Long countAddressTransactions(Long scriptId) {
@@ -59,18 +63,23 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
     if(lockScript == null){
       response.setLockScript(null);
     }else{
-      response.setLockScript(LockScriptConvert.INSTANCE.toConvert(lockScript));
+      var lockScriptResponse = LockScriptConvert.INSTANCE.toConvert(lockScript);
+      var script = scriptConfig.getLockScriptByCodeHash(lockScriptResponse.getCodeHash());
+      lockScriptResponse.setVerifiedScriptName(script == null ? null : script.getName());
+      response.setLockScript(lockScriptResponse);
       response.setAddress(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),
           lockScript.getArgs(),
           lockScript.getHashType()));
     }
 
-
     // 获取type_script
     if(cellOutput.getTypeScriptId() != null){
       Script typeScript = scriptMapper.selectById(cellOutput.getTypeScriptId());
       if (typeScript != null) {
-        response.setTypeScript(TypeScriptConvert.INSTANCE.toConvert(typeScript));
+        var typeScriptResponse = TypeScriptConvert.INSTANCE.toConvert(typeScript);
+        var script = scriptConfig.getTypeScriptByCodeHash(typeScriptResponse.getCodeHash(), typeScriptResponse.getArgs());
+        typeScriptResponse.setVerifiedScriptName(script == null ? null : script.getName());
+        response.setTypeScript(typeScriptResponse);
       }
     }
 

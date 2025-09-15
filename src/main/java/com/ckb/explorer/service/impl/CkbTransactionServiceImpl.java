@@ -3,7 +3,6 @@ package com.ckb.explorer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
@@ -59,9 +58,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Resource
   private ScriptMapper scriptMapper;
 
-  @Resource
-  private ScriptConfig scriptConfig;
-
   @Override
   public Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
 
@@ -88,16 +84,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     }
 
     TransactionResponse result = CkbTransactionConvert.INSTANCE.toConvertTransactionResponse(transaction);
-
-    // 根据outpoint tx_hash跟index查找对应的CellDeps
-    var cellDeps = result.getCellDeps();
-    if(cellDeps != null){
-      cellDeps.stream().map(cellDependencyResponse -> {
-        var outPoint = cellDependencyResponse.getOutPoint();
-        cellDependencyResponse.setScript(scriptConfig.getScriptByOutPoint(outPoint.getTxHash(), outPoint.getIndex()));
-        return cellDependencyResponse;
-      }).collect(Collectors.toList());
-    }
 
     return result;
   }

@@ -1,10 +1,10 @@
 package com.ckb.explorer.config;
 
 
-import com.ckb.explorer.domain.resp.Script;
 import com.ckb.explorer.domain.resp.ScriptResponse;
 import lombok.Data;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -55,41 +55,24 @@ public class ScriptConfig {
 
     private String hashType;
 
+    private String args;
+
     private List<CellDep> cellDeps;
 
   }
 
   public LockScript getLockScriptByCodeHash(String codeHash) {
     return lockScripts.stream()
-        .filter(lockScript -> Objects.equals(lockScript.getCodeHash(), codeHash)).findFirst().get();
+        .filter(lockScript -> Objects.equals(lockScript.getCodeHash(), codeHash)).findFirst().orElse(null);
   }
 
-  public List<TypeScript> getTypeScriptByCodeHash(String codeHash) {
-    return typeScripts.stream()
+  public TypeScript getTypeScriptByCodeHash(String codeHash, String args) {
+    List<TypeScript> typeScriptList=  typeScripts.stream()
         .filter(typeScript -> Objects.equals(typeScript.getCodeHash(), codeHash)).toList();
+    if(typeScriptList.size() > 1 && !StringUtils.isEmpty(args)){
+      return typeScriptList.stream().filter(typeScript -> Objects.equals(typeScript.getArgs(), args)).findFirst().orElse(null);
+    }
+    return typeScriptList.size() > 0 ? typeScriptList.get(0) : null;
   }
 
-  public Script getScriptByOutPoint(String txHash, Integer index) {
-    var lockOpt = lockScripts.stream()
-        .filter(typeScript -> typeScript.getCellDeps().stream().anyMatch(
-            cellDep -> Objects.equals(cellDep.getTxHash(), txHash) &&
-                cellDep.getIndex().intValue() == index.intValue())).findFirst();
-    if (lockOpt.isPresent()) {
-      var lock = lockOpt.orElse(null);
-      return lock == null ? null
-          : new Script(lock.getName(), lock.getCodeHash(), lock.getHashType(), true, false);
-    }
-
-    var typeOpt = typeScripts.stream()
-        .filter(typeScript -> typeScript.getCellDeps().stream().anyMatch(
-            cellDep -> Objects.equals(cellDep.getTxHash(), txHash) &&
-                cellDep.getIndex().intValue() == index.intValue())).findFirst();
-    if (typeOpt.isPresent()) {
-      var type = typeOpt.orElse(null);
-      return type == null ? null
-          : new Script(type.getName(), type.getCodeHash(), type.getHashType(), false, true);
-    }
-
-    return null;
-  }
 }
