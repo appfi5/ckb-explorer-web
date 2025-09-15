@@ -67,11 +67,6 @@ public class CellOutputResponse extends BaseResponse<Long> {
   private Integer cellIndex;
   
   /**
-   * 标签列表
-   */
-  private List<String> tags;// TODO
-  
-  /**
    * 类型脚本
    */
   private ScriptResponse typeScript;

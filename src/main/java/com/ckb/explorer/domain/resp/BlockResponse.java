@@ -24,7 +24,7 @@ public class BlockResponse extends BaseResponse<Long> {
   private List<String> uncleBlockHashes;
   private String minerHash;
   private String transactionsRoot;
-  private String rewardStatus;// TODO 状态待定，需定时任务刷
+  private String rewardStatus;// 状态待定，目前根据块高计算
   private String receivedTxFeeStatus;
   private String minerMessage;
 
@@ -35,13 +35,13 @@ public class BlockResponse extends BaseResponse<Long> {
   private Integer proposalsCount;
   private Integer unclesCount;
   private Long timestamp;
-  private Long reward;// TODO 待定先不要
+  private Long reward;// 待定先不要
   private Long cellConsumed;
   private Long totalTransactionFee;
   private Integer transactionsCount; // from object.ckb_transactions_count.to_s
   @JsonSerialize(using = ToStringSerializer.class)
   private Long totalCellCapacity;
-  private Long receivedTxFee;// TODO 待定先不要
+  private Long receivedTxFee;// 待定先不要
   private Long epoch; // 对应表里的epochNumber
   private Long blockIndexInEpoch;
   private String nonce;
