@@ -66,11 +66,6 @@ public class CellInputResponse extends BaseResponse<Long> {
   private SinceResponse since;
   
   /**
-   * 标签列表
-   */
-  private List<String> tags; // TODO 对应output的tag，目前没有
-  
-  /**
    * 类型脚本
    */
   private ScriptResponse typeScript;

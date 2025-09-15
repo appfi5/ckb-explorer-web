@@ -22,7 +22,9 @@ public interface AccountUdtBalanceConvert {
   @AfterMapping
   default void afterMapping(@MappingTarget AccountUdtBalanceResponse accountUdtBalanceResponse, AccountUdtBalanceDto accountUdtBalanceDto)
   {
-    var hashType = Short.valueOf(accountUdtBalanceDto.getUdtTypeScript().getHashType());
-    accountUdtBalanceResponse.getUdtTypeScript().setHashType(HashType.getValueByCode(hashType));
+    if(accountUdtBalanceDto.getUdtTypeScript() != null){
+      var hashType = Short.valueOf(accountUdtBalanceDto.getUdtTypeScript().getHashType());
+      accountUdtBalanceResponse.getUdtTypeScript().setHashType(HashType.getValueByCode(hashType));
+    }
   }
 }
