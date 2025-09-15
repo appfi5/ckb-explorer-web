@@ -55,4 +55,5 @@ public class CellInfoResponse {
 
   private Integer cellType;
 
+  private ExtraInfoResponse extraInfo; // 根据不同资产 cellType 显示不同的信息
 }
