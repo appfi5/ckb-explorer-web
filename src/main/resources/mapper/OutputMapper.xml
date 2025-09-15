@@ -32,7 +32,7 @@
       o.output_index AS cell_index,
       CASE
         WHEN oe.cell_type is null THEN 0
-        ELSE oe.cell_type END               as cell_type,
+        ELSE oe.cell_type END               as cell_type
     FROM
       output o
         left join script s ON o.lock_script_id = s.id
