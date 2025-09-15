@@ -16,6 +16,7 @@ import com.ckb.explorer.service.LiveCellsService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.utils.Numeric;
@@ -69,7 +70,7 @@ public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells
     }
 
     Long typeScriptId = null;
-    if(!"ckb".equals(typeHash)){
+    if(!"ckb".equals(typeHash) && !"others".equals(typeHash)){
       LambdaQueryWrapper<Script> typeQueryWrapper = new LambdaQueryWrapper<>();
       typeQueryWrapper.eq(Script::getScriptHash, Numeric.hexStringToByteArray(typeHash));
       var typeScript = scriptMapper.selectOne(typeQueryWrapper);
@@ -81,8 +82,14 @@ public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells
     }
 
     Page<LiveCellsResponse> pageResult = new Page<>(page, pageSize);
+    Page<LiveCellsResponse> result;
+    if("others".equals(typeHash)){
+      Set<Integer> udtAndNormalCellType = Set.of(CellType.NORMAL.getValue(), CellType.UDT.getValue(),CellType.XUDT.getValue(),CellType.XUDT_COMPATIBLE.getValue());
+      result = baseMapper.getOthersLiveCellsByLockScriptId(pageResult,script.getId(), udtAndNormalCellType);
+    } else {
+      result = baseMapper.getLiveCellsByLockScriptIdWithTypeScriptId(pageResult, script.getId(), typeScriptId);
+    }
 
-    var result = baseMapper.getLiveCellsByLockScriptIdWithTypeScriptId(pageResult, script.getId(), typeScriptId);
     result.getRecords().stream().map(liveCells -> {
       var extraInfo = liveCells.getExtraInfo();
       if(extraInfo == null){

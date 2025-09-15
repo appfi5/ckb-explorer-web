@@ -72,4 +72,25 @@
       and lc.type_script_id is null
     </if>
   </select>
+  <select id="getOthersLiveCellsByLockScriptId" resultMap="liveCellsMap">
+    select lc.cell_type,
+    '0x' || encode(lc.tx_hash, 'hex'),
+    -- lc.cell_index,
+    '0x' || encode(u.type_script_hash, 'hex'),
+    '0x' || encode(lc.data, 'hex'),
+    lc.block_number,
+    lc.capacity,
+    lc.occupied_capacity,
+    lc.block_timestamp
+    from live_cells lc
+           left join udts u on lc.type_script_id = u.type_script_id
+    where lc.lock_script_id = #{lockScriptId}
+    <if test="null != udtAndNormalCellType">
+      AND lc.cell_type not in
+      <foreach item="item" index="index" collection="udtAndNormalCellType" open="(" separator=","
+        close=" )">
+        #{item}
+      </foreach>
+    </if>
+  </select>
 </mapper>
