@@ -54,13 +54,6 @@
         <result property="txHash" column="outpoint_tx_hash"/>
         <result property="index" column="outpoint_index"/>
       </association>
-      <!--<association property="script" javaType="com.ckb.explorer.domain.resp.Script">
-        <result property="name" column="name"/>
-        <result property="codeHash" column="code_hash"/>
-        <result property="hashType" column="hash_type"/>
-        <result property="isLockScript" column="is_lock_script"/>
-        <result property="isTypeScript" column="is_type_script"/>
-      </association>-->
     </collection>
   </resultMap>
 
