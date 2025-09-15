@@ -2,6 +2,7 @@ package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.AddressResponse;
@@ -37,6 +38,9 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
   @Resource
   private OutputService outputService;
 
+  @Resource
+  private ScriptConfig scriptConfig;
+
   @Override
   public AddressResponse getAddressInfo(String address) {
     LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
@@ -66,6 +70,10 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
 
     // 获取地址响应对象
     AddressResponse addressResponse = LockScriptConvert.INSTANCE.toConvertAddressResponse(script);
+    var lockScript = addressResponse.getLockScript();
+    // 获取codeHash对应的名称
+    var scriptWithName = scriptConfig.getLockScriptByCodeHash(lockScript.getCodeHash());
+    lockScript.setVerifiedScriptName(scriptWithName == null ? null : scriptWithName.getName());
 
     // 查询地址统计信息
     var addressStatistics = statisticAddressService.getOne(

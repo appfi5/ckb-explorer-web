@@ -98,44 +98,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       // 普通交易
     } else{
       return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize);
-
-      // TODO 如果是资产的交易，则需要拼接额外的信息
-//    if previous_cell_output.nervos_dao_withdrawing?
-//        display_input.merge!(attributes_for_dao_input(previous_cell_output))
-//    end
-//    if previous_cell_output.nervos_dao_deposit?
-//        display_input.merge!(attributes_for_dao_input(cell_outputs[cell_input.index], false))
-//    end
-//    if previous_cell_output.udt?
-//        display_input.merge!(attributes_for_udt_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.xudt?
-//        display_input.merge!(attributes_for_xudt_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.ssri?
-//        display_input.merge!(attributes_for_ssri_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.xudt_compatible?
-//        display_input.merge!(attributes_for_xudt_compatible_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(m_nft_issuer m_nft_class m_nft_token))
-//    display_input.merge!(attributes_for_m_nft_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(nrc_721_token nrc_721_factory))
-//    display_input.merge!(attributes_for_nrc_721_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(omiga_inscription_info omiga_inscription))
-//    display_input.merge!(attributes_for_omiga_inscription_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.bitcoin_vout
-//    display_input.merge!(attributes_for_rgb_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(spore_cluster spore_cell did_cell))
-//    display_input.merge!(attributes_for_dob_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.lock_script.code_hash == Settings.fiber_funding_code_hash
-//    display_input.merge!(attributes_for_fiber_cell(previous_cell_output))
-//    end
     }
   }
 
@@ -186,7 +148,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
       Page<CellOutputDto> resultPage = outputMapper.getCellbaseDisplayOutputs(pageResult, ckbTransaction.getId());
 
-      // TODO 标签判断：如果区块时间戳等于创世区块时间戳则包含标签，否则为空列表
       Page<CellOutputResponse> result = CellOutputConvert.INSTANCE.toConvertPage(resultPage);
       List<CellOutputResponse> records = result.getRecords();
       records.stream().forEach(record-> record.setTargetBlockNumber(ckbTransaction.getBlockNumber()< 11 ?0:ckbTransaction.getBlockNumber()-11));
@@ -196,30 +157,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       Page<CellOutputDto> resultPage = outputMapper.getNormalTxDisplayOutputs(pageResult, ckbTransaction.getId());
 
       return CellOutputConvert.INSTANCE.toConvertPage(resultPage);
-      //    display_output.merge!(attributes_for_udt_cell(output)) if output.udt?
-//        display_output.merge!(attributes_for_xudt_cell(output)) if output.xudt?
-//        display_output.merge!(attributes_for_ssri_cell(output)) if output.ssri?
-//        display_output.merge!(attributes_for_xudt_compatible_cell(output)) if output.xudt_compatible?
-//        display_output.merge!(attributes_for_cota_registry_cell(output)) if output.cota_registry?
-//        display_output.merge!(attributes_for_cota_regular_cell(output)) if output.cota_regular?
-//    if output.cell_type.in?(%w(m_nft_issuer m_nft_class m_nft_token))
-//    display_output.merge!(attributes_for_m_nft_cell(output))
-//    end
-//    if output.cell_type.in?(%w(nrc_721_token nrc_721_factory))
-//    display_output.merge!(attributes_for_nrc_721_cell(output))
-//    end
-//    if output.cell_type.in?(%w(omiga_inscription_info omiga_inscription))
-//    display_output.merge!(attributes_for_omiga_inscription_cell(output))
-//    end
-//    if output.bitcoin_vout
-//    display_output.merge!(attributes_for_rgb_cell(output))
-//    end
-//    if output.cell_type.in?(%w(spore_cluster spore_cell did_cell))
-//    display_output.merge!(attributes_for_dob_cell(output))
-//    end
-//    if output.lock_script.code_hash == Settings.fiber_funding_code_hash
-//    display_output.merge!(attributes_for_fiber_cell(output))
-//    end
     }
   }
 

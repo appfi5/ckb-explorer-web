@@ -308,7 +308,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据类型哈希查询UDT TODO
+   * 根据类型哈希查询UDT
    */
   private Object findUdtByTypeHash(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -341,7 +341,6 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
    * 根据代码哈希查询Lock脚本 第一版不支持
    */
   private LockScriptResponse findLockScriptByCodeHash(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
     return scriptService.findLockScriptByCodeHash(queryKey);
   }
 
@@ -368,7 +367,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据名称或符号查询UDT TODO
+   * 根据名称或符号查询UDT
    */
   private List<Object> findUdtsByNameOrSymbol(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -381,7 +380,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据SN查询NFT集合 TODO
+   * 根据SN查询NFT集合
    */
   private List<Object> findNftCollectionsBySn(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -394,7 +393,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据名称查询NFT集合 TODO
+   * 根据名称查询NFT集合
    */
   private List<Object> findNftCollectionsByName(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -407,7 +406,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 查询Fiber图节点 TODO
+   * 查询Fiber图节点
    */
   private List<Object> findFiberGraphNodes(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
