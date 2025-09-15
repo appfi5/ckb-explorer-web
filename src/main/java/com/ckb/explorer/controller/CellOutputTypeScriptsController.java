@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * CellOutputLockScriptsController控制器，用于处理CellOutput的lock_script相关请求
  */
+@Deprecated
 @RestController
 @RequestMapping("/api/v1/cell_output_type_scripts")
 public class CellOutputTypeScriptsController {

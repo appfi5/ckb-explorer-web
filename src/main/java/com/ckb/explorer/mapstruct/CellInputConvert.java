@@ -20,7 +20,6 @@ public interface CellInputConvert {
   @Mapping(target = "addressHash", ignore = true)
   @Mapping(expression = "java(new com.ckb.explorer.domain.resp.SinceResponse(cellInput.getSinceRaw(),null))", target = "since")
   @Mapping(target = "typeScript", ignore = true)
-  @Mapping(target = "cellType",expression = "java(cellInput.getCellType() == null? null :com.ckb.explorer.enums.CellType.getNameByValue(cellInput.getCellType().intValue()))")
   CellInputResponse toConvert(CellInputDto cellInput);
 
   List<CellInputResponse> toConvertList(List<CellInputDto> list);

@@ -4,17 +4,22 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.domain.resp.CellInfoResponse;
+import com.ckb.explorer.domain.resp.ExtraInfoResponse;
 import com.ckb.explorer.entity.Output;
 import com.ckb.explorer.entity.OutputExtend;
 import com.ckb.explorer.entity.Script;
+import com.ckb.explorer.enums.CellType;
 import com.ckb.explorer.mapper.OutputExtendMapper;
 import com.ckb.explorer.mapper.OutputMapper;
 import com.ckb.explorer.mapper.ScriptMapper;
+import com.ckb.explorer.mapper.UdtsMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
 import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.service.OutputService;
+import com.ckb.explorer.util.CkbUtil;
 import com.ckb.explorer.util.TypeConversionUtil;
 import jakarta.annotation.Resource;
+import java.util.Set;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +35,9 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
   @Resource
   private ScriptConfig scriptConfig;
+
+  @Resource
+  private UdtsMapper udtsMapper;
 
   @Override
   public Long countAddressTransactions(Long scriptId) {
@@ -83,7 +91,26 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
       }
     }
 
-    // TODO 扩展信息
+    // 扩展信息
+    var cellType = response.getCellType();
+    if(cellType != null && cellOutput.getTypeScriptId() != null){
+      var extraInfoResponse = new ExtraInfoResponse();
+
+      Set<Integer> udtCellType = Set.of(CellType.UDT.getValue(),CellType.XUDT.getValue(),CellType.XUDT_COMPATIBLE.getValue(),CellType.SSRI.getValue());
+      if(udtCellType.contains(cellType.intValue())){
+        var udtInfo = udtsMapper.getByTypeScriptId(cellOutput.getTypeScriptId());
+        if(udtInfo != null){
+          extraInfoResponse.setSymbol(udtInfo.getSymbol());
+          extraInfoResponse.setDecimal(udtInfo.getDecimal().toString());
+          extraInfoResponse.setTypeHash(Numeric.toHexString(udtInfo.getTypeScriptHash()));
+          extraInfoResponse.setAmount(CkbUtil.dataToUdtAmount(cellOutput.getData()));
+          extraInfoResponse.setPublished(udtInfo.getPublished());
+        }
+      }
+
+      response.setExtraInfo(extraInfoResponse);
+    }
+
 
     return response;
   }

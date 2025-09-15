@@ -10,7 +10,7 @@ public class TransactionDto {
 
   private Boolean isCellbase;
 
-  private String txStatus; // TODO 待确认
+  private String txStatus; // 当前没有过程状态
 
   private byte[] witnesses;
 
