@@ -49,23 +49,24 @@
   </resultMap>
 
   <select id="getLiveCellsByLockScriptIdWithTypeScriptId" resultMap="liveCellsMap">
-    select  lc.output_id as id,
-            lc.cell_type,
-           '0x' || encode(lc.tx_hash, 'hex'),
-           lc.output_index as cell_index,
-           '0x' || encode(u.type_script_hash, 'hex'),
-           '0x' || encode(lc.data, 'hex'),
-           u.xudt_tags,
-           lc.block_number,
-           lc.capacity,
-           lc.occupied_capacity,
-           lc.block_timestamp,
-           lc.udt_amount,
-           u.symbol,
-           u.decimal,
-           u.published
+    select
+        lc.output_id                              as id,
+        lc.cell_type                              as cell_type,
+        '0x' || encode(lc.tx_hash, 'hex')         as tx_hash,
+        lc.output_index                           as cell_index,
+        '0x' || encode(u.type_script_hash, 'hex') as type_script_hash,
+        '0x' || encode(lc.data, 'hex')            as data,
+        u.xudt_tags                               as xudt_tags,
+        lc.block_number                           as block_number,
+        lc.capacity                               as capacity,
+        lc.occupied_capacity                      as occupied_capacity,
+        lc.block_timestamp                        as block_timestamp,
+        lc.udt_amount                             as udt_amount,
+        u.symbol                                  as symbol,
+        u.decimal                                 as decimal,
+        u.published                               as published
     from live_cells lc
-           left join udts u on lc.type_script_id = u.type_script_id
+        left join udts u on lc.type_script_id = u.type_script_id
     where lc.lock_script_id = #{lockScriptId}
     <if test="typeScriptId != null">
       and lc.type_script_id = #{typeScriptId}
@@ -76,16 +77,16 @@
   </select>
   <select id="getOthersLiveCellsByLockScriptId" resultMap="liveCellsMap">
     select
-        lc.output_id as id,
-        lc.cell_type,
-        '0x' || encode(lc.tx_hash, 'hex'),
-        lc.output_index as cell_index,
-        '0x' || encode(u.type_script_hash, 'hex'),
-        '0x' || encode(lc.data, 'hex'),
-        lc.block_number,
-        lc.capacity,
-        lc.occupied_capacity,
-        lc.block_timestamp
+        lc.output_id                              as id,
+        lc.cell_type                              as cell_type,
+        '0x' || encode(lc.tx_hash, 'hex')         as tx_hash,
+        lc.output_index                           as cell_index,
+        '0x' || encode(u.type_script_hash, 'hex') as type_script_hash,
+        '0x' || encode(lc.data, 'hex')            as data,
+        lc.block_number                           as block_number,
+        lc.capacity                               as capacity,
+        lc.occupied_capacity                      as occupied_capacity,
+        lc.block_timestamp                        as block_timestamp,
     from live_cells lc
            left join udts u on lc.type_script_id = u.type_script_id
     where lc.lock_script_id = #{lockScriptId}
