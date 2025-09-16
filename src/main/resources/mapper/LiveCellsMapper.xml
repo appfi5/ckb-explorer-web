@@ -32,7 +32,7 @@
     <result property="cellType" column="cell_type"/>
     <result property="txHash" column="tx_hash"/>
     <result property="typeHash" column="type_script_hash"/>
-    <!--<result property="cellIndex" column="cell_index"/>-->
+    <result property="cellIndex" column="cell_index"/>
     <result property="data" column="data"/>
     <result property="tags" column="xudt_tags" typeHandler="org.apache.ibatis.type.ArrayTypeHandler" jdbcType="ARRAY"/>
     <result property="blockNumber" column="block_number"/>
@@ -52,7 +52,7 @@
     select  lc.output_id as id,
             lc.cell_type,
            '0x' || encode(lc.tx_hash, 'hex'),
-           -- lc.cell_index,
+           lc.output_index as cell_index,
            '0x' || encode(u.type_script_hash, 'hex'),
            '0x' || encode(lc.data, 'hex'),
            u.xudt_tags,
@@ -79,7 +79,7 @@
         lc.output_id as id,
         lc.cell_type,
         '0x' || encode(lc.tx_hash, 'hex'),
-        -- lc.cell_index,
+        lc.output_index as cell_index,
         '0x' || encode(u.type_script_hash, 'hex'),
         '0x' || encode(lc.data, 'hex'),
         lc.block_number,

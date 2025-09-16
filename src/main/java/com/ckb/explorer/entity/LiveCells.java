@@ -41,5 +41,11 @@ public class LiveCells implements Serializable {
 
     private byte[] data;
 
+    private Integer outputIndex;
+
+    private Integer inputIndex;
+
+    private byte[] consumedTxHash;
+
     private static final long serialVersionUID = 1L;
 }
