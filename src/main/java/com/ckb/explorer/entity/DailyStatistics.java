@@ -110,7 +110,7 @@ public class DailyStatistics implements Serializable {
   private Long knowledgeSize;// dao
 
   @TableField(typeHandler = MapTypeHandler.class)
-  private Map<String, Long> activityAddressContractDistribution;// 1
+  private Map<String, String> activityAddressContractDistribution;// 1
 
   private static final long serialVersionUID = 1L;
 }
