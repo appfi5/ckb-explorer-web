@@ -42,5 +42,5 @@ public class DailyStatisticResponse extends BaseResponse<Long> {
 
   private Long holderCount; // 1
 
-  private Map<String, Long> activityAddressContractDistribution;// 1
+  private Map<String, String> activityAddressContractDistribution;// 1
 }
