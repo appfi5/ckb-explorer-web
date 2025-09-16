@@ -2,14 +2,12 @@ package com.ckb.explorer.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.ckb.explorer.config.mybatis.BlockTimeDistributionTypeHandler;
 import com.ckb.explorer.config.mybatis.ListStringTypeHandler;
 import com.ckb.explorer.config.mybatis.MapTypeHandler;
 import com.ckb.explorer.domain.dto.ListStringWrapper;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.Data;
 
@@ -83,8 +81,8 @@ public class DailyStatistics implements Serializable {
 
   private BigInteger circulatingSupply; // dao
 
-  @TableField(typeHandler = BlockTimeDistributionTypeHandler.class)
-  private LinkedHashMap<String, String> blockTimeDistribution; // 1
+  @TableField(typeHandler = ListStringTypeHandler.class)
+  private ListStringWrapper blockTimeDistribution; // 1
 
   @TableField(typeHandler = ListStringTypeHandler.class)
   private ListStringWrapper epochTimeDistribution; // 1

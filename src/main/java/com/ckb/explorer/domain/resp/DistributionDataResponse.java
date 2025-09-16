@@ -19,7 +19,7 @@ public class DistributionDataResponse extends BaseResponse<Long> {
 
   private List<String[]> addressBalanceDistribution;
 
-  private LinkedHashMap<String, String> blockTimeDistribution;
+  private List<String[]> blockTimeDistribution;
 
   private List<String[]> epochTimeDistribution;
 
