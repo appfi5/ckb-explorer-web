@@ -12,7 +12,6 @@ import com.ckb.explorer.enums.CellType;
 import com.ckb.explorer.mapper.OutputExtendMapper;
 import com.ckb.explorer.mapper.OutputMapper;
 import com.ckb.explorer.mapper.ScriptMapper;
-import com.ckb.explorer.mapper.UdtsMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
 import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.service.OutputService;

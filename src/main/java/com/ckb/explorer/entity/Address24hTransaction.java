@@ -20,5 +20,7 @@ public class Address24hTransaction implements Serializable {
 
     private Long blockTimestamp;
 
+    private Long typeScriptId;
+
     private static final long serialVersionUID = 1L;
 }

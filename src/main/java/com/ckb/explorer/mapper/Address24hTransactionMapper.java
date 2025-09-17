@@ -2,9 +2,14 @@ package com.ckb.explorer.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.dto.UdtAddressCountDto;
+import com.ckb.explorer.domain.dto.UdtH24TransactionsCountDto;
 import com.ckb.explorer.entity.Address24hTransaction;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
 * @author dell
@@ -12,6 +17,7 @@ import org.apache.ibatis.annotations.Select;
 * @createDate 2025-09-03 17:37:17
 * @Entity com.ckb.explore.worker.entity.Address24hTransaction
 */
+@Mapper
 public interface Address24hTransactionMapper extends BaseMapper<Address24hTransaction> {
 
     @Select("WITH ranked_transactions AS (\n"
@@ -32,6 +38,11 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
         + "WHERE rn = 1  -- 筛选出每个交易ID的最新一条记录\n"
         + "ORDER BY ${orderByStr} ${ascOrDesc}")
     Page<Long> getTransactionsLast24hrsByLockScriptIdWithSort(Page page, @Param("lockScriptId") Long lockScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
+
+
+
+    List<UdtH24TransactionsCountDto> getTransactionsCountByScriptHashes(@Param("scriptHashes") List<byte[]> scriptHashes, @Param("oneDayAgo")  Long oneDayAgo);
+
 }
 
 

@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 /**
  * FungibleTokensPageResponse 用于将 udts page 实体序列化为 JSON 响应对象
  */
@@ -15,17 +13,11 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class XudtsPageResponse extends BaseResponse<Long> {
+public class UdtsListResponse  {
 
   private String type = "udt";
   private String typeScriptHash;
-  private Long blockTimestamp;
-  private String[] xudtTags;
-  private String iconFile;
-  private String fullName;
-  private String symbol;
   private Long h24CkbTransactionsCount;
   private Long addressesCount;
-  private String tokenType;
 
 }

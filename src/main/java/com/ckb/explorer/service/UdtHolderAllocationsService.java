@@ -1,6 +1,8 @@
 package com.ckb.explorer.service;
 
+import com.ckb.explorer.domain.resp.UdtDetailResponse;
 import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
+import com.ckb.explorer.domain.resp.UdtsListResponse;
 import com.ckb.explorer.entity.UdtHolderAllocations;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -14,4 +16,8 @@ import java.util.List;
 public interface UdtHolderAllocationsService extends IService<UdtHolderAllocations> {
 
     List<UdtHolderAllocationsResponse> findByTypeScriptHash(String typeScriptHash);
+
+    List<UdtsListResponse> udtListStatistic();
+
+    UdtDetailResponse findDetailByTypeHash(String typeHash);
 }
