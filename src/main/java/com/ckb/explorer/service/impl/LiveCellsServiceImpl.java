@@ -103,8 +103,8 @@ public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells
       } else if(liveCells.getCodeHash() != null){
         var typeScript = scriptConfig.getTypeScriptByCodeHash(liveCells.getCodeHash(), liveCells.getArgs());
         if(typeScript != null){
-          extraInfo.setSymbol(typeScript == null ? null : typeScript.getSymbol());
-          extraInfo.setDecimal(typeScript == null ? null : typeScript.getDecimal().toString());
+          extraInfo.setSymbol(typeScript.getSymbol());
+          extraInfo.setDecimal(typeScript.getDecimal());
           extraInfo.setPublished(true);
           extraInfo.setTypeHash(liveCells.getTypeHash());
         }

@@ -78,7 +78,13 @@ public class ScriptConfig {
     List<TypeScript> typeScriptList=  typeScripts.stream()
         .filter(typeScript -> Objects.equals(typeScript.getCodeHash(), codeHash)).toList();
     if(typeScriptList.size() > 1 && !StringUtils.isEmpty(args)){
-      return typeScriptList.stream().filter(typeScript -> Objects.equals(typeScript.getArgs(), args)).findFirst().orElse(null);
+      // 优先返回匹配上args的
+      var type = typeScriptList.stream().filter(typeScript -> Objects.equals(typeScript.getArgs(), args)).findFirst().orElse(null);
+      if(type == null){
+        // 降级返回匹配上codeHash且args为空的，比如基础类的合约
+        return typeScriptList.stream().filter(typeScript -> Objects.equals(typeScript.getArgs(), null)).findFirst().orElse(null);
+      }
+      return type;
     }
     return typeScriptList.size() > 0 ? typeScriptList.get(0) : null;
   }
