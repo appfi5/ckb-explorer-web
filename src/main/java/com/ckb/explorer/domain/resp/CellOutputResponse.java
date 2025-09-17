@@ -54,7 +54,7 @@ public class CellOutputResponse extends BaseResponse<Long> {
   /**
    * 单元格类型
    */
-  private String cellType;
+  private Integer cellType;
   
   /**
    * 生成的交易哈希
@@ -65,11 +65,6 @@ public class CellOutputResponse extends BaseResponse<Long> {
    * 单元格索引
    */
   private Integer cellIndex;
-  
-  /**
-   * 标签列表
-   */
-  private List<String> tags;// TODO
   
   /**
    * 类型脚本

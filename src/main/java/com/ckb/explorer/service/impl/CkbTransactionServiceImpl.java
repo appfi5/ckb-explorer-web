@@ -15,6 +15,7 @@ import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.entity.Script;
+import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
 import com.ckb.explorer.mapper.InputMapper;
 import com.ckb.explorer.mapper.OutputMapper;
@@ -28,14 +29,11 @@ import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,66 +52,21 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Resource
   private CkbTransactionMapper ckbTransactionMapper;
 
-  // 有效的排序字段
-  private static final Set<String> VALID_SORT_FIELDS = new HashSet<String>() {
-    {
-      add("id");
-      add("blockNumber");
-      add("capacityInvolved");
-    }
-  };
-  @Autowired
+  @Resource
+  private Address24hTransactionMapper address24hTransactionMapper;
+
+  @Resource
   private ScriptMapper scriptMapper;
 
   @Override
   public Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
-    // 解析排序参数
-//    String[] sortParts = sort.split("\\.", 2);
-//    String orderBy = sortParts[0];
-//    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
-//
-//    // 字段映射
-//    orderBy = switch (orderBy) {
-//      case "height" -> "blockNumber";
-//      case "capacity" -> "capacityInvolved";
-//      default -> orderBy;
-//    };
-//
-//    // 验证排序字段
-//    if (!VALID_SORT_FIELDS.contains(orderBy)) {
-//      throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
-//    }
 
     // 创建分页对象
     Page<CkbTransaction> pageResult = new Page<>(pageNum, pageSize);
-    // 创建查询条件
+    // 创建查询条件 normal交易
     LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.ne(CkbTransaction::getTxIndex, 0);
     queryWrapper.orderByDesc(CkbTransaction::getId);
-    // 添加排序条件
-//    boolean isAsc = "asc".equals(ascOrDesc);
-//    switch (orderBy) {
-//      case "id":
-//        if (isAsc) {
-//          queryWrapper.orderByAsc(CkbTransaction::getId);
-//        } else {
-//          queryWrapper.orderByDesc(CkbTransaction::getId);
-//        }
-//        break;
-//      case "blockNumber":
-//        if (isAsc) {
-//          queryWrapper.orderByAsc(CkbTransaction::getBlockNumber);
-//        } else {
-//          queryWrapper.orderByDesc(CkbTransaction::getBlockNumber);
-//        }
-//        break;
-//      case "capacityInvolved":
-//        if (isAsc) {
-//          queryWrapper.orderByAsc(CkbTransaction::getCapacityInvolved);
-//        } else {
-//          queryWrapper.orderByDesc(CkbTransaction::getCapacityInvolved);
-//        }
-//        break;
-//    }
 
     // 执行分页查询
     return baseMapper.selectPage(pageResult, queryWrapper);
@@ -145,44 +98,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       // 普通交易
     } else{
       return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize);
-
-      // TODO 如果是资产的交易，则需要拼接额外的信息
-//    if previous_cell_output.nervos_dao_withdrawing?
-//        display_input.merge!(attributes_for_dao_input(previous_cell_output))
-//    end
-//    if previous_cell_output.nervos_dao_deposit?
-//        display_input.merge!(attributes_for_dao_input(cell_outputs[cell_input.index], false))
-//    end
-//    if previous_cell_output.udt?
-//        display_input.merge!(attributes_for_udt_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.xudt?
-//        display_input.merge!(attributes_for_xudt_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.ssri?
-//        display_input.merge!(attributes_for_ssri_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.xudt_compatible?
-//        display_input.merge!(attributes_for_xudt_compatible_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(m_nft_issuer m_nft_class m_nft_token))
-//    display_input.merge!(attributes_for_m_nft_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(nrc_721_token nrc_721_factory))
-//    display_input.merge!(attributes_for_nrc_721_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(omiga_inscription_info omiga_inscription))
-//    display_input.merge!(attributes_for_omiga_inscription_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.bitcoin_vout
-//    display_input.merge!(attributes_for_rgb_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.cell_type.in?(%w(spore_cluster spore_cell did_cell))
-//    display_input.merge!(attributes_for_dob_cell(previous_cell_output))
-//    end
-//    if previous_cell_output.lock_script.code_hash == Settings.fiber_funding_code_hash
-//    display_input.merge!(attributes_for_fiber_cell(previous_cell_output))
-//    end
     }
   }
 
@@ -233,7 +148,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
       Page<CellOutputDto> resultPage = outputMapper.getCellbaseDisplayOutputs(pageResult, ckbTransaction.getId());
 
-      // TODO 标签判断：如果区块时间戳等于创世区块时间戳则包含标签，否则为空列表
       Page<CellOutputResponse> result = CellOutputConvert.INSTANCE.toConvertPage(resultPage);
       List<CellOutputResponse> records = result.getRecords();
       records.stream().forEach(record-> record.setTargetBlockNumber(ckbTransaction.getBlockNumber()< 11 ?0:ckbTransaction.getBlockNumber()-11));
@@ -243,30 +157,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       Page<CellOutputDto> resultPage = outputMapper.getNormalTxDisplayOutputs(pageResult, ckbTransaction.getId());
 
       return CellOutputConvert.INSTANCE.toConvertPage(resultPage);
-      //    display_output.merge!(attributes_for_udt_cell(output)) if output.udt?
-//        display_output.merge!(attributes_for_xudt_cell(output)) if output.xudt?
-//        display_output.merge!(attributes_for_ssri_cell(output)) if output.ssri?
-//        display_output.merge!(attributes_for_xudt_compatible_cell(output)) if output.xudt_compatible?
-//        display_output.merge!(attributes_for_cota_registry_cell(output)) if output.cota_registry?
-//        display_output.merge!(attributes_for_cota_regular_cell(output)) if output.cota_regular?
-//    if output.cell_type.in?(%w(m_nft_issuer m_nft_class m_nft_token))
-//    display_output.merge!(attributes_for_m_nft_cell(output))
-//    end
-//    if output.cell_type.in?(%w(nrc_721_token nrc_721_factory))
-//    display_output.merge!(attributes_for_nrc_721_cell(output))
-//    end
-//    if output.cell_type.in?(%w(omiga_inscription_info omiga_inscription))
-//    display_output.merge!(attributes_for_omiga_inscription_cell(output))
-//    end
-//    if output.bitcoin_vout
-//    display_output.merge!(attributes_for_rgb_cell(output))
-//    end
-//    if output.cell_type.in?(%w(spore_cluster spore_cell did_cell))
-//    display_output.merge!(attributes_for_dob_cell(output))
-//    end
-//    if output.lock_script.code_hash == Settings.fiber_funding_code_hash
-//    display_output.merge!(attributes_for_fiber_cell(output))
-//    end
     }
   }
 
@@ -282,14 +172,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 创建分页对象
     Page<CkbTransaction> transactionPage = new Page<>(page, pageSize);
-    LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
-    queryWrapper.eq(CkbTransaction::getBlockHash, Numeric.hexStringToByteArray(blockHash));
 
-    if (txHash != null && !txHash.isEmpty()) {
-      queryWrapper.eq(CkbTransaction::getTxHash, Numeric.hexStringToByteArray(txHash));
-    }
-
-    // TODO 如果指定地址
+    Long lockScriptId = null;
+    // 如果指定地址
     if (addressHash != null && !addressHash.isEmpty()) {
       // 查找地址
       // 计算地址的哈希
@@ -300,24 +185,11 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       if(script == null){
         throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
       }
-      // TODO 查询该地址相关的交易ID相关的统计表
-//      List<Long> transactionIds = accountBookMapper.selectList(
-//              new LambdaQueryWrapper<AccountBook>().eq(AccountBook::getAddressId, address.getId()))
-//          .stream()
-//          .map(AccountBook::getTransactionId)
-//          .filter(Objects::nonNull)
-//          .distinct()
-//          .toList();
-      List<Long> transactionIds = new ArrayList<>();
-      if (!transactionIds.isEmpty()) {
-        queryWrapper.in(CkbTransaction::getId, transactionIds);
-      }
+      lockScriptId = script.getId();
     }
 
-    queryWrapper.orderByAsc(CkbTransaction::getTxIndex);
-
     // 执行分页查询
-    Page<CkbTransaction> resultPage = ckbTransactionMapper.selectPage(transactionPage, queryWrapper);
+    Page<CkbTransaction> resultPage = ckbTransactionMapper.selectPageByBlockHash(transactionPage, Numeric.hexStringToByteArray(blockHash), txHash != null && !txHash.isEmpty() ?Numeric.hexStringToByteArray(txHash): null, lockScriptId);
 
     var result = BlockTransactionConvert.INSTANCE.toConvertPage(resultPage);
 
@@ -362,7 +234,12 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         transaction.setDisplayInputs(records);
 
         List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
-        cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        if(cellbaseOutput != null && cellbaseOutput.size() > 0){
+          cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        } else{
+          cellbaseOutput = new ArrayList<>();
+        }
+
 
         transaction.setDisplayOutputs(cellbaseOutput);
         // 组装普通交易
@@ -377,6 +254,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     return result;
   }
+
 
   @Override
   public Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort,
@@ -396,15 +274,24 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     var addressScriptHash = Address.decode(address).getScript().computeHash();
     queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
     var script = scriptMapper.selectOne(queryScriptWrapper);
-    if(script == null){
-      throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+    if (script == null) {
+      throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE,
+          i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
 
-    Page<AddressTransactionPageResponse> transactionPage = new Page<>(page, pageSize);
-    // TODO 待确认，有可能改成从24小时历史交易里查
-    Page<AddressTransactionPageResponse> result = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId());
+    // 从24小时表里获取翻页的交易id
+    Page<Long> transactionIdsPage = new Page<>(page, pageSize);
+    Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
+        transactionIdsPage, script.getId(), orderBy, ascOrDesc);
 
-    var transactions = result.getRecords();
+    List<Long> transactionIds = transactionIdPage.getRecords();
+    if (transactionIds.isEmpty()){
+      return Page.of(page, pageSize, 0);
+    }
+
+    // 根据交易id查询交易详情
+    List<AddressTransactionPageResponse> transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
+
     // 分开处理cellbase和普通交易
     var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
     var normalTransactionsIds = transactions.stream().filter(transaction-> !transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
@@ -444,7 +331,11 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         transaction.setDisplayInputs(records);
 
         List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
-        cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        if(cellbaseOutput != null && cellbaseOutput.size() > 0){
+          cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        }else{
+          cellbaseOutput = new ArrayList<>();
+        }
 
         transaction.setDisplayOutputs(cellbaseOutput);
         // 组装普通交易
@@ -457,6 +348,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       }
     });
 
+    var result = new Page<AddressTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), transactionIdPage.getTotal());
+    result.setRecords(transactions);
     return result;
   }
 

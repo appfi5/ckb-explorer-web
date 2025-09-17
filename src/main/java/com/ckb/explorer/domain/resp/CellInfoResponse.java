@@ -1,11 +1,8 @@
 package com.ckb.explorer.domain.resp;
 
 import com.ckb.explorer.domain.resp.base.BaseResponse;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import java.math.BigInteger;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CellInfoResponse {
+public class CellInfoResponse extends BaseResponse<Long> {
   /**
    * 容量
    */
@@ -57,4 +54,7 @@ public class CellInfoResponse {
 
   private String data;
 
+  private Integer cellType;
+
+  private ExtraInfoResponse extraInfo; // 根据不同资产 cellType 显示不同的信息
 }

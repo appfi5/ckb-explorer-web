@@ -17,11 +17,11 @@ import lombok.NoArgsConstructor;
 public class DistributionDataResponse extends BaseResponse<Long> {
   private String type = "distribution_data";
 
-  private List<AddressBalanceDistributionDto> addressBalanceDistribution;
+  private List<String[]> addressBalanceDistribution;
 
-  private LinkedHashMap<String, String> blockTimeDistribution;
+  private List<String[]> blockTimeDistribution;
 
-  private Object epochTimeDistribution;
+  private List<String[]> epochTimeDistribution;
 
   private List<RollingAvgBlockTime> averageBlockTime;
 

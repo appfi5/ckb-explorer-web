@@ -79,15 +79,12 @@ public class CkbTransactionsController {
   @Operation(summary = "获取交易输入单元格列表")
   public ResponseInfo<Page<CellInputResponse>> displayInputs(
       @PathVariable String txHash,
-      @Valid BasePageReq req,
-      HttpServletResponse servletResponse) {
+      @Valid BasePageReq req) {
 
     // 校验入参
     if(StringUtils.isEmpty(txHash) || (!queryKeyUtils.isValidHex(txHash))){
       throw new ServerException(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_MESSAGE));
     }
-    // 设置缓存控制头（15秒）
-    servletResponse.setHeader("Cache-Control", "public, max-age=15, must-revalidate");
 
     return ResponseInfo.SUCCESS(transactionCacheFacade.getDisplayInputs(txHash, req.getPage(), req.getPageSize()));
   }
@@ -102,16 +99,12 @@ public class CkbTransactionsController {
   @Operation(summary = "获取交易输出单元格列表")
   public ResponseInfo<Page<CellOutputResponse>> displayOutputs(
       @PathVariable String txHash,
-      @Valid BasePageReq req,
-      HttpServletResponse servletResponse) {
+      @Valid BasePageReq req) {
 
     // 校验入参
     if(StringUtils.isEmpty(txHash) || (!queryKeyUtils.isValidHex(txHash))){
       throw new ServerException(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_TX_HASH_INVALID_MESSAGE));
     }
-
-    // 设置缓存控制头（15秒）
-    servletResponse.setHeader("Cache-Control", "public, max-age=15, must-revalidate");
 
     return ResponseInfo.SUCCESS(transactionCacheFacade.getDisplayOutputs(txHash, req.getPage(), req.getPageSize()));
   }

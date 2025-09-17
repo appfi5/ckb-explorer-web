@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ckb.explorer.mapper.UdtAccountsMapper">
+
+    <resultMap id="BaseResultMap" type="com.ckb.explorer.entity.UdtAccounts">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="typeScriptId" column="type_script_d" jdbcType="BIGINT"/>
+            <result property="nftTokenId" column="nft_token_id" jdbcType="VARCHAR"/>
+            <result property="amount" column="amount" jdbcType="BIGINT"/>
+           <result property="lockScriptId" column="lock_script_d" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,udt_id,nft_token_id,
+        amount,lock_script_d
+    </sql>
+
+  <resultMap id="accountUdtBalance" type="com.ckb.explorer.domain.dto.AccountUdtBalanceDto">
+    <result property="fullName" column="full_name" />
+    <result property="symbol" column="symbol" />
+    <result property="decimal" column="decimal" />
+    <result property="amount" column="amount" />
+    <result property="udtIconFile" column="udt_icon_file" />
+    <result property="udtType" column="udt_type" />
+    <result property="totalAmount" column="total_amount" />
+    <result property="typeScriptHash" column="type_script_hash" />
+    <association property="udtTypeScript" javaType="com.ckb.explorer.domain.resp.ScriptResponse">
+      <result property="args" column="args"/>
+      <result property="codeHash" column="code_hash"/>
+      <result property="hashType" column="hash_type"/>
+    </association>
+  </resultMap>
+
+    <select id="getUdtBalanceByLockScriptId" resultMap="accountUdtBalance">
+      select u.full_name,
+             u.symbol,
+             u.decimal,
+             ua.amount,
+             u.icon_file                           as udt_icon_file,
+             u.udt_type,
+             '0x' || encode(s.code_hash, 'hex')    as code_hash,
+             s.hash_type,
+             '0x' || encode( s.args, 'hex')        as args,
+             '0x' || encode( s.script_hash, 'hex') as type_script_hash,
+             u.total_amount
+      from udt_accounts ua
+             left join udts u on ua.type_script_id = u.type_script_id
+             left join script s on u.type_script_id = s.id
+        where ua.lock_script_id = #{lockScriptId}
+    </select>
+
+</mapper>

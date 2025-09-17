@@ -3,21 +3,13 @@ package com.ckb.explorer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.domain.resp.AddressBalanceRanking;
-import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.entity.StatisticInfo;
-import com.ckb.explorer.entity.UncleBlock;
-import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapper.StatisticInfoMapper;
-import com.ckb.explorer.mapper.UncleBlockMapper;
 import com.ckb.explorer.service.StatisticInfoService;
 import com.ckb.explorer.util.JsonUtil;
-import jakarta.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import org.nervos.ckb.type.BlockchainInfo;
-import org.nervos.ckb.utils.Numeric;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**

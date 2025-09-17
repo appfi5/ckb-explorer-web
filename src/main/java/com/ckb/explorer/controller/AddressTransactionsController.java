@@ -34,6 +34,9 @@ public class AddressTransactionsController {
   @Resource
   private QueryKeyUtils queryKeyUtils;
 
+  @Resource
+  private I18n i18n;
+
   /**
    * 获取地址的交易列表
    *
@@ -49,7 +52,8 @@ public class AddressTransactionsController {
 
     // address格式校验
     if(!queryKeyUtils.isValidAddress(address)){
-      throw new ServerException("入参必须是正确的地址");
+      throw new ServerException(I18nKey.ADDRESS_HASH_INVALID_CODE,
+          i18n.getMessage(I18nKey.ADDRESS_HASH_INVALID_MESSAGE));
     }
 
     // 查询地址的交易列表（通过缓存门面）

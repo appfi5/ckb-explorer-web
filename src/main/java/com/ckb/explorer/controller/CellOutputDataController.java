@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * CellOutputDataController控制器，用于处理CellOutput的数据相关请求
  */
+@Deprecated
 @RestController
 @RequestMapping("/api/v1/cell_output_data")
 public class CellOutputDataController {

@@ -18,6 +18,4 @@ public class CellDependencyResponse {
   private OutPoint outPoint;
 
   private String depType;
-
-  private Script script;
 }

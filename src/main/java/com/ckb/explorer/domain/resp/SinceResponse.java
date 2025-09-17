@@ -21,6 +21,6 @@ public class SinceResponse {
   /**
    * 中值时间戳
    */
-  private Long medianTimestamp; // TODO 原逻辑是同步时调用API get_block_median_time 落表，页面不展示，考虑不要
+  private Long medianTimestamp; // 页面不用，不要
 
 }

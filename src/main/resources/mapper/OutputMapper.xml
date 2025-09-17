@@ -3,35 +3,6 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ckb.explorer.mapper.OutputMapper">
-  <resultMap id="liveCellsResultMap" type="com.ckb.explorer.domain.resp.AddressLiveCellsResponse">
-    <id property="id" column="id"/>
-    <result property="cellType" column="cell_type"/>
-    <result property="txHash" column="tx_hash"/>
-    <result property="cellIndex" column="cell_index"/>
-    <result property="typeHash" column="type_hash"/>
-    <result property="data" column="data"/>
-    <!-- <result property="tags" column="tags"/> -->
-    <result property="blockNumber" column="block_number"/>
-    <result property="capacity" column="capacity"/>
-    <result property="occupiedCapacity" column="occupied_capacity"/>
-    <result property="blockTimestamp" column="block_timestamp"/>
-
-    <!-- 使用 association 映射嵌套对象 -->
-    <association property="typeScript" javaType="com.ckb.explorer.domain.resp.ScriptResponse">
-      <result property="args" column="type_args"/>
-      <result property="codeHash" column="type_code_hash"/>
-      <result property="hashType" column="type_hash_type"/>
-    </association>
-    <association property="lockScript" javaType="com.ckb.explorer.domain.resp.ScriptResponse">
-      <result property="args" column="lock_args"/>
-      <result property="codeHash" column="lock_code_hash"/>
-      <result property="hashType" column="lock_hash_type"/>
-    </association>
-    <association property="extraInfo" javaType="com.ckb.explorer.domain.resp.ExtraInfoResponse">
-      <result property="type" column="type"/>
-      <result property="capacity" column="capacity"/>
-    </association>
-  </resultMap>
 
   <!--
     根据交易ID获取cellbase交易的输出单元格列表
@@ -58,10 +29,14 @@
       CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
       -- 生成的交易哈希
       '0x' || encode(o.tx_hash, 'hex') AS generated_tx_hash,
-      o.output_index AS cell_index
+      o.output_index AS cell_index,
+      CASE
+        WHEN oe.cell_type is null THEN 0
+        ELSE oe.cell_type END               as cell_type
     FROM
       output o
         left join script s ON o.lock_script_id = s.id
+        left join output_extend oe ON o.id = oe.output_id
     -- JOIN
     --   block b ON t.block_id = b.id
     WHERE 
@@ -75,34 +50,35 @@
     对应Ruby中的normal_tx_display_outputs方法
   -->
   <select id="getNormalTxDisplayOutputs" resultType="com.ckb.explorer.domain.dto.CellOutputDto">
-    SELECT
-      o.id,
-      o.capacity,
-      o.occupied_capacity ,
-      -- 从script表获取地址信息
-      s.code_hash                           as lock_code_hash,
-      s.args                                as lock_args,
-      s.hash_type                           as lock_hash_type,
-      -- Cellbase奖励相关字段
-      -- b.base_reward,
-      -- b.commit_reward,
-      -- b.proposal_reward,
-      -- b.secondary_reward,
-      -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
-      o.is_spent                            AS status,
-      -- 消耗的交易哈希
-      CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
-      -- 生成的交易哈希
-      '0x' || encode(o.tx_hash, 'hex') AS generated_tx_hash,
-      o.output_index AS cell_index,
-      'normal'                              as cell_type,-- TODO 后面需根据资产返回不同的cell_type
-      '0x' || encode(type.args, 'hex')      as args,
-      '0x' || encode(type.code_hash, 'hex') as code_hash,
-      type.hash_type                        as hash_type
-    FROM
-      output o
-        left join script s ON o.lock_script_id = s.id
-        left join script type on o.type_script_id = type.id
+    SELECT o.id,
+           o.capacity,
+           o.occupied_capacity,
+           -- 从script表获取地址信息
+           s.code_hash                                                                 as lock_code_hash,
+           s.args                                                                      as lock_args,
+           s.hash_type                                                                 as lock_hash_type,
+           -- Cellbase奖励相关字段
+           -- b.base_reward,
+           -- b.commit_reward,
+           -- b.proposal_reward,
+           -- b.secondary_reward,
+           -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+           o.is_spent                                                                  AS status,
+           -- 消耗的交易哈希
+           CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
+           -- 生成的交易哈希
+           '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+           o.output_index                                                              AS cell_index,
+           CASE
+             WHEN oe.cell_type is null THEN 0
+             ELSE oe.cell_type END                                                     as cell_type,
+           '0x' || encode(type.args, 'hex')                                            as args,
+           '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
+           type.hash_type                                                              as hash_type
+    FROM output o
+           left join script s ON o.lock_script_id = s.id
+           left join script type on o.type_script_id = type.id
+           left join output_extend oe ON o.id = oe.output_id
     -- JOIN
     --   block b ON t.block_id = b.id
     WHERE
@@ -133,9 +109,13 @@
     -- 生成的交易哈希
     '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
     o.output_index                                                              AS cell_index,
+    CASE
+      WHEN oe.cell_type is null THEN 0
+      ELSE oe.cell_type END                                                     as cell_type,
     o.tx_id                                                                     as transaction_id
     FROM output o
-    left join script s ON o.lock_script_id = s.id
+      left join script s ON o.lock_script_id = s.id
+      left join output_extend oe ON o.id = oe.output_id
     -- JOIN
     -- block b ON t.block_id = b.id
     WHERE
@@ -169,9 +149,9 @@
                  o.capacity,
                  o.occupied_capacity,
                  -- 从script表获取地址信息
-                 s.code_hash                                                                 as lock_code_hash,
-                 s.args                                                                      as lock_args,
-                 s.hash_type                                                                 as lock_hash_type,
+                 s.code_hash                                                                 AS lock_code_hash,
+                 s.args                                                                      AS lock_args,
+                 s.hash_type                                                                 AS lock_hash_type,
                  -- Cellbase奖励相关字段
                  -- b.base_reward,
                  -- b.commit_reward,
@@ -186,15 +166,18 @@
                  -- 生成的交易哈希
                  '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
                  o.output_index                                                              AS cell_index,
-                 'normal'                                                                    as cell_type,-- TODO 后面需根据资产返回不同的cell_type
-                 '0x' || encode(type.args, 'hex')                                            as args,
-                 '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
-                 type.hash_type                                                              as hash_type,
-                 o.tx_id                                                                     as transaction_id,
-                 ROW_NUMBER()                                                                   OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn
+                 CASE
+                  WHEN oe.cell_type is null THEN 0
+                     ELSE oe.cell_type END                                                   AS cell_type,
+                 '0x' || encode(type.args, 'hex')                                            AS args,
+                 '0x' || encode(type.code_hash, 'hex')                                       AS code_hash,
+                 type.hash_type                                                              AS hash_type,
+                 o.tx_id                                                                     AS transaction_id,
+                 ROW_NUMBER()        OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn
           FROM output o
                  left join script s ON o.lock_script_id = s.id
                  left join script type on o.type_script_id = type.id
+                 left join output_extend oe ON o.id = oe.output_id
           -- JOIN
           -- block b ON t.block_id = b.id
           WHERE
@@ -208,55 +191,6 @@
           ) t
     WHERE rn &lt;= #{size}
     ORDER BY transaction_id, cell_index ASC;
-  </select>
-
-
-  <select id="getLiveCellsByLockScriptId"
-    resultMap="liveCellsResultMap">
-    select o.id                                  as id,
-           'normal'                              as cell_type,
-           '0x' || encode(o.tx_hash, 'hex')      as tx_hash,
-           o.output_index                        as cell_index,
-           '0x' || encode(ts.script_hash, 'hex') as type_hash,
-           '0x' || encode(o.data , 'hex')        as data,
-           o.block_number                        as block_number,
-           o.capacity                            as capacity,
-           o.occupied_capacity                   as occupied_capacity,
-           o.block_timestamp                     as block_timestamp,
-           '0x' || encode(ts.code_hash , 'hex')  as type_code_hash,
-           '0x' || encode(ts.args, 'hex')        as type_args,
-            CASE
-              WHEN ts.hash_type = 0 THEN 'data'
-              WHEN ts.hash_type = 1 THEN 'type'
-              WHEN ts.hash_type = 2 THEN 'data1'
-              WHEN ts.hash_type = 4 THEN 'data2'
-              ELSE null
-            END                                  as type_hash_type,
-            '0x' || encode(ls.code_hash, 'hex')  as lock_code_hash,
-            '0x' || encode(ls.args, 'hex')       as lock_args,
-            CASE
-              WHEN ls.hash_type = 0 THEN 'data'
-              WHEN ls.hash_type = 1 THEN 'type'
-              WHEN ls.hash_type = 2 THEN 'data1'
-              WHEN ls.hash_type = 4 THEN 'data2'
-              ELSE null
-            END                                  as lock_hash_type,
-           'ckb'                                 as type
-    from output o
-           left join script ts on o.type_script_id = ts.id
-           left join script ls on o.lock_script_id = ls.id
-    where o.is_spent = 0
-      and o.lock_script_id = #{lockScriptId}
-    <if test="null != filteredIds and filteredIds.size() > 0">
-      and o.type_script_id in
-      <foreach item="item" index="index" collection="filteredIds" open="(" separator=","
-        close=" )">
-        #{item}
-      </foreach>
-    </if>
-    <if test="null != orderByStr and (orderByStr == 'block_timestamp' or orderByStr=='capacity' )">
-      order by ${orderByStr} ${ascOrDesc}
-    </if>
   </select>
 
   <select id="countAddressTransactions"

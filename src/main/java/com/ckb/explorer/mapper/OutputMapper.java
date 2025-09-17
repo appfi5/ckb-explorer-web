@@ -3,7 +3,6 @@ package com.ckb.explorer.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.CellOutputDto;
-import com.ckb.explorer.domain.resp.AddressLiveCellsResponse;
 import com.ckb.explorer.entity.Output;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -23,8 +22,6 @@ public interface OutputMapper extends BaseMapper<Output> {
   List<CellOutputDto> getCellbaseDisplayOutputsByTransactionIds( @Param("transactionIds") List<Long> transactionIds);
 
   List<CellOutputDto> getNormalTxDisplayOutputsByTransactionIds(@Param("transactionIds") List<Long> transactionIds, @Param("size")int size);
-
-  Page<AddressLiveCellsResponse> getLiveCellsByLockScriptId(Page page, @Param("lockScriptId") Long lockScriptId, @Param("filteredIds") List<Long> filteredIds, @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
 
   Long countAddressTransactions(@Param("lockScriptId") Long lockScriptId);
 }
