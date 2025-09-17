@@ -8,6 +8,7 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.dto.CellOutputDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
+import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.entity.Script;
@@ -29,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Service;
@@ -355,10 +358,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
 
   @Override
-  public Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, String sort,
-                                                                 int page, int pageSize) {
-
-    String[] sortParts = sort.split("\\.", 2);
+  public Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, UdtTransactionsPageReq req) {
+    Integer page = req.getPage();
+    Integer pageSize = req.getPageSize();
+    String[] sortParts = req.getSort().split("\\.", 2);
     String orderBy = sortParts[0];
     String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
 
@@ -373,10 +376,29 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       throw new ServerException(I18nKey.UDTS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.UDTS_NOT_FOUND_MESSAGE));
     }
 
+    Long lockScriptId = null;
+    if (StringUtils.isNotEmpty(req.getAddressHash())) {
+      // 查找地址
+      // 计算地址的哈希
+      var addressScriptHash = Address.decode(req.getAddressHash()).getScript().computeHash();
+      LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+      queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+      var lockScript = scriptMapper.selectOne(queryScriptWrapper);
+      if(lockScript == null){
+        throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+      }
+      lockScriptId = lockScript.getId();
+    }
+
+    byte[] txHashBytes = null;
+    if(StringUtils.isNotEmpty(req.getTxHash())){
+      txHashBytes = Numeric.hexStringToByteArray(req.getTxHash());
+    }
+
     // 从24小时表里获取翻页的交易id
     Page<Long> transactionIdsPage = new Page<>(page, pageSize);
     Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByTypeScriptIdWithSort(
-            transactionIdsPage, script.getId(), orderBy, ascOrDesc);
+            transactionIdsPage, script.getId(), orderBy, ascOrDesc,txHashBytes,lockScriptId);
 
     List<Long> transactionIds = transactionIdPage.getRecords();
     if (transactionIds.isEmpty()){

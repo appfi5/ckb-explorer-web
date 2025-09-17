@@ -1,9 +1,8 @@
 package com.ckb.explorer.facade.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
+import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.UdtTransactionPageResponse;
-import com.ckb.explorer.facade.IAddressTransactionCacheFacade;
 import com.ckb.explorer.facade.IUdtTransactionCacheFacade;
 import com.ckb.explorer.service.CkbTransactionService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,7 @@ public class UdtTransactionCacheFacadeImpl implements IUdtTransactionCacheFacade
     @Autowired
     private CkbTransactionService transactionService;
 
-    private static final String ADDRESS_TRANSACTIONS_CACHE_PREFIX = "udt:transactions:";
+    private static final String UDT_TRANSACTIONS_CACHE_PREFIX = "udt:transactions:";
     private static final String CACHE_VERSION = "v1";
 
     // 缓存 TTL：10 秒
@@ -43,11 +42,12 @@ public class UdtTransactionCacheFacadeImpl implements IUdtTransactionCacheFacade
     private static final long LOCK_LEASE_TIME = 8;
 
     @Override
-    public Page<UdtTransactionPageResponse> getUdtTransactions(String address, String sort, Integer page, Integer pageSize) {
-      sort = StringUtils.defaultIfBlank(sort, "time.desc");
+    public Page<UdtTransactionPageResponse> getUdtTransactions(String typeHash, UdtTransactionsPageReq req) {
+
+      req.setSort(StringUtils.defaultIfBlank(req.getSort(), "time.desc"));
       // 创建缓存键
-        String cacheKey = String.format("%s%s:%s:sort:%s:page:%d:size:%d",
-                ADDRESS_TRANSACTIONS_CACHE_PREFIX, CACHE_VERSION, address, sort, page, pageSize);
+        String cacheKey = String.format("%s%s:%s:sort:%s:page:%d:size:%d:txHash:%s:addressHash:%s",
+                UDT_TRANSACTIONS_CACHE_PREFIX, CACHE_VERSION, typeHash, req.getSort(), req.getPage(), req.getPageSize(),req.getTxHash(),req.getAddressHash());
 
         RBucket<Page<UdtTransactionPageResponse>> bucket = redissonClient.getBucket(cacheKey);
 
@@ -77,7 +77,7 @@ public class UdtTransactionCacheFacadeImpl implements IUdtTransactionCacheFacade
                     }
 
                     // 真正加载数据
-                    Page<UdtTransactionPageResponse> result = loadFromDatabase(address, sort, page, pageSize);
+                    Page<UdtTransactionPageResponse> result = loadFromDatabase(typeHash,req);
 
                     // 写入缓存
                     bucket.set(result, Duration.ofMillis(TTL_MILLIS));
@@ -90,21 +90,21 @@ public class UdtTransactionCacheFacadeImpl implements IUdtTransactionCacheFacade
                 }
             } else {
                 // 获取锁失败，降级：直接查库
-                Page<UdtTransactionPageResponse> result = loadFromDatabase(address, sort, page, pageSize);
+                Page<UdtTransactionPageResponse> result = loadFromDatabase(typeHash, req);
                 bucket.set(result, Duration.ofMillis(TTL_MILLIS));
                 return result;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             // 降级处理
-            return loadFromDatabase(address, sort, page, pageSize);
+            return loadFromDatabase(typeHash, req);
         }
     }
 
     /**
      * 从数据库加载地址的交易列表
      */
-    private Page<UdtTransactionPageResponse> loadFromDatabase(String address, String sort, Integer page, Integer pageSize) {
-        return transactionService.getUdtTransactions(address, sort, page, pageSize);
+    private Page<UdtTransactionPageResponse> loadFromDatabase(String typeScriptHash, UdtTransactionsPageReq req) {
+        return transactionService.getUdtTransactions(typeScriptHash, req);
     }
 }

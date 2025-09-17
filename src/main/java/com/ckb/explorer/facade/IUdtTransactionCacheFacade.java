@@ -1,6 +1,7 @@
 package com.ckb.explorer.facade;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
 import com.ckb.explorer.domain.resp.UdtTransactionPageResponse;
 
@@ -10,13 +11,11 @@ import com.ckb.explorer.domain.resp.UdtTransactionPageResponse;
 public interface IUdtTransactionCacheFacade {
 
     /**
-     * 根据地址获取交易列表（分页）
+     * 根据type Script 哈希获取交易列表（分页）
      *
      * @param typeScriptHash udt typeScript哈希
-     * @param sort 排序方式
-     * @param page 页码
-     * @param pageSize 每页大小
+     * @param pageReq 分页查询参数
      * @return 交易列表响应
      */
-    Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, String sort, Integer page, Integer pageSize);
+    Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, UdtTransactionsPageReq pageReq);
 }

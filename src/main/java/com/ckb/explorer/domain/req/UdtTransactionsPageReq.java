@@ -14,4 +14,13 @@ public class UdtTransactionsPageReq extends BasePageReq {
     
     @Schema(description = "排序方式，默认为time.desc", example = "time.desc")
     private String sort = "time.desc";
+
+
+    @Schema(description = "交易哈希")
+    private String txHash;
+
+    @Schema(description = "地址")
+    private String addressHash;
+
+
 }

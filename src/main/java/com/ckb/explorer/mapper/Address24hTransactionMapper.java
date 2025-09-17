@@ -44,8 +44,32 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
     List<UdtH24TransactionsCountDto> getTransactionsCountByScriptHashes(@Param("scriptHashes") List<byte[]> scriptHashes, @Param("oneDayAgo")  Long oneDayAgo);
 
 
-    @Select("select ckb_transaction_id from  address_24h_transaction where type_script_id = #{typeScriptId} ")
-    Page<Long> getTransactionsLast24hrsByTypeScriptIdWithSort(Page page, @Param("typeScriptId") Long typeScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
+    @Select("<script>" +
+            "WITH ranked_transactions AS (\n"
+            + "    SELECT\n"
+            + "        ckb_transaction_id,\n"
+            + "        block_timestamp,\n"
+            + "        -- 对同一交易ID，按要求排序\n"
+            + "        ROW_NUMBER() OVER (\n"
+            + "            PARTITION BY ckb_transaction_id\n"
+            + "            ORDER BY ${orderByStr} ${ascOrDesc}\n"
+            + "        ) AS rn\n"
+            + "    FROM address_24h_transaction ad \n"
+            + "    WHERE type_script_id = #{typeScriptId}\n"
+            + "    <if test='null != txHash'>\n"
+            + "       and exists (select ct.id from ckb_transaction ct where ct.tx_hash = #{txHash} and ct.id = ad.ckb_transaction_id)\n"
+            + "     </if> "
+            + "     <if test='null != lockScriptId'>\n"
+            + "       and lock_script_id = #{lockScriptId}\n "
+            + "      </if> "
+            + ")\n"
+            + "SELECT ckb_transaction_id\n"
+            + "FROM ranked_transactions\n"
+            + "WHERE rn = 1  -- 筛选出每个交易ID的最新一条记录\n"
+            + "ORDER BY ${orderByStr} ${ascOrDesc}\n"
+            + "</script>")
+    Page<Long> getTransactionsLast24hrsByTypeScriptIdWithSort(Page page, @Param("typeScriptId") Long typeScriptId , @Param("orderByStr") String orderByStr,
+                                                              @Param("ascOrDesc") String ascOrDesc,@Param("txHash") byte[] txHash, @Param("lockScriptId") Long lockScriptId);
 
 
 }
