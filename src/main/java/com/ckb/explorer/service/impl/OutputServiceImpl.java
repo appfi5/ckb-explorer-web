@@ -101,7 +101,7 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
           Set<Integer> udtCellType = Set.of(CellType.UDT.getValue(),CellType.XUDT.getValue(),CellType.XUDT_COMPATIBLE.getValue(),CellType.SSRI.getValue());
           if(udtCellType.contains(cellType.intValue()) && script != null){
             extraInfoResponse.setSymbol(script.getSymbol());
-            extraInfoResponse.setDecimal(script.getDecimal().toString());
+            extraInfoResponse.setDecimal(script.getDecimal());
             extraInfoResponse.setTypeHash(Numeric.toHexString(typeScript.getScriptHash()));
             extraInfoResponse.setAmount(CkbUtil.dataToUdtAmount(cellOutput.getData()));
             extraInfoResponse.setPublished(true);

@@ -26,7 +26,8 @@ public class ExtraInfoResponse {
   @JsonSerialize(using = ToStringSerializer.class)
   private BigInteger amount;
 
-  private String decimal;
+  @JsonSerialize(using = ToStringSerializer.class)
+  private Integer decimal;
 
   private String typeHash;
 
