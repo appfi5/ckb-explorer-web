@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ckb.explorer.mapper.Address24hTransactionMapper">
+
+    <resultMap id="BaseResultMap" type="com.ckb.explorer.entity.Address24hTransaction">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="lockScriptId" column="lock_script_id" jdbcType="BIGINT"/>
+        <result property="ckbTransactionId" column="ckb_transaction_id" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <resultMap id="transactionsCount" type="com.ckb.explorer.domain.dto.UdtH24TransactionsCountDto">
+        <result property="typeScriptHash" column="typeScriptHash" />
+        <result property="h24CkbTransactionsCount" column="h24CkbTransactionsCount" />
+    </resultMap>
+
+    <select id="getTransactionsCountByScriptHashes" resultMap="transactionsCount">
+        select  s.script_hash as typeScriptHash,
+        count(at.*) as h24CkbTransactionsCount
+        from address_24h_transaction at
+        left join script s on at.type_script_id = s.id
+        where s.script_hash in
+        <foreach  item="item" index="index" collection="scriptHashes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="null != oneDayAgo and oneDayAgo >0 ">
+         and at.block_timestamp >#{oneDayAgo}
+        </if>
+        group by s.script_hash
+    </select>
+</mapper>

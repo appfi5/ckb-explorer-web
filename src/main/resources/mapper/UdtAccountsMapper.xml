@@ -51,4 +51,20 @@
         where ua.lock_script_id = #{lockScriptId}
     </select>
 
+    <resultMap id="addressCount" type="com.ckb.explorer.domain.dto.UdtAddressCountDto">
+        <result property="typeScriptHash" column="typeScriptHash" />
+        <result property="addressesCount" column="addressesCount" />
+    </resultMap>
+
+    <select id="getAddressNumByScriptHashes" resultMap="addressCount">
+        select  s.script_hash as typeScriptHash,
+                count(ua.*) as addressesCount
+        from udt_accounts ua
+            left join script s on ua.type_script_id = s.id
+        where s.script_hash in
+        <foreach  item="item" index="index" collection="scriptHashes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        group by s.script_hash
+    </select>
 </mapper>

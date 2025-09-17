@@ -2,10 +2,13 @@ package com.ckb.explorer.domain.resp;
 
 import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigInteger;
 import java.util.Set;
 
 /**
@@ -15,26 +18,14 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UdtDetailResponse extends BaseResponse<Long> {
+public class UdtDetailResponse {
 
   private String type = "udt";
-  private String symbol;
-  private String fullName;
-  private String iconFile;
-  private Boolean published;
-  private String description;
-  private String typeScriptHash;
-  private ScriptResponse typeScript;
-  private String issuerAddress;
-  private String udtType;
-  private String operatorWebsite;
-  private Long totalAmount;
-  private Long addressesCount;
-  private Integer decimal;
-  private Long h24CkbTransactionsCount;
+
+  @JsonSerialize(using = ToStringSerializer.class)
+  private BigInteger totalAmount;
+
   private Long holdersCount;
-  private Long blockTimestamp;
-  private String[] xudtTags;
 
 
 }
