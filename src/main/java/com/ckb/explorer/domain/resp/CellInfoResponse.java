@@ -1,5 +1,6 @@
 package com.ckb.explorer.domain.resp;
 
+import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CellInfoResponse {
+public class CellInfoResponse extends BaseResponse<Long> {
   /**
    * 容量
    */

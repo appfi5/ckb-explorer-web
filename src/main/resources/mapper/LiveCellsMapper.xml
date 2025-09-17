@@ -34,18 +34,12 @@
     <result property="typeHash" column="type_script_hash"/>
     <result property="cellIndex" column="cell_index"/>
     <result property="data" column="data"/>
-    <result property="tags" column="xudt_tags" typeHandler="org.apache.ibatis.type.ArrayTypeHandler" jdbcType="ARRAY"/>
     <result property="blockNumber" column="block_number"/>
     <result property="capacity" column="capacity"/>
     <result property="occupiedCapacity" column="occupied_capacity"/>
     <result property="blockTimestamp" column="block_timestamp"/>
-    <association property="extraInfo" javaType="com.ckb.explorer.domain.resp.ExtraInfoResponse">
-      <result property="symbol" column="symbol"/>
-      <result property="amount" column="udt_amount"/>
-      <result property="decimal" column="decimal"/>
-      <result property="typeHash" column="type_script_hash"/>
-      <result property="published" column="published"/>
-    </association>
+    <result property="codeHash" column="code_hash"/>
+    <result property="args" column="args"/>
   </resultMap>
 
   <select id="getLiveCellsByLockScriptIdWithTypeScriptId" resultMap="liveCellsMap">
@@ -54,48 +48,47 @@
         lc.cell_type                              as cell_type,
         '0x' || encode(lc.tx_hash, 'hex')         as tx_hash,
         lc.output_index                           as cell_index,
-        '0x' || encode(u.type_script_hash, 'hex') as type_script_hash,
+        '0x' || encode(s.script_hash, 'hex')      as type_script_hash,
         '0x' || encode(lc.data, 'hex')            as data,
-        u.xudt_tags                               as xudt_tags,
         lc.block_number                           as block_number,
         lc.capacity                               as capacity,
         lc.occupied_capacity                      as occupied_capacity,
         lc.block_timestamp                        as block_timestamp,
         lc.udt_amount                             as udt_amount,
-        u.symbol                                  as symbol,
-        u.decimal                                 as decimal,
-        u.published                               as published
+        '0x' || encode(s.code_hash, 'hex')        as code_hash,
+        '0x' || encode(s.args , 'hex')            as args
     from live_cells lc
-        left join udts u on lc.type_script_id = u.type_script_id
+        left join script s on lc.type_script_id = s.id
     where lc.lock_script_id = #{lockScriptId}
     <if test="typeScriptId != null">
       and lc.type_script_id = #{typeScriptId}
     </if>
-    <if test="typeScriptId = null">
+      -- 筛选出ckb的live_cells
+    <if test="typeScriptId == null">
+      and lc.cell_type = 0
       and lc.type_script_id is null
     </if>
+    order by lc.block_number desc, lc.output_index asc
   </select>
+
   <select id="getOthersLiveCellsByLockScriptId" resultMap="liveCellsMap">
     select
         lc.output_id                              as id,
         lc.cell_type                              as cell_type,
         '0x' || encode(lc.tx_hash, 'hex')         as tx_hash,
         lc.output_index                           as cell_index,
-        '0x' || encode(u.type_script_hash, 'hex') as type_script_hash,
+        case when s.script_hash is not null then '0x' || encode(s.script_hash, 'hex')  else null end    as type_script_hash,
         '0x' || encode(lc.data, 'hex')            as data,
         lc.block_number                           as block_number,
         lc.capacity                               as capacity,
         lc.occupied_capacity                      as occupied_capacity,
-        lc.block_timestamp                        as block_timestamp,
+        lc.block_timestamp                        as block_timestamp
     from live_cells lc
-           left join udts u on lc.type_script_id = u.type_script_id
+        left join script s on lc.type_script_id = s.id
+        left join output_extend oe on lc.output_id = oe.output_id
     where lc.lock_script_id = #{lockScriptId}
-    <if test="null != udtAndNormalCellType">
-      AND lc.cell_type not in
-      <foreach item="item" index="index" collection="udtAndNormalCellType" open="(" separator=","
-        close=" )">
-        #{item}
-      </foreach>
-    </if>
+      and lc.cell_type != 0
+      and oe.output_id is null -- 筛选出没有被解析到extend表的，都算为other
+      order by lc.block_number desc, lc.output_index asc
   </select>
 </mapper>
