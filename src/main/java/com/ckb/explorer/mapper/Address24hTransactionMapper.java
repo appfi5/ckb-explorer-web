@@ -43,6 +43,11 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
 
     List<UdtH24TransactionsCountDto> getTransactionsCountByScriptHashes(@Param("scriptHashes") List<byte[]> scriptHashes, @Param("oneDayAgo")  Long oneDayAgo);
 
+
+    @Select("select ckb_transaction_id from  address_24h_transaction where type_script_id = #{typeScriptId} ")
+    Page<Long> getTransactionsLast24hrsByTypeScriptIdWithSort(Page page, @Param("typeScriptId") Long typeScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
+
+
 }
 
 
