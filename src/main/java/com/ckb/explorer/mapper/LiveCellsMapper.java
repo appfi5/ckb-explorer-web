@@ -18,7 +18,7 @@ public interface LiveCellsMapper extends BaseMapper<LiveCells> {
 
   Page<LiveCellsResponse> getLiveCellsByLockScriptIdWithTypeScriptId(Page page,  @Param("lockScriptId") Long lockScriptId,@Param("typeScriptId")  Long typeScriptId);
 
-  Page<LiveCellsResponse> getOthersLiveCellsByLockScriptId(Page page,  @Param("lockScriptId") Long lockScriptId,@Param("udtAndNormalCellType") Set<Integer> udtAndNormalCellType);
+  Page<LiveCellsResponse> getOthersLiveCellsByLockScriptId(Page page,  @Param("lockScriptId") Long lockScriptId);
 }
 
 

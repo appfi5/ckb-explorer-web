@@ -2,6 +2,7 @@ package com.ckb.explorer.domain.resp;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.ckb.explorer.domain.resp.base.BaseResponse;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -41,4 +42,10 @@ public class LiveCellsResponse extends BaseResponse<Long> {
   private Long blockTimestamp;
 
   private ExtraInfoResponse extraInfo; // 根据不同资产 cellType 显示不同的信息
+
+  @JsonIgnore
+  private String codeHash;
+
+  @JsonIgnore
+  private String args;
 }
