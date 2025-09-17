@@ -1,5 +1,7 @@
 package com.ckb.explorer.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.resp.UdtTransactionPageResponse;
 import com.ckb.explorer.entity.UdtTransactions;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -10,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UdtTransactionsService extends IService<UdtTransactions> {
 
+    Page<UdtTransactionPageResponse> page(String typeScriptHash, Integer page, Integer pageSize);
 }
