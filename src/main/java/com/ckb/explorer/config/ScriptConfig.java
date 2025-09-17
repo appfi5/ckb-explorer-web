@@ -59,6 +59,12 @@ public class ScriptConfig {
 
     private List<CellDep> cellDeps;
 
+    private String symbol;
+
+    private Integer decimal;
+
+    private String scriptHash;
+
   }
 
   public LockScript getLockScriptByCodeHash(String codeHash) {

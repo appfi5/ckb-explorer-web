@@ -49,4 +49,39 @@ public enum CellType {
     public   boolean isUdtType(){
         return udtCellType.contains(this);
     }
+
+  public static String getTypeByCellType(Integer cellType){
+    var type =CellType.valueOf(cellType);
+    switch (type) {
+      case CellType.NORMAL:
+        return "ckb";
+      case CellType.UDT:
+        return type.getName();
+      case CellType.XUDT:
+        return "xudt";
+      case CellType.XUDT_COMPATIBLE:
+        return "xudt_compatible";
+      case CellType.COTA_REGISTRY:
+      case CellType.COTA_REGULAR:
+        return "cota";
+      case CellType.M_NFT_ISSUER:
+      case CellType.M_NFT_CLASS:
+      case CellType.M_NFT_TOKEN:
+        return "m_nft";
+      case CellType.NRC_721_TOKEN:
+      case CellType.NRC_721_FACTORY:
+        return "nrc_721";
+      case CellType.SPORE_CLUSTER:
+      case CellType.SPORE_CELL:
+      case CellType.DID_CELL:
+        return "dob";
+      case CellType.OMIGA_INSCRIPTION_INFO:
+      case CellType.OMIGA_INSCRIPTION:
+        return "omiga_inscription";
+      case CellType.STABLEPP_POOL:
+        return "stablepp_pool";
+      default:
+        return "other";
+    }
+  }
 }

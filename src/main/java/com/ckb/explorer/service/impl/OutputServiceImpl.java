@@ -36,9 +36,6 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
   @Resource
   private ScriptConfig scriptConfig;
 
-  @Resource
-  private UdtsMapper udtsMapper;
-
   @Override
   public Long countAddressTransactions(Long scriptId) {
     return baseMapper.countAddressTransactions(scriptId);
@@ -52,6 +49,7 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
     if (cellOutput == null) {
       return null;
     }
+    response.setId(cellOutput.getId());
     response.setCapacity(cellOutput.getCapacity());
     response.setOccupiedCapacity(cellOutput.getOccupiedCapacity());
     response.setStatus(cellOutput.getIsSpent());
@@ -61,10 +59,17 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
     response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
 
+    // 获取cellType
     OutputExtend outputExtend = outputExtendMapper.selectOne(new QueryWrapper<OutputExtend>().eq("output_id", id));
+    Integer cellType = null;
+    // 只有解析过的output才有cellType
     if(outputExtend != null){
-      response.setCellType(outputExtend.getCellType());
+      cellType = outputExtend.getCellType();
+      // ckb的cellType默认为0
+    } else if(cellOutput.getTypeScriptId() == null){
+      cellType = CellType.NORMAL.getValue();
     }
+    response.setCellType(cellType);
 
     // 获取lock_script
     Script lockScript = scriptMapper.selectById(cellOutput.getLockScriptId());
@@ -88,29 +93,25 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
         var script = scriptConfig.getTypeScriptByCodeHash(typeScriptResponse.getCodeHash(), typeScriptResponse.getArgs());
         typeScriptResponse.setVerifiedScriptName(script == null ? null : script.getName());
         response.setTypeScript(typeScriptResponse);
-      }
-    }
 
-    // 扩展信息
-    var cellType = response.getCellType();
-    if(cellType != null && cellOutput.getTypeScriptId() != null){
-      var extraInfoResponse = new ExtraInfoResponse();
+        // 只有资产才有扩展信息
+        if(cellType != null){
+          var extraInfoResponse = new ExtraInfoResponse();
+          extraInfoResponse.setType(CellType.getTypeByCellType(cellType));
+          // 根据不同的cellType组装不同的扩展信息
+          Set<Integer> udtCellType = Set.of(CellType.UDT.getValue(),CellType.XUDT.getValue(),CellType.XUDT_COMPATIBLE.getValue(),CellType.SSRI.getValue());
+          if(udtCellType.contains(cellType.intValue()) && script != null){
+            extraInfoResponse.setSymbol(script.getSymbol());
+            extraInfoResponse.setDecimal(script.getDecimal().toString());
+            extraInfoResponse.setTypeHash(Numeric.toHexString(typeScript.getScriptHash()));
+            extraInfoResponse.setAmount(CkbUtil.dataToUdtAmount(cellOutput.getData()));
+            extraInfoResponse.setPublished(true);
+          }
 
-      Set<Integer> udtCellType = Set.of(CellType.UDT.getValue(),CellType.XUDT.getValue(),CellType.XUDT_COMPATIBLE.getValue(),CellType.SSRI.getValue());
-      if(udtCellType.contains(cellType.intValue())){
-        var udtInfo = udtsMapper.getByTypeScriptId(cellOutput.getTypeScriptId());
-        if(udtInfo != null){
-          extraInfoResponse.setSymbol(udtInfo.getSymbol());
-          extraInfoResponse.setDecimal(udtInfo.getDecimal().toString());
-          extraInfoResponse.setTypeHash(Numeric.toHexString(udtInfo.getTypeScriptHash()));
-          extraInfoResponse.setAmount(CkbUtil.dataToUdtAmount(cellOutput.getData()));
-          extraInfoResponse.setPublished(udtInfo.getPublished());
+          response.setExtraInfo(extraInfoResponse);
         }
       }
-
-      response.setExtraInfo(extraInfoResponse);
     }
-
 
     return response;
   }
