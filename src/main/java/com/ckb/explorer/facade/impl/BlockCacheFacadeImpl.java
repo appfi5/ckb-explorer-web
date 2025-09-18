@@ -27,7 +27,7 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
   // 缓存 TTL：5 秒
   private static final long TTL_SECONDS = 5;
 
-  private static final long DETAIL_TTL_SECONDS = 180;
+  private static final long DETAIL_TTL_SECONDS = 5 * 60;
 
   private static final String CACHE_PREFIX = "ckb:blocks:";
   private static final String CACHE_VERSION = "v1";
