@@ -87,8 +87,8 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     }
 
     // 查询地址的交易总数
-    var transactionCount = outputService.countAddressTransactions(script.getId());
-    addressResponse.setTransactionsCount(transactionCount);
+//    var transactionCount = outputService.countAddressTransactions(script.getId());
+//    addressResponse.setTransactionsCount(transactionCount);
     
     return addressResponse;
   }

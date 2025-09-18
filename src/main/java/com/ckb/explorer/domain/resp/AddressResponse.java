@@ -25,7 +25,7 @@ public class AddressResponse extends BaseResponse<Long> {
   @JsonSerialize(using = ToStringSerializer.class)
   private BigDecimal balance = BigDecimal.ZERO;
 
-  private Long transactionsCount = 0L;
+//  private Long transactionsCount = 0L;
 
   /**
    * DAO 押金
