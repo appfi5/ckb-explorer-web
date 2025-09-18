@@ -1,16 +1,13 @@
 package com.ckb.explorer.facade.impl;
 
 import com.ckb.explorer.domain.resp.DistributionDataResponse;
-import com.ckb.explorer.entity.RollingAvgBlockTime;
 import com.ckb.explorer.facade.IDistributionDataCacheFacade;
 import com.ckb.explorer.service.DistributionDataService;
 import com.ckb.explorer.util.CacheUtils;
 import com.ckb.explorer.util.JsonUtil;
 import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**

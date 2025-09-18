@@ -48,7 +48,7 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
 
     return cacheUtils.getCache(
         cacheKey,                    // 缓存键
-        () -> loadFromDatabase(),  // 数据加载函数
+        this::loadFromDatabase,  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
@@ -57,7 +57,7 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
 
   private IndexStatisticResponse loadFromDatabase() {
     IndexStatisticResponse response = new IndexStatisticResponse();
-    LambdaQueryWrapper wrapper = new LambdaQueryWrapper<Block>().orderByDesc(Block::getId)
+    LambdaQueryWrapper<Block> wrapper = new LambdaQueryWrapper<Block>().orderByDesc(Block::getId)
         .last("LIMIT 1");
 
     var tipBlock = blockMapper.selectOne(wrapper);

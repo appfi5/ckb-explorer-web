@@ -128,7 +128,7 @@ public class CacheUtils {
     RBucket<T> bucket = bucketSupplier.get();
     T cachedValue = bucket.get();
 
-    // 2. 首次缓存命中：直接返回
+    // 2. 首次 缓存命中：直接返回
     if (cachedValue != null) {
       log.info("Cache hit (with lock), key: {}", cacheKey);
       return cachedValue;
@@ -152,7 +152,7 @@ public class CacheUtils {
         lockAcquired.set(true);
         log.info("Acquired lock for cache key: {}", cacheKey);
 
-        // 3.3 锁内再次检查：避免锁等待期间数据已被加载
+        // 3.3 锁内再次检查：避免锁等待期间 数据已被加载
         cachedValue = bucket.get();
         if (cachedValue != null) {
           log.info("Cache hit (in lock), key: {}", cacheKey);
@@ -171,8 +171,6 @@ public class CacheUtils {
         } else {
           log.info("Loaded null value from supplier, skip caching, key: {}", cacheKey);
         }
-
-        return cachedValue;
       } else {
 
         // 3.6 锁获取失败：降级查库（避免返回 null）
@@ -182,9 +180,8 @@ public class CacheUtils {
           bucket.set(cachedValue, Duration.ofMillis(timeUnit.toMillis(ttl)));
           log.info("Degraded load and saved cache, key: {}", cacheKey);
         }
-
-        return cachedValue;
       }
+      return cachedValue;
     } catch (InterruptedException e) {
 
       // 3.7 线程中断：恢复中断状态 + 降级查库

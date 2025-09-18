@@ -33,7 +33,7 @@ public class NetInfoCacheFacadeImpl implements INetInfoCacheFacade {
 
     return cacheUtils.getCache(
         cacheKey,                    // 缓存键
-        () -> loadNodeInfoVersion(),  // 数据加载函数
+        this::loadNodeInfoVersion,  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
