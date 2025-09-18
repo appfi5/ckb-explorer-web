@@ -135,3 +135,9 @@ CREATE TABLE epoch_statistics
 );
 
 CREATE INDEX idx_epoch_statistics_number ON epoch_statistics (epoch_number);
+
+CREATE INDEX idx_output_lockscript_txhash_full ON output (lock_script_id)
+    INCLUDE (tx_hash) WHERE tx_hash IS NOT NULL;
+
+CREATE INDEX idx_output_lockscript_consumedtxhash_full ON output (lock_script_id)
+    INCLUDE (consumed_tx_hash) WHERE consumed_tx_hash IS NOT NULL;

@@ -7,13 +7,10 @@ import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.mapstruct.BlockConvert;
 import com.ckb.explorer.service.BlockService;
-import java.time.Duration;
+import com.ckb.explorer.util.CacheUtils;
+import jakarta.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,19 +18,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BlockCacheFacadeImpl implements IBlockCacheFacade {
 
-  @Autowired
-  private RedissonClient redissonClient;
-
-  @Autowired
+  @Resource
   private BlockService blockService;
+
+  @Resource
+  private CacheUtils cacheUtils;
 
   // 缓存 TTL：5 秒
   private static final long TTL_SECONDS = 5;
-  private static final long TTL_MILLIS = TimeUnit.SECONDS.toMillis(TTL_SECONDS);
 
-  // 防击穿锁等待时间
-  private static final long LOCK_WAIT_TIME = 1;
-  private static final long LOCK_LEASE_TIME = 8;
+  private static final long DETAIL_TTL_SECONDS = 180;
 
   private static final String CACHE_PREFIX = "ckb:blocks:";
   private static final String CACHE_VERSION = "v1";
@@ -45,111 +39,25 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
     String cacheKey = String.format("%s%s:page:%d:size:%d:sort:%s",
         CACHE_PREFIX, CACHE_VERSION, page, pageSize, sort);
 
-    RBucket<Page<BlockListResponse>> bucket = redissonClient.getBucket(
-        cacheKey);
-
-    // 1. 先尝试读缓存
-    Page<BlockListResponse> cached = bucket.get();
-    if (cached != null) {
-      return cached;
-    }
-
-    // 2. 缓存未命中，使用分布式锁防止击穿
-    String lockKey = cacheKey + ":lock";
-    RLock lock = redissonClient.getLock(lockKey);
-
-    try {
-      // 双重检查
-      cached = bucket.get();
-      if (cached != null) {
-        return cached;
-      }
-
-      if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
-        // 再次检查
-        cached = bucket.get();
-        if (cached != null) {
-          return cached;
-        }
-
-        // 真正加载数据
-        Page<BlockListResponse> result = loadFromDatabase(page,
-            pageSize, sort);
-
-        // 写入缓存
-        bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-
-        return result;
-      } else {
-        // 获取锁失败，降级：直接查库
-        Page<BlockListResponse> result = loadFromDatabase(page,
-            pageSize, sort);
-        bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-        return result;
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      // 降级处理
-      return loadFromDatabase(page, pageSize, sort);
-    } finally {
-      if (lock.isHeldByCurrentThread()) {
-        lock.unlock();
-      }
-    }
+    String finalSort = sort;
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> loadFromDatabase(page, pageSize, finalSort),  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
   }
 
   @Override
   public BlockResponse findBlock(String id) {
     String cacheKey = String.format("%s%s:block:%s", CACHE_PREFIX, CACHE_VERSION, id);
 
-    RBucket<BlockResponse> bucket = redissonClient.getBucket(cacheKey);
-
-    // 1. 先尝试读缓存
-    BlockResponse cached = bucket.get();
-    if (cached != null) {
-      return cached;
-    }
-
-    // 2. 缓存未命中，使用分布式锁防止击穿
-    String lockKey = cacheKey + ":lock";
-    RLock lock = redissonClient.getLock(lockKey);
-
-    try {
-      // 双重检查
-      cached = bucket.get();
-      if (cached != null) {
-        return cached;
-      }
-
-      if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
-        // 再次检查
-        cached = bucket.get();
-        if (cached != null) {
-          return cached;
-        }
-
-        // 真正加载数据
-        BlockResponse result = loadBlockFromDatabase(id);
-
-        // 写入缓存 对应Rails.cache.fetch([name, query_key], race_condition_ttl: 3.seconds, expires_in: 30.minutes)
-        bucket.set(result, Duration.ofMinutes(30));
-
-        return result;
-      } else {
-        // 获取锁失败，降级：直接查库
-        BlockResponse result = loadBlockFromDatabase(id);
-        bucket.set(result, Duration.ofMinutes(30));
-        return result;
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      // 降级处理
-      return loadBlockFromDatabase(id);
-    } finally {
-      if (lock.isHeldByCurrentThread()) {
-        lock.unlock();
-      }
-    }
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> loadBlockFromDatabase(id),  // 数据加载函数
+        DETAIL_TTL_SECONDS,               // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
   }
 
   /**

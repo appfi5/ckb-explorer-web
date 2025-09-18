@@ -195,15 +195,20 @@
 
   <select id="countAddressTransactions"
     resultType="java.lang.Long">
-    SELECT COUNT(DISTINCT tx_hash) AS transaction_count
+    SELECT COUNT(combined.tx_hash) AS transaction_count
     FROM (
+           -- 直接用 UNION 合并并去重（UNION 自动去重，避免外层 DISTINCT 处理大量数据）
            SELECT tx_hash
            FROM output
-           WHERE lock_script_id = #{lockScriptId} AND tx_hash IS NOT NULL
-           UNION ALL
+           WHERE lock_script_id = #{lockScriptId}
+             AND tx_hash IS NOT NULL
+
+           UNION -- 替换 UNION ALL + 子查询 GROUP BY，减少中间数据量
+
            SELECT consumed_tx_hash AS tx_hash
            FROM output
-           WHERE lock_script_id = #{lockScriptId} AND consumed_tx_hash IS NOT NULL
+           WHERE lock_script_id = #{lockScriptId}
+             AND consumed_tx_hash IS NOT NULL
          ) AS combined;
   </select>
 
