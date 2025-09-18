@@ -9,17 +9,14 @@ import com.ckb.explorer.facade.IStatisticCacheFacade;
 import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapstruct.BlockchainInfoConvert;
 import com.ckb.explorer.service.StatisticInfoService;
+import com.ckb.explorer.util.CacheUtils;
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.type.BlockchainInfo;
 import org.nervos.ckb.utils.Numeric;
-import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
 
   @Resource
-  private RedissonClient redissonClient;
+  private CacheUtils cacheUtils;
 
   @Resource
   private BlockMapper blockMapper;
@@ -43,72 +40,24 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
 
   // 缓存 TTL
   private static final long TTL_SECONDS = 15;
-  private static final long TTL_MILLIS = TimeUnit.SECONDS.toMillis(TTL_SECONDS);
-  // 防击穿锁等待时间
-  private static final long LOCK_WAIT_TIME = 1;
-  private static final long LOCK_LEASE_TIME = 8;
 
   @Override
   public IndexStatisticResponse getIndexStatistic() {
     // 创建缓存键
     String cacheKey = String.format("%s%s", STATISTIC_CACHE_PREFIX, CACHE_VERSION);
 
-    RBucket<IndexStatisticResponse> bucket = redissonClient.getBucket(cacheKey);
-
-    // 1. 先尝试读缓存
-    IndexStatisticResponse cached = bucket.get();
-    if (cached != null) {
-      return cached;
-    }
-
-    // 2. 缓存未命中，使用分布式锁防止击穿
-    String lockKey = cacheKey + ":lock";
-    RLock lock = redissonClient.getLock(lockKey);
-
-    try {
-      // 双重检查
-      cached = bucket.get();
-      if (cached != null) {
-        return cached;
-      }
-
-      if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
-        try {
-          // 再次检查
-          cached = bucket.get();
-          if (cached != null) {
-            return cached;
-          }
-
-          // 真正加载数据
-          IndexStatisticResponse result = loadFromDatabase();
-
-          // 写入缓存
-          bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-
-          return result;
-        } finally {
-          if (lock.isHeldByCurrentThread()) {
-            lock.unlock();
-          }
-        }
-      } else {
-        // 获取锁失败，降级：直接查库
-        IndexStatisticResponse result = loadFromDatabase();
-        bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-        return result;
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      // 降级处理
-      return loadFromDatabase();
-    }
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        this::loadFromDatabase,  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
   }
 
 
   private IndexStatisticResponse loadFromDatabase() {
     IndexStatisticResponse response = new IndexStatisticResponse();
-    LambdaQueryWrapper wrapper = new LambdaQueryWrapper<Block>().orderByDesc(Block::getId)
+    LambdaQueryWrapper<Block> wrapper = new LambdaQueryWrapper<Block>().orderByDesc(Block::getId)
         .last("LIMIT 1");
 
     var tipBlock = blockMapper.selectOne(wrapper);
@@ -147,57 +96,12 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
     // 创建缓存键
     String cacheKey = String.format("%s%s:fieldName:%s", STATISTIC_CACHE_PREFIX, CACHE_VERSION,
         fieldName);
-
-    RBucket<StatisticResponse> bucket = redissonClient.getBucket(cacheKey);
-
-    // 1. 先尝试读缓存
-    StatisticResponse cached = bucket.get();
-    if (cached != null) {
-      return cached;
-    }
-
-    // 2. 缓存未命中，使用分布式锁防止击穿
-    String lockKey = cacheKey + ":lock";
-    RLock lock = redissonClient.getLock(lockKey);
-
-    try {
-      // 双重检查
-      cached = bucket.get();
-      if (cached != null) {
-        return cached;
-      }
-
-      if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
-        try {
-          // 再次检查
-          cached = bucket.get();
-          if (cached != null) {
-            return cached;
-          }
-
-          // 真正加载数据
-          StatisticResponse result = loadFromDatabase(fieldName);
-
-          // 写入缓存
-          bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-
-          return result;
-        } finally {
-          if (lock.isHeldByCurrentThread()) {
-            lock.unlock();
-          }
-        }
-      } else {
-        // 获取锁失败，降级：直接查库
-        StatisticResponse result = loadFromDatabase(fieldName);
-        bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-        return result;
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      // 降级处理
-      return loadFromDatabase(fieldName);
-    }
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> loadFromDatabase(fieldName),  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
   }
 
   private StatisticResponse loadFromDatabase(String fieldName) {

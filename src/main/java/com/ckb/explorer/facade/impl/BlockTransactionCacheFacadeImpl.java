@@ -4,18 +4,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
 import com.ckb.explorer.facade.IBlockTransactionCacheFacade;
 import com.ckb.explorer.service.CkbTransactionService;
-import com.ckb.explorer.util.I18n;
+import com.ckb.explorer.util.CacheUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.redisson.api.RBucket;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,92 +20,43 @@ import java.util.concurrent.TimeUnit;
 @Transactional(readOnly = true)
 public class BlockTransactionCacheFacadeImpl implements IBlockTransactionCacheFacade {
 
-    @Autowired
-    private RedissonClient redissonClient;
+  @Resource
+  private CacheUtils cacheUtils;
 
-    @Autowired
-    private CkbTransactionService transactionService;
+  @Resource
+  private CkbTransactionService transactionService;
 
-    @Resource
-    private I18n i18n;
+  private static final String BLOCK_TRANSACTIONS_CACHE_PREFIX = "block:transactions:";
+  private static final String CACHE_VERSION = "v1";
 
-    private static final String BLOCK_TRANSACTIONS_CACHE_PREFIX = "block:transactions:";
-    private static final String CACHE_VERSION = "v1";
+  // 缓存 TTL：10 秒
+  private static final long TTL_SECONDS = 10;
 
-    // 缓存 TTL：10 秒
-    private static final long TTL_SECONDS = 10;
-    private static final long TTL_MILLIS = TimeUnit.SECONDS.toMillis(TTL_SECONDS);
-    // 防击穿锁等待时间
-    private static final long LOCK_WAIT_TIME = 1;
-    private static final long LOCK_LEASE_TIME = 8;
+  @Override
+  public Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash,
+      String addressHash, Integer page, Integer pageSize) {
+    // 创建缓存键
+    String cacheKey = String.format("%s%s:blockHash:%s:txHash:%s:addressHash:%s:page:%d:size:%d",
+        BLOCK_TRANSACTIONS_CACHE_PREFIX, CACHE_VERSION, blockHash,
+        StringUtils.isEmpty(txHash) ? "empty" : txHash,
+        StringUtils.isEmpty(addressHash) ? "empty" : addressHash,
+        page, pageSize);
 
-    @Override
-    public Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash, String addressHash, Integer page, Integer pageSize) {
-        // 创建缓存键
-        String cacheKey = String.format("%s%s:blockHash:%s:txHash:%s:addressHash:%s:page:%d:size:%d",
-                BLOCK_TRANSACTIONS_CACHE_PREFIX, CACHE_VERSION, blockHash,
-                StringUtils.isEmpty(txHash) ? "empty" : txHash, 
-                StringUtils.isEmpty(addressHash) ? "empty" : addressHash, 
-                page, pageSize);
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> loadFromDatabase(blockHash, txHash, addressHash, page, pageSize),  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
+  }
 
-        RBucket<Page<BlockTransactionPageResponse>> bucket = redissonClient.getBucket(cacheKey);
+  /**
+   * 从数据库加载区块内的交易列表
+   */
+  private Page<BlockTransactionPageResponse> loadFromDatabase(String blockHash, String txHash,
+      String addressHash, Integer page, Integer pageSize) {
 
-        // 1. 先尝试读缓存
-        Page<BlockTransactionPageResponse> cached = bucket.get();
-        if (cached != null) {
-            return cached;
-        }
-
-        // 2. 缓存未命中，使用分布式锁防止击穿
-        String lockKey = cacheKey + ":lock";
-        RLock lock = redissonClient.getLock(lockKey);
-
-        try {
-            // 双重检查
-            cached = bucket.get();
-            if (cached != null) {
-                return cached;
-            }
-
-            if (lock.tryLock(LOCK_WAIT_TIME, LOCK_LEASE_TIME, TimeUnit.SECONDS)) {
-                try {
-                    // 再次检查
-                    cached = bucket.get();
-                    if (cached != null) {
-                        return cached;
-                    }
-
-                    // 真正加载数据
-                    Page<BlockTransactionPageResponse> result = loadFromDatabase(blockHash, txHash, addressHash, page, pageSize);
-
-                    // 写入缓存
-                    bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-
-                    return result;
-                } finally {
-                    if (lock.isHeldByCurrentThread()) {
-                        lock.unlock();
-                    }
-                }
-            } else {
-                // 获取锁失败，降级：直接查库
-                Page<BlockTransactionPageResponse> result = loadFromDatabase(blockHash, txHash, addressHash, page, pageSize);
-                bucket.set(result, Duration.ofMillis(TTL_MILLIS));
-                return result;
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            // 降级处理
-            return loadFromDatabase(blockHash, txHash, addressHash, page, pageSize);
-        }
-    }
-
-    /**
-     * 从数据库加载区块内的交易列表
-     */
-    private Page<BlockTransactionPageResponse> loadFromDatabase(String blockHash, String txHash, String addressHash, Integer page, Integer pageSize) {
-
-        // 调用BlockTransactionService获取区块内的交易列表
-        return transactionService.getBlockTransactions(blockHash, txHash, addressHash, page, pageSize);
-    }
+    // 调用BlockTransactionService获取区块内的交易列表
+    return transactionService.getBlockTransactions(blockHash, txHash, addressHash, page, pageSize);
+  }
 }
