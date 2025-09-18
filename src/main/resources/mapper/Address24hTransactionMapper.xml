@@ -17,7 +17,7 @@
 
     <select id="getTransactionsCountByScriptHashes" resultMap="transactionsCount">
         select  s.script_hash as typeScriptHash,
-        count(at.*) as h24CkbTransactionsCount
+        count(distinct  at.ckb_transaction_id) as h24CkbTransactionsCount
         from address_24h_transaction at
         left join script s on at.type_script_id = s.id
         where s.script_hash in

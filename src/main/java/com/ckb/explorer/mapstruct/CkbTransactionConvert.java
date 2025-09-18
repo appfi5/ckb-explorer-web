@@ -2,8 +2,10 @@ package com.ckb.explorer.mapstruct;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.TransactionDto;
+import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
+import com.ckb.explorer.domain.resp.UdtTransactionPageResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.util.TypeConversionUtil;
 import java.util.List;
@@ -27,5 +29,8 @@ public interface CkbTransactionConvert {
   @Mapping(source = "headerDeps", target = "headerDeps", qualifiedByName = "byteToHashList(Value)")
   @Mapping(source = "txHash", target = "transactionHash")
   TransactionResponse toConvertTransactionResponse(TransactionDto ckbTransaction);
+
+
+  List<UdtTransactionPageResponse> toConvertUdtTransactionList(List<AddressTransactionPageResponse> page);
 
 }

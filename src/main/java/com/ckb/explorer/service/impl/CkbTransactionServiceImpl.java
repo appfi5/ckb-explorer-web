@@ -8,11 +8,8 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.dto.CellOutputDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
-import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
-import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
-import com.ckb.explorer.domain.resp.CellInputResponse;
-import com.ckb.explorer.domain.resp.CellOutputResponse;
-import com.ckb.explorer.domain.resp.TransactionResponse;
+import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
+import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
@@ -25,6 +22,7 @@ import com.ckb.explorer.mapstruct.CellInputConvert;
 import com.ckb.explorer.mapstruct.CellOutputConvert;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
 import com.ckb.explorer.service.CkbTransactionService;
+import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.ArrayList;
@@ -32,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Service;
@@ -57,6 +57,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Resource
   private ScriptMapper scriptMapper;
+
+  @Resource
+  ScriptService scriptService;
 
   @Override
   public Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
@@ -349,6 +352,119 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     });
 
     var result = new Page<AddressTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), transactionIdPage.getTotal());
+    result.setRecords(transactions);
+    return result;
+  }
+
+
+  @Override
+  public Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, UdtTransactionsPageReq req) {
+    Integer page = req.getPage();
+    Integer pageSize = req.getPageSize();
+    String[] sortParts = req.getSort().split("\\.", 2);
+    String orderBy = sortParts[0];
+    String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+
+    orderBy = switch (orderBy) {
+      case "time" -> "block_timestamp";
+      default -> throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
+    };
+
+    // 判断Udt是否存在
+    Script script = scriptService.findByScriptHash(typeScriptHash);
+    if (script == null) {
+      throw new ServerException(I18nKey.UDTS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.UDTS_NOT_FOUND_MESSAGE));
+    }
+
+    Long lockScriptId = null;
+    if (StringUtils.isNotEmpty(req.getAddressHash())) {
+      // 查找地址
+      // 计算地址的哈希
+      var addressScriptHash = Address.decode(req.getAddressHash()).getScript().computeHash();
+      LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+      queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+      var lockScript = scriptMapper.selectOne(queryScriptWrapper);
+      if(lockScript == null){
+        throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+      }
+      lockScriptId = lockScript.getId();
+    }
+
+    byte[] txHashBytes = null;
+    if(StringUtils.isNotEmpty(req.getTxHash())){
+      txHashBytes = Numeric.hexStringToByteArray(req.getTxHash());
+    }
+
+    // 从24小时表里获取翻页的交易id
+    Page<Long> transactionIdsPage = new Page<>(page, pageSize);
+    Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByTypeScriptIdWithSort(
+            transactionIdsPage, script.getId(), orderBy, ascOrDesc,txHashBytes,lockScriptId);
+
+    List<Long> transactionIds = transactionIdPage.getRecords();
+    if (transactionIds.isEmpty()){
+      return Page.of(page, pageSize, 0);
+    }
+
+    // 根据交易id查询交易详情
+    List<UdtTransactionPageResponse> transactions = CkbTransactionConvert.INSTANCE.toConvertUdtTransactionList(baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc));
+
+    // 分开处理cellbase和普通交易
+    var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(UdtTransactionPageResponse::getId).collect(Collectors.toList());
+    var normalTransactionsIds = transactions.stream().filter(transaction-> !transaction.getIsCellbase()).map(UdtTransactionPageResponse::getId).collect(Collectors.toList());
+
+    Map<Long,List<CellOutputDto>>  cellbaseOutputsWithTrans;
+    Map<Long,List<CellInputDto>> normalInputsWithTrans ;
+    Map<Long,List<CellOutputDto>>  normalOutputsWithTrans;
+    // cellbase获取output
+    if(cellbaseTransactionsIds.size() > 0){
+      cellbaseOutputsWithTrans = outputMapper.getCellbaseDisplayOutputsByTransactionIds(cellbaseTransactionsIds).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else{
+      cellbaseOutputsWithTrans = new HashMap<>();
+    }
+
+    // 普通交易获取input和output
+    if(normalTransactionsIds.size() > 0){
+      normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else{
+      normalInputsWithTrans = new HashMap<>();
+      normalOutputsWithTrans = new HashMap<>();
+    }
+
+    transactions.stream().forEach(transaction -> {
+      // 组装cellbase交易
+      if(transaction.getIsCellbase()){
+        Long targetBlockNumber = transaction.getBlockNumber()< 11 ?0:transaction.getBlockNumber()-11;
+        List<CellInputResponse> records = new ArrayList<>();
+
+        // Cellbase交易只有一个特殊的输入
+        CellInputResponse cellInput = new CellInputResponse();
+        cellInput.setFromCellbase(true);
+        cellInput.setTargetBlockNumber(targetBlockNumber);
+        cellInput.setGeneratedTxHash(transaction.getTransactionHash());
+
+        records.add(cellInput);
+        transaction.setDisplayInputs(records);
+
+        List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
+        if(cellbaseOutput != null && cellbaseOutput.size() > 0){
+          cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
+        }else{
+          cellbaseOutput = new ArrayList<>();
+        }
+
+        transaction.setDisplayOutputs(cellbaseOutput);
+        // 组装普通交易
+      }else{
+        transaction.setDisplayInputs(CellInputConvert.INSTANCE.toConvertList(
+                normalInputsWithTrans.get(transaction.getId())));
+
+        transaction.setDisplayOutputs(CellOutputConvert.INSTANCE.INSTANCE.toConvertList(
+                normalOutputsWithTrans.get(transaction.getId())));
+      }
+    });
+
+    var result = new Page<UdtTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), transactionIdPage.getTotal());
     result.setRecords(transactions);
     return result;
   }

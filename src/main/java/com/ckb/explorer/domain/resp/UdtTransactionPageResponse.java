@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * TransactionResponse 用于将 CkbTransaction 实体序列化为 JSON 响应对象
+ * UdtTransactionPageResponse 用于将 CkbTransaction 实体序列化为 JSON 响应对象
  */
 @Data
 @AllArgsConstructor

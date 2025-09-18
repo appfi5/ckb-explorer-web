@@ -2,11 +2,8 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
-import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
-import com.ckb.explorer.domain.resp.CellInputResponse;
-import com.ckb.explorer.domain.resp.CellOutputResponse;
-import com.ckb.explorer.domain.resp.TransactionResponse;
+import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
+import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 
 import java.util.Map;
@@ -70,4 +67,12 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @return
    */
   Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort, int page, int pageSize);
+
+  /**
+   * UDT相关交易
+   * @param typeScriptHash
+   * @param req udt请求参数交易
+   * @return
+   */
+  Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, UdtTransactionsPageReq req);
 }
