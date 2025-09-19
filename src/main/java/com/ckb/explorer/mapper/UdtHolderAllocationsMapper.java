@@ -1,9 +1,12 @@
 package com.ckb.explorer.mapper;
 
+import com.ckb.explorer.domain.dto.UdtAddressCountDto;
 import com.ckb.explorer.entity.UdtHolderAllocations;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
 * @author dell
@@ -16,6 +19,8 @@ public interface UdtHolderAllocationsMapper extends BaseMapper<UdtHolderAllocati
 
     @Select("select sum(holder_count) from udt_holder_allocations where type_script_id = #{typeScriptId} ")
     Long selectHolderCountByTypeScriptId(@Param("typeScriptId") Long typeScriptId);
+
+    List<UdtAddressCountDto> getAddressNumByScriptHashes(@Param("scriptHashes") List<byte[]> scriptHashes);
 
 }
 

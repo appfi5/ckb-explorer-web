@@ -15,4 +15,21 @@
         id,type_script_id,holder_count,
         lock_code_hash
     </sql>
+
+    <resultMap id="addressCount" type="com.ckb.explorer.domain.dto.UdtAddressCountDto">
+        <result property="typeScriptHash" column="typeScriptHash" />
+        <result property="addressesCount" column="addressesCount" />
+    </resultMap>
+
+    <select id="getAddressNumByScriptHashes" resultMap="addressCount">
+        select  s.script_hash as typeScriptHash,
+        sum(uh.holder_count) as addressesCount
+        from udt_holder_allocations uh
+        left join script s on uh.type_script_id = s.id
+        where s.script_hash in
+        <foreach  item="item" index="index" collection="scriptHashes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        group by s.script_hash
+    </select>
 </mapper>

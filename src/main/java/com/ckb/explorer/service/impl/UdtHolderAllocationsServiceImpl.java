@@ -85,15 +85,10 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         }).toList();
         List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
 
-        List<UdtAddressCountDto> addressesCounts = udtAccountsMapper.getAddressNumByScriptHashes(typeHashes);
+        //TODO debezium CDC模式保持取数一致 如果使用risingWave需要替换
+        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNumByScriptHashes(typeHashes);
         Long oneDayAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(24);
         List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptHashes(typeHashes, 0L);
-        addressesCounts.forEach(a->{
-            log.info("hash is {}",Numeric.toHexString(a.getTypeScriptHash()));
-        });
-        transactionsCounts.forEach(a->{
-            log.info("hash is {}",Numeric.toHexString(a.getTypeScriptHash()));
-        });
 
         typeScripts.stream().forEach(typeScript -> {
             String typeHash = typeScript.getScriptHash();
