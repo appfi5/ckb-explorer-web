@@ -77,7 +77,7 @@
         lc.cell_type                              as cell_type,
         '0x' || encode(lc.tx_hash, 'hex')         as tx_hash,
         lc.output_index                           as cell_index,
-        case when s.script_hash is not null then '0x' || encode(s.script_hash, 'hex')  else null end    as type_script_hash,
+        '0x' || encode(s.script_hash, 'hex')      as type_script_hash,
         '0x' || encode(lc.data, 'hex')            as data,
         lc.block_number                           as block_number,
         lc.capacity                               as capacity,
@@ -85,10 +85,13 @@
         lc.block_timestamp                        as block_timestamp
     from live_cells lc
         left join script s on lc.type_script_id = s.id
-        left join output_extend oe on lc.output_id = oe.output_id
     where lc.lock_script_id = #{lockScriptId}
       and lc.cell_type != 0
-      and oe.output_id is null -- 筛选出没有被解析到extend表的，都算为other
+      and NOT EXISTS (
+        SELECT 1
+        FROM output_extend oe
+        WHERE oe.output_id = lc.output_id -- 仅需判断是否存在匹配，无需返回数据
+      )
       order by lc.block_number desc, lc.output_index asc
   </select>
 </mapper>

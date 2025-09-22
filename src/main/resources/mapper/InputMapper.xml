@@ -23,12 +23,12 @@
            '0x' || encode(type.code_hash, 'hex') as code_hash,
            type.hash_type                        as hash_type
     from input i
-           left join output o on o.id = i.output_id
+           inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
            left join output_extend oe ON o.id = oe.output_id
     where consumed_tx_id = #{transactionId}
-    order by id asc
+    order by o.id asc
   </select>
 
   <select id="getNormalDisplayInputsByTransactionIds" resultType="com.ckb.explorer.domain.dto.CellInputDto">
@@ -67,7 +67,7 @@
            i.consumed_tx_id                      as transaction_id,
            ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn
     from input i
-           left join output o on o.id = i.output_id
+           inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
            left join output_extend oe ON o.id = oe.output_id

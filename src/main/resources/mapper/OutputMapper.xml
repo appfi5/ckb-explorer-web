@@ -17,12 +17,6 @@
       s.code_hash                           as lock_code_hash,
       s.args                                as lock_args,
       s.hash_type                           as lock_hash_type,
-      -- Cellbase奖励相关字段
-      -- t.block_number - 11 as target_block_number,
-      -- b.base_reward,
-      -- b.commit_reward,
-      -- b.proposal_reward,
-      -- b.secondary_reward,
       -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
       o.is_spent                             AS status,
       -- 消耗的交易哈希
@@ -37,8 +31,6 @@
       output o
         left join script s ON o.lock_script_id = s.id
         left join output_extend oe ON o.id = oe.output_id
-    -- JOIN
-    --   block b ON t.block_id = b.id
     WHERE 
       o.tx_id = #{transactionId}
     ORDER BY 
@@ -57,11 +49,6 @@
            s.code_hash                                                                 as lock_code_hash,
            s.args                                                                      as lock_args,
            s.hash_type                                                                 as lock_hash_type,
-           -- Cellbase奖励相关字段
-           -- b.base_reward,
-           -- b.commit_reward,
-           -- b.proposal_reward,
-           -- b.secondary_reward,
            -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
            o.is_spent                                                                  AS status,
            -- 消耗的交易哈希
@@ -79,8 +66,6 @@
            left join script s ON o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
            left join output_extend oe ON o.id = oe.output_id
-    -- JOIN
-    --   block b ON t.block_id = b.id
     WHERE
       o.tx_id = #{transactionId}
     ORDER BY
@@ -96,12 +81,6 @@
     s.code_hash                                                                 as lock_code_hash,
     s.args                                                                      as lock_args,
     s.hash_type                                                                 as lock_hash_type,
-    -- Cellbase奖励相关字段
-    -- t.block_number - 11 as target_block_number,
-    -- b.base_reward,
-    -- b.commit_reward,
-    -- b.proposal_reward,
-    -- b.secondary_reward,
     -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
     o.is_spent                                                                  AS status,
     -- 消耗的交易哈希
@@ -116,8 +95,6 @@
     FROM output o
       left join script s ON o.lock_script_id = s.id
       left join output_extend oe ON o.id = oe.output_id
-    -- JOIN
-    -- block b ON t.block_id = b.id
     WHERE
     <if test="null != transactionIds">
       o.tx_id in
@@ -152,11 +129,6 @@
                  s.code_hash                                                                 AS lock_code_hash,
                  s.args                                                                      AS lock_args,
                  s.hash_type                                                                 AS lock_hash_type,
-                 -- Cellbase奖励相关字段
-                 -- b.base_reward,
-                 -- b.commit_reward,
-                 -- b.proposal_reward,
-                 -- b.secondary_reward,
                  -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
                  o.is_spent                                                                  AS status,
                  -- 消耗的交易哈希
@@ -178,8 +150,6 @@
                  left join script s ON o.lock_script_id = s.id
                  left join script type on o.type_script_id = type.id
                  left join output_extend oe ON o.id = oe.output_id
-          -- JOIN
-          -- block b ON t.block_id = b.id
           WHERE
               <if test="null != transactionIds">
                 o.tx_id in

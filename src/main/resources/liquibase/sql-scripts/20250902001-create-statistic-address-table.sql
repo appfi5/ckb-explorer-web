@@ -141,3 +141,7 @@ CREATE INDEX idx_output_lockscript_txhash_full ON output (lock_script_id)
 
 CREATE INDEX idx_output_lockscript_consumedtxhash_full ON output (lock_script_id)
     INCLUDE (consumed_tx_hash) WHERE consumed_tx_hash IS NOT NULL;
+
+CREATE INDEX idx_outputextend_outputid_cover
+    ON output_extend (output_id)  -- 关联字段在前
+    INCLUDE (cell_type);  -- 仅需查询 cell_type
