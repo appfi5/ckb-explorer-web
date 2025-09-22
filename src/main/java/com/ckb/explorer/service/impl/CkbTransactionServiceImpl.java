@@ -70,6 +70,15 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
     queryWrapper.ne(CkbTransaction::getTxIndex, 0);
     queryWrapper.orderByDesc(CkbTransaction::getId);
+    queryWrapper.select(
+        CkbTransaction::getId,
+        CkbTransaction::getTxHash,
+        CkbTransaction::getBlockNumber,
+        CkbTransaction::getBlockTimestamp,
+        CkbTransaction::getCapacityInvolved,
+        CkbTransaction::getInputCount,
+        CkbTransaction::getOutputCount
+    );
 
     // 执行分页查询
     return baseMapper.selectPage(pageResult, queryWrapper);
