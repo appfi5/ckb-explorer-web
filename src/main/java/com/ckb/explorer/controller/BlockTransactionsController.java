@@ -1,9 +1,11 @@
 package com.ckb.explorer.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.req.BlockTransactionPageReq;
+import com.ckb.explorer.domain.resp.BlockTransactionPageResponse;
 import com.ckb.explorer.facade.IBlockTransactionCacheFacade;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
@@ -11,12 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.CacheControl;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * BlockTransactionsController 处理区块内交易的API请求 对应Ruby代码中的Api::V1::BlockTransactionsController
@@ -25,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/api/v1/block_transactions")
 public class BlockTransactionsController {
 
-  @Autowired
+  @Resource
   private IBlockTransactionCacheFacade blockTransactionCacheFacade;
 
   @Resource
@@ -43,7 +40,7 @@ public class BlockTransactionsController {
    */
   @GetMapping("/{id}")
   @Operation(summary = "获取区块内的交易列表")
-  public ResponseInfo show(
+  public ResponseInfo<Page<BlockTransactionPageResponse>> show(
       @PathVariable("id") String blockId,
       @Valid BlockTransactionPageReq req) {
 
@@ -54,10 +51,7 @@ public class BlockTransactionsController {
     var transactions = blockTransactionCacheFacade.getBlockTransactions(blockId, req.getTxHash(),
         req.getAddressHash(), req.getPage(), req.getPageSize());
 
-    // 构建响应
-    ResponseInfo response = ResponseInfo.SUCCESS(transactions);
-
-    return response;
+    return ResponseInfo.SUCCESS(transactions);
   }
 
   /**
