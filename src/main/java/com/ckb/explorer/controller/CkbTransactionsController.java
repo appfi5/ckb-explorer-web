@@ -1,5 +1,7 @@
 package com.ckb.explorer.controller;
 
+import static com.baomidou.mybatisplus.extension.ddl.DdlScriptErrorHandler.PrintlnLogErrorHandler.log;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.config.ServerException;
@@ -16,12 +18,12 @@ import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -37,6 +39,20 @@ public class CkbTransactionsController {
 
   @Resource
   private I18n i18n;
+
+  /**
+   * 查询首页交易列表
+   * @param pageSize
+   * @return
+   */
+  @GetMapping("/homePage")
+  @Operation(summary = "获取首页交易列表")
+  public ResponseInfo<List<TransactionPageResponse>> homePage(Integer pageSize) {
+
+    pageSize =(pageSize == null || pageSize < 1) ? 10 : pageSize;
+    pageSize = pageSize > 100 ? 100 : pageSize;
+    return ResponseInfo.SUCCESS(transactionCacheFacade.getHomePageTransactions(pageSize));
+  }
 
   /**
    * 查询交易列表

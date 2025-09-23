@@ -2,14 +2,17 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
+import java.util.List;
 
 /**
  * 区块服务接口
  */
 public interface BlockService extends IService<Block> {
 
+  List<BlockListResponse> getHomePageBlocks(int size);
     /**
      * 分页查询区块列表
      * @param pageNum 当前页码
@@ -17,7 +20,7 @@ public interface BlockService extends IService<Block> {
      * @param sort 排序字段和方式，格式为"字段名.排序方式"，如"number.desc"
      * @return 分页结果
      */
-    Page<Block> getBlocksByPage(int pageNum, int pageSize, String sort);
+    Page<BlockListResponse> getBlocksByPage(int pageNum, int pageSize, String sort);
 
     BlockResponse getBlock(String id);
 }

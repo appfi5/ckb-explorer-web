@@ -5,11 +5,19 @@ import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
+import java.util.List;
 
 /**
  * ITransactionCacheFacade 提供交易相关的缓存操作接口
  */
 public interface ICkbTransactionCacheFacade {
+
+  /**
+   * 获取首页交易列表
+   *
+   * @return 交易列表响应
+   */
+  List<TransactionPageResponse> getHomePageTransactions(int size);
 
   /**
    * 获取交易列表（分页）

@@ -13,6 +13,7 @@ import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,22 @@ public class BlocksController {
 
   @Resource
   private I18n i18n;
+
+  /**
+   * 查询块列表
+   * @param pageSize
+   * @return
+   */
+  @GetMapping("/homePage")
+  @Operation(summary = "获取首页块列表")
+  public ResponseInfo<List<BlockListResponse>> homePage(Integer pageSize) {
+
+    pageSize = (pageSize == null || pageSize < 1) ? 10 : pageSize;
+    pageSize = pageSize > 100 ? 100 : pageSize;
+    // 查询带缓存
+    return ResponseInfo.SUCCESS(blockCacheFacade.getHomePageBlocks(pageSize));
+
+  }
 
   /**
    * 查询块列表

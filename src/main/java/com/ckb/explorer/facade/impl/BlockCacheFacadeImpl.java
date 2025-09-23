@@ -3,12 +3,11 @@ package com.ckb.explorer.facade.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
-import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.facade.IBlockCacheFacade;
-import com.ckb.explorer.mapstruct.BlockConvert;
 import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.util.CacheUtils;
 import jakarta.annotation.Resource;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -31,6 +30,21 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
 
   private static final String CACHE_PREFIX = "ckb:blocks:";
   private static final String CACHE_VERSION = "v1";
+
+  @Override
+  public List<BlockListResponse> getHomePageBlocks(int size) {
+    String cacheKey = String.format("%s%s:list:size:%d",
+        CACHE_PREFIX, CACHE_VERSION, size);
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> loadFromDatabase(size),  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
+  }
+  private List<BlockListResponse>  loadFromDatabase(int size){
+    return blockService.getHomePageBlocks(size);
+  }
 
   @Override
   public Page<BlockListResponse> getBlocksByPage(int page,
@@ -73,9 +87,6 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
   private Page<BlockListResponse> loadFromDatabase(
       int page, int pageSize, String sort) {
     // 执行分页查询
-    Page<Block> pageResult = blockService.getBlocksByPage(page, pageSize, sort);
-
-    return BlockConvert.INSTANCE.toConvertPage(pageResult);
-
+    return blockService.getBlocksByPage(page, pageSize, sort);
   }
 }
