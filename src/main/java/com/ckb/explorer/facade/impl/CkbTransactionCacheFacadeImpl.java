@@ -5,12 +5,11 @@ import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
-import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
-import com.ckb.explorer.mapstruct.CkbTransactionConvert;
 import com.ckb.explorer.service.CkbTransactionService;
 import com.ckb.explorer.util.CacheUtils;
 import jakarta.annotation.Resource;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -43,6 +42,25 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
   private static final long TTL_SECONDS_DETAIL = 10;
 
   @Override
+  public List<TransactionPageResponse> getHomePageTransactions(int size) {
+    // 创建缓存键
+    String cacheKey = String.format("%s%s:list:size:%d",
+        TRANSACTION_CACHE_PREFIX, CACHE_VERSION, size);
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> loadFromDatabase(size),  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
+  }
+
+  private List<TransactionPageResponse> loadFromDatabase(Integer pageSize) {
+
+    // 执行分页查询
+    return ckbTransactionService.getHomePageTransactions(pageSize);
+  }
+
+  @Override
   public Page<TransactionPageResponse> getTransactionsByPage(Integer page, Integer size,
       String sort) {
     // 设置默认排序
@@ -68,10 +86,9 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
       String sort) {
 
     // 执行分页查询
-    Page<CkbTransaction> pageResult = ckbTransactionService.getCkbTransactionsByPage(page, pageSize,
+    return ckbTransactionService.getCkbTransactionsByPage(page, pageSize,
         sort);
-    // 转换为响应对象
-    return CkbTransactionConvert.INSTANCE.toConvertPage(pageResult);
+
   }
 
   @Override

@@ -6,9 +6,16 @@ import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 
-import java.util.Map;
+import java.util.List;
 
 public interface CkbTransactionService extends IService<CkbTransaction> {
+
+  /**
+   * 获取交易列表
+   * @param size
+   * @return
+   */
+  List<TransactionPageResponse> getHomePageTransactions(int size);
 
   /**
    * 分页查询交易列表
@@ -17,7 +24,7 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @param sort 排序字段和方式，格式为"字段名.排序方式"，如"number.desc"
    * @return 分页结果
    */
-  Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort);
+  Page<TransactionPageResponse> getCkbTransactionsByPage(int pageNum, int pageSize, String sort);
 
   /**
    * 根据交易哈希获取交易详情

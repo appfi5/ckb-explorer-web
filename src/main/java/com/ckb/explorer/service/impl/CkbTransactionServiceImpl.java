@@ -62,26 +62,20 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   ScriptService scriptService;
 
   @Override
-  public Page<CkbTransaction> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
+  public List<TransactionPageResponse> getHomePageTransactions(int size) {
+
+    return baseMapper.getHomePageTransactions( size);
+
+  }
+
+  @Override
+  public Page<TransactionPageResponse> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
 
     // 创建分页对象
     Page<CkbTransaction> pageResult = new Page<>(pageNum, pageSize);
-    // 创建查询条件 normal交易
-    LambdaQueryWrapper<CkbTransaction> queryWrapper = new LambdaQueryWrapper<>();
-    queryWrapper.ne(CkbTransaction::getTxIndex, 0);
-    queryWrapper.orderByDesc(CkbTransaction::getId);
-    queryWrapper.select(
-        CkbTransaction::getId,
-        CkbTransaction::getTxHash,
-        CkbTransaction::getBlockNumber,
-        CkbTransaction::getBlockTimestamp,
-        CkbTransaction::getCapacityInvolved,
-        CkbTransaction::getInputCount,
-        CkbTransaction::getOutputCount
-    );
 
     // 执行分页查询
-    return baseMapper.selectPage(pageResult, queryWrapper);
+    return baseMapper.getPageTransactions(pageResult);
   }
 
   @Override
