@@ -46,10 +46,11 @@ public class CkbTransactionsController {
    * @return
    */
   @GetMapping("/homePage")
-  @Operation(summary = "获取交易列表")
+  @Operation(summary = "获取首页交易列表")
   public ResponseInfo<List<TransactionPageResponse>> homePage(Integer pageSize) {
 
-    pageSize = pageSize == null ? 10 : pageSize;
+    pageSize =(pageSize == null || pageSize < 1) ? 10 : pageSize;
+    pageSize = pageSize > 100 ? 100 : pageSize;
     return ResponseInfo.SUCCESS(transactionCacheFacade.getHomePageTransactions(pageSize));
   }
 

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
+import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.mapper.BlockMapper;
@@ -16,15 +17,15 @@ import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.utils.Numeric;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * BlockService的实现类 提供区块相关的服务实现，包括分页查询
  */
+@Slf4j
 @Service
 public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements BlockService {
 
@@ -34,6 +35,38 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
   @Resource
   private QueryKeyUtils queryKeyUtils;
 
+  @Override
+  public List<BlockListResponse> getHomePageBlocks(int size) {
+    long start = System.currentTimeMillis();
+    var blocks = baseMapper.getHomePageBlocks(size);
+    Map<Long, Block> afterBlockMap;
+    if (!blocks.isEmpty()) {
+      // 直接生成“原区块号+11”的列表，无需中间变量blockNumbers
+      List<Long> afterNumbers = blocks.stream()
+          .map(block -> block.getBlockNumber() + 11)
+          .distinct() // 避免重复的区块号（若原分页有重复number，减少in查询的参数数量）
+          .toList();
+      if (!afterNumbers.isEmpty()) {
+        List<Block> afterBlocks = baseMapper.getAfterReward(afterNumbers);
+        afterBlockMap = afterBlocks.stream()
+            .collect(Collectors.toMap(
+                Block::getBlockNumber, // key：目标区块号（原number+11）
+                block -> block,        // value：对应的区块对象
+                (k1, k2) -> k1         // 若有重复key（理论上区块号唯一，此处为防御），取第一个
+            ));
+      } else {
+        afterBlockMap = new HashMap<>(size);
+      }
+      blocks.forEach(block -> {
+        long targetBlockNumber = block.getBlockNumber() + 11;
+        Block afterBlock = afterBlockMap.get(targetBlockNumber); // O(1)查询
+        block.setReward(afterBlock != null ? afterBlock.getReward() : 0L);
+      });
+    }
+    log.info("查询首页区块列表耗时：{}ms", System.currentTimeMillis() - start);
+    return BlockConvert.INSTANCE.toConvertList(blocks);
+  }
+
   /**
    * 分页查询区块列表
    *
@@ -42,15 +75,11 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
    * @param sort     排序字段和方式，格式为"字段名.排序方式"，如"number.desc"
    * @return 分页结果
    */
-  public Page<Block> getBlocksByPage(int pageNum, int pageSize, String sort) {
-
+  public Page<BlockListResponse> getBlocksByPage(int pageNum, int pageSize, String sort) {
+    long start = System.currentTimeMillis();
     // 创建分页对象
     Page<Block> page = new Page<>(pageNum, pageSize);
-    // 创建查询条件
-    LambdaQueryWrapper<Block> queryWrapper = new LambdaQueryWrapper<>();
-    queryWrapper.orderByDesc(Block::getBlockNumber);
-
-    var blocks = baseMapper.selectPage(page, queryWrapper);
+    var blocks = baseMapper.getPageBlocks(page);
     Map<Long, Block> afterBlockMap;
     List<Block> records = blocks.getRecords();
     if (!records.isEmpty()) {
@@ -59,17 +88,18 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
           .map(block -> block.getBlockNumber() + 11)
           .distinct() // 避免重复的区块号（若原分页有重复number，减少in查询的参数数量）
           .toList();
-      LambdaQueryWrapper<Block> afterWrapper = new LambdaQueryWrapper<>();
-      afterWrapper.in(Block::getBlockNumber, afterNumbers)
-          .select(Block::getBlockNumber, Block::getReward); // 只查需要的字段（投影查询，减少IO）
-      List<Block> afterBlocks = baseMapper.selectList(afterWrapper);
+      if (!afterNumbers.isEmpty()) {
+        List<Block> afterBlocks = baseMapper.getAfterReward(afterNumbers);
+        afterBlockMap = afterBlocks.stream()
+            .collect(Collectors.toMap(
+                Block::getBlockNumber, // key：目标区块号（原number+11）
+                block -> block,        // value：对应的区块对象
+                (k1, k2) -> k1         // 若有重复key（理论上区块号唯一，此处为防御），取第一个
+            ));
+      } else {
+        afterBlockMap = new HashMap<>(pageSize);
+      }
 
-      afterBlockMap = afterBlocks.stream()
-          .collect(Collectors.toMap(
-              Block::getBlockNumber, // key：目标区块号（原number+11）
-              block -> block,        // value：对应的区块对象
-              (k1, k2) -> k1         // 若有重复key（理论上区块号唯一，此处为防御），取第一个
-          ));
     } else {
       afterBlockMap = new HashMap<>(pageSize);
     }
@@ -79,8 +109,9 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
       Block afterBlock = afterBlockMap.get(targetBlockNumber); // O(1)查询
       block.setReward(afterBlock != null ? afterBlock.getReward() : 0L);
     });
+    log.info("查询区块列表耗时：{}ms", System.currentTimeMillis() - start);
     // 执行分页查询
-    return blocks;
+    return BlockConvert.INSTANCE.toConvertPage(blocks);
   }
 
   @Override
