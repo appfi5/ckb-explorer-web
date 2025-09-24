@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j
-@Transactional(readOnly = true)
 public class LiveCellsCacheFacadeImpl implements ILiveCellsCacheFacade {
   @Resource
   private CacheUtils cacheUtils;

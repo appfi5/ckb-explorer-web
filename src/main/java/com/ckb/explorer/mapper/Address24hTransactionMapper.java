@@ -1,5 +1,6 @@
 package com.ckb.explorer.mapper;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.UdtAddressCountDto;
@@ -17,14 +18,13 @@ import java.util.List;
 * @createDate 2025-09-03 17:37:17
 * @Entity com.ckb.explore.worker.entity.Address24hTransaction
 */
-@Mapper
+@DS("risingwave")
 public interface Address24hTransactionMapper extends BaseMapper<Address24hTransaction> {
 
   @Select("WITH ranked_transactions AS (\n"
       + "    SELECT\n"
       + "        t.ckb_transaction_id,\n"
       + "        t.block_timestamp,\n"
-      + "        -- 对同一交易ID，按指定条件排序并编号\n"
       + "        ROW_NUMBER() OVER (\n"
       + "            PARTITION BY t.ckb_transaction_id\n"
       + "            ORDER BY t.${orderByStr} ${ascOrDesc}\n"
@@ -34,16 +34,15 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
       + ")\n"
       + "SELECT rt.ckb_transaction_id\n"
       + "FROM ranked_transactions rt\n"
-      + "WHERE rt.rn = 1  -- 筛选每个交易ID的目标记录\n"
+      + "WHERE rt.rn = 1  \n"
       + "ORDER BY rt.${orderByStr} ${ascOrDesc}")
-    Page<Long> getTransactionsLast24hrsByLockScriptIdWithSort(Page page, @Param("lockScriptId") Long lockScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
-
+  Page<Long> getTransactionsLast24hrsByLockScriptIdWithSort(Page page, @Param("lockScriptId") Long lockScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
 
 
     List<UdtH24TransactionsCountDto> getTransactionsCountByScriptHashes(@Param("scriptHashes") List<byte[]> scriptHashes, @Param("oneDayAgo")  Long oneDayAgo);
 
 
-    @Select("<script>" +
+  @Select("<script>" +
             "WITH ranked_transactions AS (\n"
             + "    SELECT\n"
             + "        ckb_transaction_id,\n"

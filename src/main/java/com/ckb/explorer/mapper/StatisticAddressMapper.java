@@ -1,5 +1,6 @@
 package com.ckb.explorer.mapper;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ckb.explorer.entity.StatisticAddress;
 import org.apache.ibatis.annotations.Mapper;
@@ -9,6 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 用于操作statistic_address表
  */
 @Mapper
+@DS("risingwave")
 public interface StatisticAddressMapper extends BaseMapper<StatisticAddress> {
 
 }

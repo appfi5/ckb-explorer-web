@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Transactional(readOnly = true)
 public class NetInfoCacheFacadeImpl implements INetInfoCacheFacade {
 
   @Resource

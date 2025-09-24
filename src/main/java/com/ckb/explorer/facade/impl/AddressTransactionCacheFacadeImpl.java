@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
-@Transactional(readOnly = true)
 public class AddressTransactionCacheFacadeImpl implements IAddressTransactionCacheFacade {
 
   @Resource

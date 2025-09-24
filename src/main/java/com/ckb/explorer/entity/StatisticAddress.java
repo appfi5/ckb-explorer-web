@@ -14,21 +14,12 @@ import lombok.Data;
 @TableName("statistic_address")
 public class StatisticAddress {
 
-  /**
-   * 主键ID
-   */
-  @TableId(type = IdType.AUTO)
-  private Long id;
+
 
   /**
    * 锁脚本ID
    */
   private Long lockScriptId;
-
-  /**
-   * 脚本哈希
-   */
-  private byte[] scriptHash;
 
   /**
    * 地址余额

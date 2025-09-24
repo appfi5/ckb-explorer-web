@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
-@Transactional(readOnly = true)
 public class UdtTransactionCacheFacadeImpl implements IUdtTransactionCacheFacade {
 
   @Resource

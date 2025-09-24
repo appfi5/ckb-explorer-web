@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
  * DailyStatisticsCacheFacadeImpl 实现了 DailyStatisticsCacheFacade 接口，提供每日统计数据缓存相关的具体实现
  */
 @Component
-@Transactional(readOnly = true)
 public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacade {
 
   @Resource

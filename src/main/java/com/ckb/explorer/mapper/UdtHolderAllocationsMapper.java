@@ -1,5 +1,6 @@
 package com.ckb.explorer.mapper;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.ckb.explorer.domain.dto.UdtAddressCountDto;
 import com.ckb.explorer.entity.UdtHolderAllocations;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -14,6 +15,7 @@ import java.util.List;
 * @createDate 2025-09-08 17:09:56
 * @Entity com.ckb.explorer.entity.UdtHolderAllocations
 */
+@DS("risingwave")
 public interface UdtHolderAllocationsMapper extends BaseMapper<UdtHolderAllocations> {
 
 

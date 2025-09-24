@@ -11,8 +11,6 @@ import lombok.Data;
 @Data
 public class Address24hTransaction implements Serializable {
 
-    @TableId(type = IdType.AUTO)
-    private Long id;
 
     private Long lockScriptId;
 

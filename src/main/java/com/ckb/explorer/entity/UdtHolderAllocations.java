@@ -12,8 +12,6 @@ import lombok.Data;
 @Data
 public class UdtHolderAllocations implements Serializable {
 
-    @TableId(type = IdType.AUTO)
-    private Long id;
 
     private Long typeScriptId;
 

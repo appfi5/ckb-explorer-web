@@ -11,12 +11,9 @@ import lombok.Data;
  */
 @Data
 public class UdtAccounts implements Serializable {
-    @TableId(type = IdType.AUTO)
-    private Long id;
+
 
     private Long typeScriptId;
-
-    private String nftTokenId;
 
     private BigInteger amount;
 

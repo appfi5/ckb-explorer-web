@@ -2,6 +2,7 @@ package com.ckb.explorer.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.ckb.explorer.config.mybatis.RisingWaveDialect;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,7 +20,10 @@ public class MyBatisPlusConfig {
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 添加分页插件，不指定数据库类型，让MyBatis Plus自动检测
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+        PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();
+        //rising wave 分页设置
+        paginationInnerInterceptor.setDialect(new RisingWaveDialect());
+        interceptor.addInnerInterceptor(paginationInnerInterceptor);
         return interceptor;
     }
 

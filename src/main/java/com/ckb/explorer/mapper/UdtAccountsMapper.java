@@ -1,5 +1,6 @@
 package com.ckb.explorer.mapper;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ckb.explorer.domain.dto.AccountUdtBalanceDto;
 import com.ckb.explorer.domain.dto.UdtAddressCountDto;
@@ -18,6 +19,7 @@ import org.apache.ibatis.annotations.Select;
 * @createDate 2025-08-29 15:02:45
 * @Entity
 */
+@DS("risingwave")
 public interface UdtAccountsMapper extends BaseMapper<UdtAccounts> {
 
   List<AccountUdtBalanceDto> getUdtBalanceByLockScriptId(@Param("lockScriptId") Long lockScriptId);

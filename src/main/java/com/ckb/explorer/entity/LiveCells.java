@@ -13,10 +13,7 @@ import lombok.Data;
 public class LiveCells implements Serializable {
 
 
-    @TableId(type = IdType.AUTO)
     private Long id;
-
-    private Long outputId;
 
     private BigInteger capacity;
 
@@ -25,8 +22,6 @@ public class LiveCells implements Serializable {
     private Long typeScriptId;
 
     private Integer cellType;
-
-    private BigInteger udtAmount;
 
     private BigInteger occupiedCapacity;
 

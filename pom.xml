@@ -144,6 +144,13 @@
       <version>${redisson-spring-boot-starter.version}</version>
     </dependency>
 
+    <!-- 动态数据源 -->
+    <dependency>
+      <groupId>com.baomidou</groupId>
+      <artifactId>dynamic-datasource-spring-boot3-starter</artifactId>
+      <version>4.3.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>

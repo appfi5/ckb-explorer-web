@@ -11,12 +11,22 @@ spring:
 #    password: rivtower
 #    virtual-host: /
   datasource:
-#    url: jdbc:postgresql://192.168.160.20:5432/ckb-rich-indexer
-    url: jdbc:postgresql://192.168.120.129:30153/ckb-rich-indexer
-    username: postgres
-    password: 123456
-    #password: postgres
-    driver-class-name: org.postgresql.Driver
+    dynamic:
+      primary: postgres  # 默认数据源（PostgreSQL）
+      strict: false      # 非严格模式，允许未指定数据源时使用默认数据源
+      datasource:
+        # PostgreSQL 数据源配置
+        postgres:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://192.168.120.129:30153/ckb-rich-indexer
+          username: postgres
+          password: 123456
+        # RisingWave 数据源配置（兼容PostgreSQL协议）
+        risingwave:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://192.168.120.129:30456/dev  # RisingWave默认端口4566，数据库名dev
+          username: root  # RisingWave默认用户名
+          password: ""    # RisingWave默认无密码
   data:
     redis:
       #host: localhost
