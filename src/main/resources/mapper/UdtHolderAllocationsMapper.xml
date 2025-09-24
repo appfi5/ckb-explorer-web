@@ -5,31 +5,29 @@
 <mapper namespace="com.ckb.explorer.mapper.UdtHolderAllocationsMapper">
 
     <resultMap id="BaseResultMap" type="com.ckb.explorer.entity.UdtHolderAllocations">
-            <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="typeScriptId" column="type_script_id" jdbcType="BIGINT"/>
             <result property="holderCount" column="holder_count" jdbcType="INTEGER"/>
-            <result property="lockCodeHash" column="lock_code_hash" jdbcType="OTHER"/>
+            <result property="lockType" column="lock_type" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,type_script_id,holder_count,
-        lock_code_hash
+        lock_type
     </sql>
 
     <resultMap id="addressCount" type="com.ckb.explorer.domain.dto.UdtAddressCountDto">
-        <result property="typeScriptHash" column="typeScriptHash" />
+        <result property="typeScriptId" column="typeScriptId" />
         <result property="addressesCount" column="addressesCount" />
     </resultMap>
 
     <select id="getAddressNumByScriptHashes" resultMap="addressCount">
-        select  s.script_hash as typeScriptHash,
+        select  uh.type_script_id as typeScriptId,
         sum(uh.holder_count) as addressesCount
         from udt_holder_allocations uh
-        left join script s on uh.type_script_id = s.id
-        where s.script_hash in
-        <foreach  item="item" index="index" collection="scriptHashes" open="(" separator="," close=")">
+        where uh.type_script_id in
+        <foreach  item="item" index="index" collection="scriptIds" open="(" separator="," close=")">
             #{item}
         </foreach>
-        group by s.script_hash
+        group by uh.type_script_id
     </select>
 </mapper>

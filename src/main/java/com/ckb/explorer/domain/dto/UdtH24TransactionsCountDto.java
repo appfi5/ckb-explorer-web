@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class UdtH24TransactionsCountDto {
 
-    private byte[] typeScriptHash;
+    private Integer typeScriptId;
 
     private Long h24CkbTransactionsCount;
 }

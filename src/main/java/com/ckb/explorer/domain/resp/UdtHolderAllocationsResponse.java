@@ -11,7 +11,7 @@ public class UdtHolderAllocationsResponse  {
 
     private String name;
 
-    private String lockCodeHash;
+    private Integer lockType;
 
     private Integer holderCount;
 

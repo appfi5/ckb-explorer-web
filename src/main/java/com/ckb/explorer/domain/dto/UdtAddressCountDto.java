@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class UdtAddressCountDto {
 
-    private byte[] typeScriptHash;
+    private Long typeScriptId;
 
     private Long addressesCount;
 }

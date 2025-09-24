@@ -18,6 +18,5 @@ public interface UdtHolderAllocationsConvert {
 
     List<UdtHolderAllocationsResponse> udtHolderListtoResponse(List<UdtHolderAllocations> udtHolderAllocations);
 
-    @Mapping(source = "lockCodeHash", target = "lockCodeHash", qualifiedByName = "byteToStringHash(Value)")
     UdtHolderAllocationsResponse toUdtHolderAllocationsResponse(UdtHolderAllocations udtHolderAllocation);
 }

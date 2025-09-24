@@ -12,6 +12,7 @@ import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
 import com.ckb.explorer.domain.resp.UdtsListResponse;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.entity.UdtHolderAllocations;
+import com.ckb.explorer.enums.LockType;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.UdtAccountsMapper;
 import com.ckb.explorer.mapstruct.UdtHolderAllocationsConvert;
@@ -66,11 +67,7 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         List<UdtHolderAllocations> udtHolderAllocations = baseMapper.selectList(udtHolderAllocationsQueryWrapper);
         List<UdtHolderAllocationsResponse> udtHolderAllocationsResponses = UdtHolderAllocationsConvert.INSTANCE.udtHolderListtoResponse(udtHolderAllocations);
         udtHolderAllocationsResponses.forEach(udtHolderAllocationsResponse -> {
-            ScriptConfig.LockScript lockScript = lockScriptConfig.getLockScriptByCodeHash(udtHolderAllocationsResponse.getLockCodeHash());
-            if (lockScript != null) {
-                udtHolderAllocationsResponse.setName(lockScript.getName());
-                udtHolderAllocationsResponse.setHashType(lockScript.getHashType());
-            }
+            udtHolderAllocationsResponse.setName(LockType.getValueByCode(udtHolderAllocationsResponse.getLockType()));
         });
         return udtHolderAllocationsResponses;
     }
@@ -80,24 +77,24 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
     public List<UdtsListResponse> udtListStatistic() {
         List<ScriptConfig.TypeScript> typeScripts = lockScriptConfig.getTypeScripts().stream()
                 .filter(typeScript -> Objects.equals(typeScript.getUdt(), true)).toList();
-        List<byte[]> typeHashes = typeScripts.stream().map(typeScript -> {
-            return Numeric.hexStringToByteArray(typeScript.getScriptHash());
+        List<Long> typeScriptIds = typeScripts.stream().map(typeScript -> {
+            return typeScript.getTypeScriptId();
         }).toList();
         List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
 
         //TODO debezium CDC模式保持取数一致 如果使用risingWave需要替换
-        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNumByScriptHashes(typeHashes);
+        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNumByScriptHashes(typeScriptIds);
         Long oneDayAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(24);
-        List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptHashes(typeHashes, 0L);
+        List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptHashes(typeScriptIds, 0L);
 
         typeScripts.stream().forEach(typeScript -> {
-            String typeHash = typeScript.getScriptHash();
+            Long typeScriptId = typeScript.getTypeScriptId();
             UdtsListResponse udtsListResponse = new UdtsListResponse();
             udtsListResponse.setTypeScriptHash(typeScript.getScriptHash());
-            UdtAddressCountDto udtAddressCountDto = addressesCounts.stream().filter(addressesCount -> addressesCount.getTypeScriptHash()!= null&&Objects.equals(Numeric.toHexString(addressesCount.getTypeScriptHash()),typeHash)).findFirst().orElse(null);
+            UdtAddressCountDto udtAddressCountDto = addressesCounts.stream().filter(addressesCount -> Objects.equals(addressesCount.getTypeScriptId(),typeScriptId)).findFirst().orElse(null);
             Long addressCount = udtAddressCountDto == null ? 0L : udtAddressCountDto.getAddressesCount();
             udtsListResponse.setAddressesCount(addressCount);
-            UdtH24TransactionsCountDto udtH24TransactionsCountDto = transactionsCounts.stream().filter(transactionsCount ->transactionsCount.getTypeScriptHash()!= null&&Objects.equals(Numeric.toHexString(transactionsCount.getTypeScriptHash()),typeHash)).findFirst().orElse(null);
+            UdtH24TransactionsCountDto udtH24TransactionsCountDto = transactionsCounts.stream().filter(transactionsCount ->Objects.equals(transactionsCount.getTypeScriptId(),typeScriptId)).findFirst().orElse(null);
             Long h24CkbTransactionsCount = udtH24TransactionsCountDto == null ? 0L : udtH24TransactionsCountDto.getH24CkbTransactionsCount();
             udtsListResponse.setH24CkbTransactionsCount(h24CkbTransactionsCount);
             udtsListResponses.add(udtsListResponse);

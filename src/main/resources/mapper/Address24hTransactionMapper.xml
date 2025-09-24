@@ -11,22 +11,21 @@
     </resultMap>
 
     <resultMap id="transactionsCount" type="com.ckb.explorer.domain.dto.UdtH24TransactionsCountDto">
-        <result property="typeScriptHash" column="typeScriptHash" />
+        <result property="typeScriptId" column="typeScriptId" />
         <result property="h24CkbTransactionsCount" column="h24CkbTransactionsCount" />
     </resultMap>
 
     <select id="getTransactionsCountByScriptHashes" resultMap="transactionsCount">
-        select  s.script_hash as typeScriptHash,
+        select  at.type_script_id as typeScriptId,
         count(distinct  at.ckb_transaction_id) as h24CkbTransactionsCount
         from address_24h_transaction at
-        left join script s on at.type_script_id = s.id
-        where s.script_hash in
-        <foreach  item="item" index="index" collection="scriptHashes" open="(" separator="," close=")">
+        where at.type_script_id in
+        <foreach  item="item" index="index" collection="scriptIds" open="(" separator="," close=")">
             #{item}
         </foreach>
         <if test="null != oneDayAgo and oneDayAgo >0 ">
          and at.block_timestamp >#{oneDayAgo}
         </if>
-        group by s.script_hash
+        group by at.type_script_id
     </select>
 </mapper>

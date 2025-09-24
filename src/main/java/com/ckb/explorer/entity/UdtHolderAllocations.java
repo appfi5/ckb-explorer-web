@@ -17,7 +17,7 @@ public class UdtHolderAllocations implements Serializable {
 
     private Integer holderCount;
 
-    private byte[] lockCodeHash;
+    private Integer lockType;
 
     private static final long serialVersionUID = 1L;
 }
