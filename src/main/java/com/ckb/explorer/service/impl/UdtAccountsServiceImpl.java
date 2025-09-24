@@ -2,6 +2,7 @@ package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.AccountUdtBalanceDto;
@@ -32,6 +33,8 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
   private QueryKeyUtils queryKeyUtils;
   @Resource
   private I18n i18n;
+  @Resource
+  private ScriptConfig scriptConfig;
   @Override
   public List<AccountUdtBalanceResponse> getUdtBalanceByAddress(String address) {
     LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
@@ -52,6 +55,18 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
       throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
     List<AccountUdtBalanceDto> list = udtAccountsMapper.getUdtBalanceByLockScriptId(script.getId());
-    return AccountUdtBalanceConvert.INSTANCE.toConvert(list);
+
+    List<AccountUdtBalanceResponse> result = AccountUdtBalanceConvert.INSTANCE.toConvert(list);
+    result.forEach(item -> {
+      var typeScript = scriptConfig.getTypeScriptByCodeHash(item.getUdtTypeScript().getCodeHash(), item.getUdtTypeScript().getArgs());
+      if(typeScript != null){
+        item.setFullName(typeScript.getName());
+        item.setSymbol(typeScript.getSymbol());
+        item.setDecimal(typeScript.getDecimal());
+        //item.setUdtIconFile(typeScript.getUdtIconFile());
+        item.setUdtType(typeScript.getUdtType());
+      }
+    });
+    return result;
   }
 }

@@ -18,13 +18,7 @@
     </sql>
 
   <resultMap id="accountUdtBalance" type="com.ckb.explorer.domain.dto.AccountUdtBalanceDto">
-    <result property="fullName" column="full_name" />
-    <result property="symbol" column="symbol" />
-    <result property="decimal" column="decimal" />
     <result property="amount" column="amount" />
-    <result property="udtIconFile" column="udt_icon_file" />
-    <result property="udtType" column="udt_type" />
-    <result property="totalAmount" column="total_amount" />
     <result property="typeScriptHash" column="type_script_hash" />
     <association property="udtTypeScript" javaType="com.ckb.explorer.domain.resp.ScriptResponse">
       <result property="args" column="args"/>
@@ -34,20 +28,14 @@
   </resultMap>
 
     <select id="getUdtBalanceByLockScriptId" resultMap="accountUdtBalance">
-      select u.full_name,
-             u.symbol,
-             u.decimal,
+      select ua.type_script_id,
              ua.amount,
-             u.icon_file                           as udt_icon_file,
-             u.udt_type,
              '0x' || encode(s.code_hash, 'hex')    as code_hash,
-             s.hash_type,
+             s.hash_type                           as hash_type,
              '0x' || encode( s.args, 'hex')        as args,
-             '0x' || encode( s.script_hash, 'hex') as type_script_hash,
-             u.total_amount
+             '0x' || encode( s.script_hash, 'hex') as type_script_hash
       from udt_accounts ua
-             left join udts u on ua.type_script_id = u.type_script_id
-             left join script s on u.type_script_id = s.id
+             left join script s on ua.type_script_id = s.id
         where ua.lock_script_id = #{lockScriptId}
     </select>
 
