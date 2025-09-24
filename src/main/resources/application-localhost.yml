@@ -328,6 +328,7 @@ script:
         }
       ]
       scriptHash: "0xcc77c4deac05d68ab5b26828f0bf4565a8d73113d7bb7e92b8362b8a74e58e58"
+      typeScriptId: 46
     - name: "TypeId"
       codeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944"
       hashType: "type"
@@ -348,6 +349,7 @@ script:
         }
       ]
       scriptHash: "0x2fa1efd0a1763de4d9f6176ce78dad05476ff6c9a56aec3a0c4e1426d887edac"
+      typeScriptId:
     - name: "USDI"
       codeHash: "0xcc9dc33ef234e14bc788c43a4848556a5fb16401a04662fc55db9bb201987037"
       hashType: "type"
@@ -363,6 +365,7 @@ script:
       scriptHash: "0x07ac97b5ff3df4b49f59a59f4d80d33d22c1263a57467c512c93b9c29b7a0de3"
       udt: true
       udtType: 15
+      typeScriptId:
     - name: "RUSD"
       codeHash: "0x1142755a044bf2ee358cba9f2da187ce928c91cd4dc8692ded0337efa677d21a"
       hashType: "type"
@@ -371,6 +374,7 @@ script:
       scriptHash: "0x45b32a2bc4285d0a09678eb11960ddc8707bc2779887a09d482e9bfe9a2cdf52"
       udt: true
       udtType: 15
+      typeScriptId:
     - name: "tBtc"
       codeHash: "0x25c29dc317811a6f6f3985a7a9ebc4838bd388d19d0feeecf0bcd60f6c0975bb"
       hashType: "type"
@@ -380,6 +384,7 @@ script:
       udt: true
       udtType: 15
       scriptHash: "0xe6396293287fefb9f26d98eb0318fe80890908f0849226ad0c8cab2d62f1e351"
+      typeScriptId:
     - name: "BTCPP"
       codeHash: "0x25c29dc317811a6f6f3985a7a9ebc4838bd388d19d0feeecf0bcd60f6c0975bb"
       hashType: "type"
@@ -389,6 +394,7 @@ script:
       scriptHash: "0xcc14aba04f0b03a5df5ef2cc2a163ff34c35863fbd65cd137aede0fb40346f66"
       udt: true
       udtType: 15
+      typeScriptId:
     - name: "web5did"
       codeHash: "0x510150477b10d6ab551a509b71265f3164e9fd4137fcb5a4322f49f03092c7c5"
       hashType: "type"
@@ -434,6 +440,7 @@ script:
       scriptHash: "0x788c79191970e313693351531930b46a708b1ca58f6d414ddc8a8827afb554ff"
       udt: true
       udtType: 3
+      typeScriptId: 5530
     - name: ""
       codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
       hashType: "type"
@@ -441,6 +448,7 @@ script:
       scriptHash: "0xc6c3add6d90a3d1eab9ec478bfa0647012989fb7ccf4a01b9dc0ed0910585a2b"
       udt: true
       udtType: 3
+      typeScriptId: 8881
     - name: ""
       codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
       hashType: "type"
@@ -448,6 +456,7 @@ script:
       scriptHash: "0x5e4229de7f1a6304099385638e4ef3e85ab7a02b0ed4d4a95783ebd982edb691"
       udt: true
       udtType: 3
+      typeScriptId: 8543
     - name: ""
       codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
       hashType: "type"
@@ -455,6 +464,7 @@ script:
       scriptHash: "0xdbfd8e50c62549e24ced774e012b1ea34559ee5e1676fddc63ebd7e3618b3e2c"
       udt: true
       udtType: 3
+      typeScriptId: 8590
     - name: ""
       codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
       hashType: "type"

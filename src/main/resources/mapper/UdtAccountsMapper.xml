@@ -19,23 +19,13 @@
 
   <resultMap id="accountUdtBalance" type="com.ckb.explorer.domain.dto.AccountUdtBalanceDto">
     <result property="amount" column="amount" />
-    <result property="typeScriptHash" column="type_script_hash" />
-    <association property="udtTypeScript" javaType="com.ckb.explorer.domain.resp.ScriptResponse">
-      <result property="args" column="args"/>
-      <result property="codeHash" column="code_hash"/>
-      <result property="hashType" column="hash_type"/>
-    </association>
+    <result property="typeScriptId" column="type_script_id" />
   </resultMap>
 
     <select id="getUdtBalanceByLockScriptId" resultMap="accountUdtBalance">
       select ua.type_script_id,
-             ua.amount,
-             '0x' || encode(s.code_hash, 'hex')    as code_hash,
-             s.hash_type                           as hash_type,
-             '0x' || encode( s.args, 'hex')        as args,
-             '0x' || encode( s.script_hash, 'hex') as type_script_hash
+             ua.amount
       from udt_accounts ua
-             left join script s on ua.type_script_id = s.id
         where ua.lock_script_id = #{lockScriptId}
     </select>
 

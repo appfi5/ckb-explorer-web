@@ -29,6 +29,8 @@ public class AccountUdtBalanceResponse {
 
   private ScriptResponse udtTypeScript;
 
+  private Long typeScriptId;
+
   private String typeScriptHash;
 
   @JsonSerialize(using = ToStringSerializer.class)

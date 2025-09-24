@@ -51,6 +51,9 @@ public enum CellType {
     }
 
   public static String getTypeByCellType(Integer cellType){
+    if(cellType == null){
+      return null;
+    }
     var type =CellType.valueOf(cellType);
     switch (type) {
       case CellType.NORMAL:

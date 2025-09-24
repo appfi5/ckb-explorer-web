@@ -9,7 +9,5 @@ public class AccountUdtBalanceDto {
 
   private BigInteger amount;
 
-  private ScriptResponse udtTypeScript;
-
-  private String typeScriptHash;
+  private Long typeScriptId;
 }

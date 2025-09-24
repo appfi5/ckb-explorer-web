@@ -49,6 +49,8 @@ public class ScriptConfig {
   @Data
   public static class TypeScript {
 
+    public Long typeScriptId;
+
     private String name;
 
     private String codeHash;
@@ -88,6 +90,14 @@ public class ScriptConfig {
       return type;
     }
     return typeScriptList.size() > 0 ? typeScriptList.get(0) : null;
+  }
+
+  public TypeScript getTypeScriptById(Long TypeScriptId) {
+
+    if(TypeScriptId == null)
+      return null;
+    return typeScripts.stream()
+        .filter(typeScript -> Objects.equals(typeScript.getTypeScriptId(), TypeScriptId)).findFirst().orElse(null);
   }
 
 }
