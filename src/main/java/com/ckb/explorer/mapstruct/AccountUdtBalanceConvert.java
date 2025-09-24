@@ -18,13 +18,4 @@ public interface AccountUdtBalanceConvert {
   AccountUdtBalanceResponse toConvert(AccountUdtBalanceDto accountUdtBalanceDto);
 
   List<AccountUdtBalanceResponse> toConvert(List<AccountUdtBalanceDto> accountUdtBalanceDtos);
-
-  @AfterMapping
-  default void afterMapping(@MappingTarget AccountUdtBalanceResponse accountUdtBalanceResponse, AccountUdtBalanceDto accountUdtBalanceDto)
-  {
-    if(accountUdtBalanceDto.getUdtTypeScript() != null){
-      var hashType = Short.valueOf(accountUdtBalanceDto.getUdtTypeScript().getHashType());
-      accountUdtBalanceResponse.getUdtTypeScript().setHashType(HashType.getValueByCode(hashType));
-    }
-  }
 }

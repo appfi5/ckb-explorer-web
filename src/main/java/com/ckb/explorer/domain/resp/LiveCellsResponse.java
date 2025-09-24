@@ -20,6 +20,8 @@ public class LiveCellsResponse extends BaseResponse<Long> {
 
   private Integer cellType;
 
+  private Long typeScriptId;
+
   private String txHash;
 
   private Integer cellIndex;

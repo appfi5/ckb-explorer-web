@@ -21,8 +21,6 @@ public class LiveCells implements Serializable {
 
     private Long typeScriptId;
 
-    private Integer cellType;
-
     private BigInteger occupiedCapacity;
 
     private Long blockNumber;

@@ -58,13 +58,14 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
 
     List<AccountUdtBalanceResponse> result = AccountUdtBalanceConvert.INSTANCE.toConvert(list);
     result.forEach(item -> {
-      var typeScript = scriptConfig.getTypeScriptByCodeHash(item.getUdtTypeScript().getCodeHash(), item.getUdtTypeScript().getArgs());
+      var typeScript = scriptConfig.getTypeScriptById(item.getTypeScriptId());
       if(typeScript != null){
         item.setFullName(typeScript.getName());
         item.setSymbol(typeScript.getSymbol());
         item.setDecimal(typeScript.getDecimal());
         //item.setUdtIconFile(typeScript.getUdtIconFile());
         item.setUdtType(typeScript.getUdtType());
+        item.setTypeScriptHash(typeScript.getScriptHash());
       }
     });
     return result;

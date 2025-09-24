@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author dell
@@ -31,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Slf4j
-@Transactional
 public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells>
     implements LiveCellsService {
 
@@ -98,15 +96,15 @@ public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells
         extraInfo = new ExtraInfoResponse();
       }
       extraInfo.setType(CellType.getTypeByCellType(liveCells.getCellType()));
-      if (liveCells.getCellType().intValue() == CellType.NORMAL.getValue()) {
+      if (liveCells.getCellType() !=null && liveCells.getCellType().intValue() == CellType.NORMAL.getValue()) {
         extraInfo.setCapacity(liveCells.getCapacity());
-      } else if(liveCells.getCodeHash() != null){
-        var typeScript = scriptConfig.getTypeScriptByCodeHash(liveCells.getCodeHash(), liveCells.getArgs());
+      } else if(liveCells.getTypeScriptId() != null){
+        var typeScript = scriptConfig.getTypeScriptById(liveCells.getTypeScriptId());
         if(typeScript != null){
           extraInfo.setSymbol(typeScript.getSymbol());
           extraInfo.setDecimal(typeScript.getDecimal());
           extraInfo.setPublished(true);
-          extraInfo.setTypeHash(liveCells.getTypeHash());
+          liveCells.setTypeHash(typeScript.getScriptHash());
         }
       }
       liveCells.setExtraInfo(extraInfo);

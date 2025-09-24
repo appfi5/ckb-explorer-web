@@ -17,6 +17,8 @@ public class OutputExtend implements Serializable {
 
     private Long outputId;
 
+    private Long lockScriptId;
+
     private Integer cellType;
 
     private BigInteger udtAmount;
