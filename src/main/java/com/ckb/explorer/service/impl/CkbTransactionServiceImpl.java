@@ -393,15 +393,19 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       lockScriptId = lockScript.getId();
     }
 
-    byte[] txHashBytes = null;
+    Long txId = null;
     if(StringUtils.isNotEmpty(req.getTxHash())){
-      txHashBytes = Numeric.hexStringToByteArray(req.getTxHash());
+      var ckbTransaction = getCkbTransaction(req.getTxHash());
+      if(ckbTransaction==null){
+        throw new ServerException(I18nKey.CKB_TRANSACTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_NOT_FOUND_MESSAGE));
+      }
+      txId = ckbTransaction.getId();
     }
 
     // 从24小时表里获取翻页的交易id
     Page<Long> transactionIdsPage = new Page<>(page, pageSize);
     Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByTypeScriptIdWithSort(
-            transactionIdsPage, script.getId(), orderBy, ascOrDesc,txHashBytes,lockScriptId);
+            transactionIdsPage, script.getId(), orderBy, ascOrDesc,txId,lockScriptId);
 
     List<Long> transactionIds = transactionIdPage.getRecords();
     if (transactionIds.isEmpty()){

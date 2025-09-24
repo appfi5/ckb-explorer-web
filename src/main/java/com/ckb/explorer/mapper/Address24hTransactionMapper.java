@@ -54,8 +54,8 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
             + "        ) AS rn\n"
             + "    FROM address_24h_transaction ad \n"
             + "    WHERE type_script_id = #{typeScriptId}\n"
-            + "    <if test='null != txHash'>\n"
-            + "       and exists (select ct.id from ckb_transaction ct where ct.tx_hash = #{txHash} and ct.id = ad.ckb_transaction_id)\n"
+            + "    <if test='null != txId'>\n"
+            + "       and ckb_transaction_id = #{txId}\n"
             + "     </if> "
             + "     <if test='null != lockScriptId'>\n"
             + "       and lock_script_id = #{lockScriptId}\n "
@@ -67,7 +67,7 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
             + "ORDER BY ${orderByStr} ${ascOrDesc}\n"
             + "</script>")
     Page<Long> getTransactionsLast24hrsByTypeScriptIdWithSort(Page page, @Param("typeScriptId") Long typeScriptId , @Param("orderByStr") String orderByStr,
-                                                              @Param("ascOrDesc") String ascOrDesc,@Param("txHash") byte[] txHash, @Param("lockScriptId") Long lockScriptId);
+                                                              @Param("ascOrDesc") String ascOrDesc,@Param("txId") Long txId, @Param("lockScriptId") Long lockScriptId);
 
 
 }
