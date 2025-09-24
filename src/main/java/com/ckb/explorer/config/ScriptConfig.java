@@ -67,6 +67,7 @@ public class ScriptConfig {
 
     private Boolean udt=false;
 
+    private Integer udtType;
   }
 
   public LockScript getLockScriptByCodeHash(String codeHash) {
