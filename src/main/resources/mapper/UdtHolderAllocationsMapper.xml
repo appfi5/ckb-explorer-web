@@ -20,7 +20,7 @@
         <result property="addressesCount" column="addressesCount" />
     </resultMap>
 
-    <select id="getAddressNumByScriptHashes" resultMap="addressCount">
+    <select id="getAddressNumByScriptIds" resultMap="addressCount">
         select  uh.type_script_id as typeScriptId,
         sum(uh.holder_count) as addressesCount
         from udt_holder_allocations uh

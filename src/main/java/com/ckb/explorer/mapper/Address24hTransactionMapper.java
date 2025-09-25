@@ -37,7 +37,7 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
   Page<Long> getTransactionsLast24hrsByLockScriptIdWithSort(Page page, @Param("lockScriptId") Long lockScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
 
 
-    List<UdtH24TransactionsCountDto> getTransactionsCountByScriptHashes(@Param("scriptIds") List<Long> scriptIds, @Param("oneDayAgo")  Long oneDayAgo);
+    List<UdtH24TransactionsCountDto> getTransactionsCountByScriptIds(@Param("scriptIds") List<Long> scriptIds);
 
 
   @Select("<script>" +

@@ -83,9 +83,9 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
 
         //TODO debezium CDC模式保持取数一致 如果使用risingWave需要替换
-        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNumByScriptHashes(typeScriptIds);
+        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNumByScriptIds(typeScriptIds);
         Long oneDayAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(24);
-        List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptHashes(typeScriptIds, 0L);
+        List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptIds(typeScriptIds);
 
         typeScripts.stream().forEach(typeScript -> {
             Long typeScriptId = typeScript.getTypeScriptId();

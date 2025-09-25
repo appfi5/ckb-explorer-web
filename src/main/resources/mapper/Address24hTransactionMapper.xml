@@ -15,7 +15,7 @@
         <result property="h24CkbTransactionsCount" column="h24CkbTransactionsCount" />
     </resultMap>
 
-    <select id="getTransactionsCountByScriptHashes" resultMap="transactionsCount">
+    <select id="getTransactionsCountByScriptIds" resultMap="transactionsCount">
         select  at.type_script_id as typeScriptId,
         count(distinct  at.ckb_transaction_id) as h24CkbTransactionsCount
         from address_24h_transaction at
@@ -23,9 +23,7 @@
         <foreach  item="item" index="index" collection="scriptIds" open="(" separator="," close=")">
             #{item}
         </foreach>
-        <if test="null != oneDayAgo and oneDayAgo >0 ">
-         and at.block_timestamp >#{oneDayAgo}
-        </if>
+         and at.block_timestamp >= (SELECT MAX(block_timestamp) - 86400000 FROM address_24h_transaction)
         group by at.type_script_id
     </select>
 </mapper>

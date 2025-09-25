@@ -22,7 +22,7 @@ public interface UdtHolderAllocationsMapper extends BaseMapper<UdtHolderAllocati
     @Select("select sum(holder_count) from udt_holder_allocations where type_script_id = #{typeScriptId} ")
     Long selectHolderCountByTypeScriptId(@Param("typeScriptId") Long typeScriptId);
 
-    List<UdtAddressCountDto> getAddressNumByScriptHashes(@Param("scriptIds") List<Long> scriptIds);
+    List<UdtAddressCountDto> getAddressNumByScriptIds(@Param("scriptIds") List<Long> scriptIds);
 
 }
 
