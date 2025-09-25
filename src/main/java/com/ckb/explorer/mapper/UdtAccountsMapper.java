@@ -24,7 +24,6 @@ public interface UdtAccountsMapper extends BaseMapper<UdtAccounts> {
 
   List<AccountUdtBalanceDto> getUdtBalanceByLockScriptId(@Param("lockScriptId") Long lockScriptId);
 
-  List<UdtAddressCountDto> getAddressNumByScriptHashes(@Param("scriptHashes") List<byte[]> scriptHashes);
 
   @Select("select sum(amount) from udt_accounts where type_script_id = #{typeScriptId} ")
   BigInteger getTotalAmountByTypeScriptId(@Param("typeScriptId") Long typeScriptId);

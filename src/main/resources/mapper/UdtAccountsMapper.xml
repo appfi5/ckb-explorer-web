@@ -5,16 +5,13 @@
 <mapper namespace="com.ckb.explorer.mapper.UdtAccountsMapper">
 
     <resultMap id="BaseResultMap" type="com.ckb.explorer.entity.UdtAccounts">
-            <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="typeScriptId" column="type_script_d" jdbcType="BIGINT"/>
-            <result property="nftTokenId" column="nft_token_id" jdbcType="VARCHAR"/>
             <result property="amount" column="amount" jdbcType="BIGINT"/>
            <result property="lockScriptId" column="lock_script_d" jdbcType="BIGINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,udt_id,nft_token_id,
-        amount,lock_script_d
+        type_script_d,amount,lock_script_d
     </sql>
 
   <resultMap id="accountUdtBalance" type="com.ckb.explorer.domain.dto.AccountUdtBalanceDto">
@@ -29,20 +26,4 @@
         where ua.lock_script_id = #{lockScriptId}
     </select>
 
-    <resultMap id="addressCount" type="com.ckb.explorer.domain.dto.UdtAddressCountDto">
-        <result property="typeScriptHash" column="typeScriptHash" />
-        <result property="addressesCount" column="addressesCount" />
-    </resultMap>
-
-    <select id="getAddressNumByScriptHashes" resultMap="addressCount">
-        select  s.script_hash as typeScriptHash,
-                count(ua.*) as addressesCount
-        from udt_accounts ua
-            left join script s on ua.type_script_id = s.id
-        where s.script_hash in
-        <foreach  item="item" index="index" collection="scriptHashes" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        group by s.script_hash
-    </select>
 </mapper>
