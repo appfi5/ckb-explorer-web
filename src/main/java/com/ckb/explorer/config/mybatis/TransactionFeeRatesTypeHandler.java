@@ -46,10 +46,10 @@ public class TransactionFeeRatesTypeHandler extends BaseTypeHandler<TransactionF
   }
 
   private TransactionFeeRatesWrapper parseJson(String json) {
-    if (json == null || json.trim().isEmpty() || "null".equals(json.trim())) {
+    if (json == null || json.trim().isEmpty() || "null".equals(json.trim())|| "{}".equals(json.trim())) {
       return null;
     }
-    TransactionFeeRatesWrapper transactionFeeRatesWrapper = new TransactionFeeRatesWrapper(JsonUtil.parseList(json, TransactionFeeRates.class));
+    TransactionFeeRatesWrapper transactionFeeRatesWrapper = new TransactionFeeRatesWrapper(JsonUtil.parseList(json.trim(), TransactionFeeRates.class));
     return transactionFeeRatesWrapper;
   }
 }
