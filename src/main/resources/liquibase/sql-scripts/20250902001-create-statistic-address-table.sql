@@ -145,3 +145,8 @@ CREATE INDEX idx_output_lockscript_consumedtxhash_full ON output (lock_script_id
 CREATE INDEX idx_outputextend_outputid_cover
     ON output_extend (output_id)  -- 关联字段在前
     INCLUDE (cell_type);  -- 仅需查询 cell_type
+
+ALTER TABLE statistic_infos
+    ADD COLUMN IF NOT EXISTS transaction_fee_rates jsonb
+-- 可选1：设置默认值为空JSON对象（避免NULL，便于后续统一处理）
+    DEFAULT '{}'::jsonb;

@@ -120,6 +120,8 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
       response.setBlockchainInfo(data == null? null : BlockchainInfoConvert.INSTANCE.toConvert(data));
     } else if ("address_balance_ranking".equals(fieldName)) {
       response.setAddressBalanceRanking(statisticInfoService.getAddressBalanceRanking());
+    } else if ("transaction_fees".equals(fieldName)) {
+      response.setTransactionFeeRates(statisticInfoService.getTransactionFeeRates());
     }
 
     // 设置创建时间戳

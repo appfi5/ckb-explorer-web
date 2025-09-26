@@ -2,6 +2,7 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ckb.explorer.domain.resp.AddressBalanceRanking;
+import com.ckb.explorer.domain.resp.TransactionFeeRates;
 import com.ckb.explorer.entity.StatisticInfo;
 import java.util.List;
 import org.nervos.ckb.type.BlockchainInfo;
@@ -17,4 +18,6 @@ public interface StatisticInfoService extends IService<StatisticInfo> {
   BlockchainInfo getBlockchainInfo();
 
   StatisticInfo getStatisticInfo();
+
+  List<TransactionFeeRates> getTransactionFeeRates();
 }

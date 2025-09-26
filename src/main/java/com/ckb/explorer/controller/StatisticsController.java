@@ -59,16 +59,12 @@ public class StatisticsController {
      * 获取有效的统计信息名称列表
      */
     private Set<String> getValidStatisticInfoNames() {
-//        List<String> validNames = Arrays.stream(StatisticResponse.class.getDeclaredFields())
-//          .map(Field::getName)                    // 获取字段名
-//          .map(FieldNameConverter::camelToSnake)  // 转为 snake_case
-//          .collect(Collectors.toList());
-//        return validNames;
       Set<String> validNames = new HashSet<>();
       validNames.add("tip_block_number");
       validNames.add("blockchain_info");
       validNames.add("flush_cache_info");
       validNames.add("address_balance_ranking");
+      validNames.add("transaction_fees");
 
       return validNames;
     }

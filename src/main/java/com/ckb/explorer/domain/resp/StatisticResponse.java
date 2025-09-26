@@ -66,4 +66,6 @@ public class StatisticResponse {
    * 创建时间戳（UNIX格式）
    */
   private Long createdAtUnixtimestamp;
+
+  private List<TransactionFeeRates> transactionFeeRates;
 }
