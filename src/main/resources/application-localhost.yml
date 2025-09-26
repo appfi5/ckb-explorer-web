@@ -73,6 +73,7 @@ ckb:
   netWork: 2 # 1:mainnet 2:testnet
   default-hash-prefix: 0x
   default-with-prefix-hash-length: 66
+  typeIdCodeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944"
 statistic:
   averageBlockTimeInterval: 100
   hashRateStatisticalInterval: 100
