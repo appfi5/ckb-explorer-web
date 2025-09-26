@@ -3,6 +3,7 @@ package com.ckb.explorer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.domain.resp.AddressBalanceRanking;
+import com.ckb.explorer.domain.resp.TransactionFeeRates;
 import com.ckb.explorer.entity.StatisticInfo;
 import com.ckb.explorer.mapper.StatisticInfoMapper;
 import com.ckb.explorer.service.StatisticInfoService;
@@ -46,5 +47,15 @@ public class StatisticInfoServiceImpl extends ServiceImpl<StatisticInfoMapper, S
     queryWrapper.last("limit 1");
     StatisticInfo statisticInfo = baseMapper.selectOne(queryWrapper);
     return statisticInfo;
+  }
+
+  @Override
+  public List<TransactionFeeRates> getTransactionFeeRates() {
+    LambdaQueryWrapper<StatisticInfo> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.select(StatisticInfo::getTransactionFeeRates);
+    queryWrapper.last("limit 1");
+    StatisticInfo result = baseMapper.selectOne(queryWrapper);
+
+    return result == null || result.getTransactionFeeRates() == null? new ArrayList<>() : result.getTransactionFeeRates().getData();
   }
 }

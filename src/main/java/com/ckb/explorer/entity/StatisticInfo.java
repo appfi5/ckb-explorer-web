@@ -6,11 +6,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.ckb.explorer.config.mybatis.AddressBalanceRankingTypeHandler;
+import com.ckb.explorer.config.mybatis.TransactionFeeRatesTypeHandler;
+import com.ckb.explorer.domain.dto.TransactionFeeRatesWrapper;
 import com.ckb.explorer.domain.resp.AddressBalanceRanking;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import lombok.Data;
 
@@ -59,6 +60,9 @@ public class StatisticInfo {
    */
   @TableField(typeHandler = AddressBalanceRankingTypeHandler.class)
   private List<AddressBalanceRanking> addressBalanceRanking;
+
+  @TableField(typeHandler = TransactionFeeRatesTypeHandler.class)
+  private TransactionFeeRatesWrapper transactionFeeRates;
 
   @TableField(fill = FieldFill.INSERT)
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
