@@ -11,7 +11,7 @@ stages:
 # 全局变量设置
 variables:
   MAVEM_IMAGE: registry.devops.rivtower.com/library/maven:3.9.11-eclipse-temurin-21-alpine
-  IMAGE_NAME: ${RIVTOWER_REGISTRY_ADDRESS}/ckb-explorer/${CI_PROJECT_PATH}:${CI_COMMIT_REF_NAME}
+  IMAGE_NAME: ${RIVTOWER_REGISTRY_ADDRESS}/ckb-explorer/${CI_PROJECT_PATH}:${CI_COMMIT_REF_NAME}${CI_PIPELINE_ID}
   K8S_IMAGE: ${RIVTOWER_REGISTRY_ADDRESS}/library/kubectl:1.24.10 # k8s 部署使用的镜像
   NAME_SPACE: app-ckb-explorer
 
@@ -25,8 +25,6 @@ build-mvn-package:
     - "rm -rf .m2/repository/com/ckb/explorer"
     - "mvn clean package -DskipTests -Dmaven.repo.local=.m2/repository"
     - echo "=============== 验证JAR文件生成 ==============="
-    - "ls -la target || echo \"target目录不存在\""
-    - "ls -la target/ckb-explorer-web.jar || echo \"JAR文件不存在\""
     # 复制JAR文件到根目录，确保在image-build阶段能够可靠获取
     - "cp -f target/ckb-explorer-web.jar . || echo \"无法复制JAR文件到根目录\""
   cache:
@@ -49,12 +47,7 @@ image-build:
     - build-mvn-package
   script:
     - echo "=============== 验证文件是否存在 ==============="
-    - ls -la
-    # 创建target目录并确保JAR文件存在
-    - mkdir -p target
-    - "if [ -f ckb-explorer-web.jar ]; then mv ckb-explorer-web.jar target/; fi"
     - "if [ -f target/ckb-explorer-web.jar ]; then echo \"JAR文件已找到\"; else echo \"错误: JAR文件不存在\" && exit 1; fi"
-    - ls -la target/
     - echo "=============== docker build image  ==============="
     - echo "${IMAGE_NAME}"
     - "docker login -u ${RIVTOWER_REGISTRY_USERNAME} -p ${RIVTOWER_REGISTRY_PASSWORD} ${RIVTOWER_REGISTRY_ADDRESS}"
