@@ -48,10 +48,9 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   @Resource
   private ScriptService scriptService;
 
-//  @Value("ckb.typeIdCodeHash")
-//  private String typeIdCodeHash;
+  @Value("${ckb.typeIdCodeHash: 0x00000000000000000000000000000000000000000000000000545950455f4944}")
+  private String typeIdCodeHash;
 
-  // 假设的服务，实际项目中可能需要创建或调整
   // @Resource
   // private UdtService udtService;
 
@@ -61,15 +60,26 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   // @Resource
   // private BitcoinTransactionService bitcoinTransactionService;
 
+  /**
+   * 查询
+   *
+   * @param queryKey 查询关键字
+   * @param filterBy 过滤条件
+   *                 0-未指定；1-块哈希；2-地址LockHash；3-TypeHash；4-typeId的args；5-lock的codeHash；6-type的codeHash;
+   *                 7-比特币交易的txid；8-比特币地址哈希；9-Udt的name_or_symbol；10-nft_collections的sn；11-nft_collections的name；12-fiber_graph_nodes
+   * @return
+   */
   @Override
   public Object find(String queryKey, Integer filterBy) {
     // 初始化查询参数
     queryKey = processQueryKey(queryKey);
 
-    if (filterBy != null && filterBy == 0) {
+    // filterBy未指定时聚合查询
+    if (filterBy == null || filterBy == 0) {
       return aggregateQuery(queryKey);
+      // 否则单个查询
     } else {
-      return singleQuery(queryKey);
+      return singleQuery(queryKey, filterBy);
     }
   }
 
@@ -99,49 +109,62 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
 
   /**
    * 单个查询
+   *
+   * @param queryKey 查询关键字
+   * @param filterBy 过滤条件
+   *                 0-未指定；1-块哈希；2-地址LockHash；3-TypeHash；4-typeId的args；5-lock的codeHash；6-type的codeHash;
+   *                 7-比特币交易的txid；8-比特币地址哈希；9-Udt的name_or_symbol；10-nft_collections的sn；11-nft_collections的name；12-fiber_graph_nodes
    */
-  private Object singleQuery(String queryKey) {
+  private Object singleQuery(String queryKey, Integer filterBy) {
     Object result = null;
 
-    // 第一版只支持按高度查区块，按哈希查交易，按地址字符串查地址
-    if (queryKeyUtils.isIntegerString(queryKey)) {
-      // 查询区块
-      result = findCachedBlock(queryKey);
-    } else if (queryKeyUtils.isValidHex(queryKey)) {
-      // 尝试多种查询方法
-      List<Supplier<Object>> queryMethods = Arrays.asList(
-//          () -> findCachedBlock(queryKey),
-          () -> findCkbTransactionByHash(queryKey)
-//          () -> findAddressByLockHash(queryKey),
-//          () -> findUdtByTypeHash(queryKey),
-//          () -> findTypeScriptByTypeId(queryKey),
-//          () -> findTypeScriptByCodeHash(queryKey),
-//          () -> findLockScriptByCodeHash(queryKey),
-//          () -> findBitcoinTransactionByTxid(queryKey),
-//          () -> findNftCollectionsBySn(queryKey)
-      );
-
-      // 并行执行所有查询方法
-      List<CompletableFuture<Object>> futures = queryMethods.stream()
-          .map(method -> CompletableFuture.supplyAsync(method))
-          .collect(Collectors.toList());
-
-      // 等待所有查询完成并收集结果
-      for (CompletableFuture<Object> future : futures) {
-        try {
-          Object tempResult = future.get();
-          if (tempResult != null) {
-            result = tempResult;
-            break; // 找到第一个结果就返回
-          }
-        } catch (InterruptedException | ExecutionException e) {
-          // 忽略异常，继续下一个查询
-          Thread.currentThread().interrupt();
-        }
-      }
-    } else if (queryKeyUtils.isValidAddress(queryKey)) {
-      // 查询地址
-      result = findCachedAddress(queryKey);
+    switch (filterBy) {
+      case 1:// 按块哈希查询
+        vaildHex(queryKey);
+        result = findCachedBlock(queryKey);
+        break;
+      case 2:// 按地址LockScriptHash查询
+        vaildHex(queryKey);
+        result = findAddressByLockHash(queryKey);
+        break;
+      case 3:// 按TypeScriptHash查询合约 TODO
+        vaildHex(queryKey);
+        result = findUdtByTypeHash(queryKey);
+        break;
+      case 4:// 按typeId的args查询UDT
+        vaildHex(queryKey);
+        result = findTypeScriptByTypeId(queryKey);
+        break;
+      case 5:// 按lock的codeHash查询合约
+        vaildHex(queryKey);
+        result = findLockScriptByCodeHash(queryKey);
+        break;
+      case 6:// 按type的codeHash查询合约
+        vaildHex(queryKey);
+        result = findTypeScriptByCodeHash(queryKey);
+        break;
+      case 7:// 比特币交易的txid
+        vaildHex(queryKey);
+        result = findBitcoinTransactionByTxid(queryKey);
+        break;
+      case 8:// 比特币地址哈希
+        vaildHex(queryKey);
+        result = findBitcoinAddress(queryKey);
+        break;
+      case 9:// 按udt的name或symbol查询udt 前端自己查了
+        //result = findUdtsByNameOrSymbol(queryKey);
+        break;
+      case 10:// 按nft的sn查询nft TODO
+        vaildHex(queryKey);
+        result = findNftCollectionsBySn(queryKey);
+        break;
+      case 11:// 按nft的name查询nft TODO
+        result = findNftCollectionsByName(queryKey);
+        break;
+      case 12:// 按fiber图节点查询fiber图
+        vaildHex(queryKey);
+        result = findFiberGraphNodes(queryKey);
+        break;
     }
 
     if (result == null) {
@@ -152,19 +175,21 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
     return result;
   }
 
+  private void vaildHex(String queryKey){
+    if (!queryKeyUtils.isValidHex(queryKey))
+      throw new ServerException(I18nKey.SUGGEST_QUERY_KEY_INVALID_CODE,
+          i18n.getMessage(I18nKey.SUGGEST_QUERY_KEY_INVALID_MESSAGE));
+  }
+
   /**
-   * 聚合查询
+   * 聚合查询 只支持按块高查块，按交易哈希查交易，按地址字符串查地址
    */
-  private List<Object> aggregateQuery(String queryKey) {
-    List<Object> dataList = new ArrayList<>();
-    // 第一版只支持按高度查区块，按哈希查交易，按地址字符串查地址
+  private Object aggregateQuery(String queryKey) {
+
+    Object result = null;
     // 如果是纯数字，查询区块
     if (queryKeyUtils.isIntegerString(queryKey)) {
-      BlockResponse block = findCachedBlock(queryKey);
-      if (block != null) {
-        dataList.add(block);
-        return dataList;
-      }
+      result = findCachedBlock(queryKey);
     }
 
     // 如果字符串长度小于2，查询结果为空
@@ -173,108 +198,22 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
           i18n.getMessage(I18nKey.SUGGEST_QUERY_RESULT_NOT_FOUND_MESSAGE));
     }
 
-    // 并行执行多种查询
-    CompletableFuture<Void> allFutures = CompletableFuture.runAsync(() -> {
-      if (queryKeyUtils.isValidHex(queryKey)) {
-        // 执行各种hex查询
-        List<Supplier<Object>> hexQueryMethods = Arrays.asList(
-//            () -> findCachedBlock(queryKey),
-            () -> findCkbTransactionByHash(queryKey)
-//            () -> findAddressByLockHash(queryKey),
-//            () -> findUdtByTypeHash(queryKey),
-//            () -> findTypeScriptByTypeId(queryKey),
-//            () -> findTypeScriptByCodeHash(queryKey),
-//            () -> findLockScriptByCodeHash(queryKey),
-//            () -> findBitcoinTransactionByTxid(queryKey),
-//            () -> findNftCollectionsBySn(queryKey)
-        );
+    if (queryKeyUtils.isValidHex(queryKey)) {
+      result = findCkbTransactionByHash(queryKey);
+    }
 
-        hexQueryMethods.forEach(method -> {
-          try {
-            Object result = method.get();
-            if (result != null) {
-              synchronized (dataList) {
-                dataList.add(result);
-              }
-            }
-          } catch (Exception e) {
-            // 忽略异常
-          }
-        });
-      }
+    if (queryKeyUtils.isValidAddress(queryKey)) {
+      // 查询地址
+      result = findCachedAddress(queryKey);
 
-      if (queryKeyUtils.isValidAddress(queryKey)) {
-        // 查询地址
-        try {
-          Object address = findCachedAddress(queryKey);
-          if (address != null) {
-            synchronized (dataList) {
-              dataList.add(address);
-            }
-          }
-        } catch (Exception e) {
-          // 忽略异常
-        }
-      }
+    }
 
-      // 查询比特币地址
-//      try {
-//        Object bitcoinAddress = findBitcoinAddress(queryKey);
-//        if (bitcoinAddress != null) {
-//          synchronized (dataList) {
-//            dataList.add(bitcoinAddress);
-//          }
-//        }
-//      } catch (Exception e) {
-//        // 忽略异常
-//      }
-
-      // 查询UDT
-//      try {
-//        List<Object> udts = findUdtsByNameOrSymbol(queryKey);
-//        if (udts != null) {
-//          synchronized (dataList) {
-//            dataList.addAll(udts);
-//          }
-//        }
-//      } catch (Exception e) {
-//        // 忽略异常
-//      }
-
-      // 查询NFT集合
-//      try {
-//        List<Object> collections = findNftCollectionsByName(queryKey);
-//        if (collections != null) {
-//          synchronized (dataList) {
-//            dataList.addAll(collections);
-//          }
-//        }
-//      } catch (Exception e) {
-//        // 忽略异常
-//      }
-
-      // 查询Fiber图节点
-//      try {
-//        List<Object> nodes = findFiberGraphNodes(queryKey);
-//        if (nodes != null) {
-//          synchronized (dataList) {
-//            dataList.addAll(nodes);
-//          }
-//        }
-//      } catch (Exception e) {
-//        // 忽略异常
-//      }
-    });
-
-    // 等待所有查询完成
-    allFutures.join();
-
-    if (dataList.isEmpty()) {
+    if (result == null) {
       throw new ServerException(I18nKey.SUGGEST_QUERY_RESULT_NOT_FOUND_CODE,
           i18n.getMessage(I18nKey.SUGGEST_QUERY_RESULT_NOT_FOUND_MESSAGE));
     }
 
-    return dataList;
+    return result;
   }
 
   /**
@@ -311,26 +250,23 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
    * 根据类型哈希查询UDT
    */
   private Object findUdtByTypeHash(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    // try {
-    //     return udtCacheFacade.findByTypeHash(queryKey);
-    // } catch (Exception e) {
-    //     return null;
-    // }
-    return null; // 占位实现
+    // TODO 根据TypeHash查Script+typeScriptExtend+dob_ext
+    // 如果是udt 返回UdtSerializer
+    // 如果是Nft 查TokenItem
+    return null;
   }
 
   /**
-   * 根据args查询类型脚本 第一版不支持
+   * 根据args查询类型脚本
    */
   private TypeScriptResponse findTypeScriptByTypeId(String queryKey) {
 
-    return null;
+    return scriptService.findTypeScriptByTypeId(queryKey,typeIdCodeHash);
 
   }
 
   /**
-   * 根据代码哈希查询类型脚本 第一版不支持
+   * 根据代码哈希查询类型脚本
    */
   private TypeScriptResponse findTypeScriptByCodeHash(String queryKey) {
 
@@ -338,14 +274,14 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据代码哈希查询Lock脚本 第一版不支持
+   * 根据代码哈希查询Lock脚本
    */
   private LockScriptResponse findLockScriptByCodeHash(String queryKey) {
     return scriptService.findLockScriptByCodeHash(queryKey);
   }
 
   /**
-   * 根据TXID查询比特币交易 一期不做比特币
+   * 根据TXID查询比特币交易 二期不做比特币
    */
   private Object findBitcoinTransactionByTxid(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -359,7 +295,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 查询比特币地址 一期不做比特币
+   * 查询比特币地址 二期不做比特币
    */
   private Object findBitcoinAddress(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -406,7 +342,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 查询Fiber图节点
+   * 查询Fiber图节点 二期不做
    */
   private List<Object> findFiberGraphNodes(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整

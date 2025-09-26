@@ -12,6 +12,7 @@ import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.entity.StatisticAddress;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
+import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.service.OutputService;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.StatisticAddressService;
@@ -95,21 +96,50 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
 
   @Override
   public TypeScriptResponse findTypeScriptByTypeId(String args, String typeIdCodeHash) {
-//    LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
-//    queryWrapper.eq(Script::getCodeHash, typeIdCodeHash);
-//    queryWrapper.eq(Script::getArgs, args);
-//    var script = baseMapper.selectOne(queryWrapper);
-    return null;
+    LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.eq(Script::getCodeHash, Numeric.hexStringToByteArray(typeIdCodeHash));
+    queryWrapper.eq(Script::getArgs, Numeric.hexStringToByteArray(args));
+    queryWrapper.eq(Script::getIsTypescript, 1);
+    var script = baseMapper.selectOne(queryWrapper);
+    if(script == null){
+      return null;
+    }
+    var typeScriptResponse = TypeScriptConvert.INSTANCE.toConvert(script);
+    var scriptConf = scriptConfig.getTypeScriptByCodeHash(typeScriptResponse.getCodeHash(), typeScriptResponse.getArgs());
+    typeScriptResponse.setVerifiedScriptName(scriptConf == null ? null : scriptConf.getName());
+    return typeScriptResponse;
   }
 
   @Override
   public TypeScriptResponse findTypeScriptByCodeHash(String codeHash) {
-    return null;
+    LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.eq(Script::getCodeHash, Numeric.hexStringToByteArray(codeHash));
+    queryWrapper.eq(Script::getIsTypescript, 1);
+    queryWrapper.last("limit 1");
+    Script script = baseMapper.selectOne(queryWrapper);
+    if(script == null){
+      return null;
+    }
+    var typeScriptResponse = TypeScriptConvert.INSTANCE.toConvert(script);
+    var typeScript = scriptConfig.getTypeScriptByCodeHash(codeHash, typeScriptResponse.getArgs());
+    typeScriptResponse.setVerifiedScriptName(typeScript == null ? null : typeScript.getName());
+    return typeScriptResponse;
   }
 
   @Override
   public LockScriptResponse findLockScriptByCodeHash(String codeHash) {
-    return null;
+    LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
+    queryWrapper.eq(Script::getCodeHash, Numeric.hexStringToByteArray(codeHash));
+    queryWrapper.eq(Script::getIsTypescript, 0);
+    queryWrapper.last("limit 1");
+    Script script = baseMapper.selectOne(queryWrapper);
+    if(script == null){
+      return null;
+    }
+    var lockScript = scriptConfig.getLockScriptByCodeHash(codeHash);
+    LockScriptResponse lockScriptResponse = LockScriptConvert.INSTANCE.toConvert(script);
+    lockScriptResponse.setVerifiedScriptName(lockScript == null ? null : lockScript.getName());
+    return lockScriptResponse;
   }
 
 

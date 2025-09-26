@@ -70,7 +70,7 @@ public final class I18nKey {
 
   // Query errors
   public static final int SUGGEST_QUERY_KEY_INVALID_CODE = 1017;
-  public static final String SUGGEST_QUERY_KEY_INVALID_MESSAGE = "query_parameter_should_be_a_block_height_block_hash_tx_hash_or_address_hash";
+  public static final String SUGGEST_QUERY_KEY_INVALID_MESSAGE = "query_parameter_should_be_a_hash";
 
   public static final int SUGGEST_QUERY_RESULT_NOT_FOUND_CODE = 1018;
   public static final String SUGGEST_QUERY_RESULT_NOT_FOUND_MESSAGE ="no_records_found_by_given_query_key";
