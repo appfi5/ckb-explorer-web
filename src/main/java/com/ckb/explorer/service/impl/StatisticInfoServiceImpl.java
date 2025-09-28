@@ -3,7 +3,8 @@ package com.ckb.explorer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.domain.resp.AddressBalanceRanking;
-import com.ckb.explorer.domain.resp.TransactionFeeRates;
+import com.ckb.explorer.domain.resp.LastNDaysTransactionFeeRates;
+import com.ckb.explorer.domain.resp.TransactionFeeRatesResponse;
 import com.ckb.explorer.entity.StatisticInfo;
 import com.ckb.explorer.mapper.StatisticInfoMapper;
 import com.ckb.explorer.service.StatisticInfoService;
@@ -50,12 +51,19 @@ public class StatisticInfoServiceImpl extends ServiceImpl<StatisticInfoMapper, S
   }
 
   @Override
-  public List<TransactionFeeRates> getTransactionFeeRates() {
+  public TransactionFeeRatesResponse getTransactionFeeRates() {
     LambdaQueryWrapper<StatisticInfo> queryWrapper = new LambdaQueryWrapper<>();
     queryWrapper.select(StatisticInfo::getTransactionFeeRates);
+    queryWrapper.select(StatisticInfo::getLastNDaysTransactionFeeRates);
     queryWrapper.last("limit 1");
     StatisticInfo result = baseMapper.selectOne(queryWrapper);
 
-    return result == null || result.getTransactionFeeRates() == null? new ArrayList<>() : result.getTransactionFeeRates().getData();
+    var response = new TransactionFeeRatesResponse();
+    if(result == null){
+      return null;
+    }
+    response.setTransactionFeeRates(result.getTransactionFeeRates() == null? new ArrayList<>() : result.getTransactionFeeRates().getData());
+    response.setLastNDaysTransactionFeeRates(result.getLastNDaysTransactionFeeRates() == null? new ArrayList<>() : JsonUtil.parseList(result.getLastNDaysTransactionFeeRates(), LastNDaysTransactionFeeRates.class));
+    return response;
   }
 }
