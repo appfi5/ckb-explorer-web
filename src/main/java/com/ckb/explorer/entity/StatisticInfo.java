@@ -64,6 +64,8 @@ public class StatisticInfo {
   @TableField(typeHandler = TransactionFeeRatesTypeHandler.class)
   private TransactionFeeRatesWrapper transactionFeeRates;
 
+  private String lastNDaysTransactionFeeRates;
+
   @TableField(fill = FieldFill.INSERT)
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;

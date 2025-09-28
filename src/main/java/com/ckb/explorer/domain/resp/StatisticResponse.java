@@ -67,5 +67,5 @@ public class StatisticResponse {
    */
   private Long createdAtUnixtimestamp;
 
-  private List<TransactionFeeRates> transactionFeeRates;
+  private TransactionFeeRatesResponse transactionFeeRates;
 }

@@ -150,3 +150,5 @@ ALTER TABLE statistic_infos
     ADD COLUMN IF NOT EXISTS transaction_fee_rates jsonb
 -- 可选1：设置默认值为空JSON对象（避免NULL，便于后续统一处理）
     DEFAULT '{}'::jsonb;
+ALTER TABLE statistic_infos
+    ADD COLUMN IF NOT EXISTS last_n_days_transaction_fee_rates varchar(2000);
