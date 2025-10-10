@@ -182,4 +182,71 @@
          ) AS combined;
   </select>
 
+  <sql id="DaoCodeHashList">
+    ('\x516be0333273bbe12a723f3be583c524f0b6089326f89c49fc61e24d1f56be21',
+      '\x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e')
+  </sql>
+  <select id="getDaoDisplayOutputsByTransactionIds"
+    resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT id,
+    capacity,
+    occupied_capacity,
+    lock_code_hash,
+    lock_args,
+    lock_hash_type,
+    status,
+    consumed_tx_hash,
+    generated_tx_hash,
+    cell_index,
+    cell_type,
+    args,
+    code_hash,
+    hash_type,
+    transaction_id
+    from (SELECT o.id,
+    o.capacity,
+    o.occupied_capacity,
+    -- 从script表获取地址信息
+    s.code_hash                                                                 AS lock_code_hash,
+    s.args                                                                      AS lock_args,
+    s.hash_type                                                                 AS lock_hash_type,
+    -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+    o.is_spent                                                                  AS status,
+    -- 消耗的交易哈希
+    CASE
+    WHEN o.is_spent = 1
+    THEN '0x' || encode(o.consumed_tx_hash, 'hex') END                      AS consumed_tx_hash,
+    -- 生成的交易哈希
+    '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+    o.output_index                                                              AS cell_index,
+    CASE
+      WHEN type.code_hash IN <include refid="DaoCodeHashList"/>
+      and type.hash_type = 1
+      and o.data = '\x0000000000000000'  THEN 1
+      WHEN type.code_hash IN <include refid="DaoCodeHashList"/>
+      and type.hash_type = 1
+      and o.data != '\x0000000000000000'  THEN 2
+      ELSE 0
+    END                                                                         AS cell_type,
+    '0x' || encode(type.args, 'hex')                                            AS args,
+    '0x' || encode(type.code_hash, 'hex')                                       AS code_hash,
+    type.hash_type                                                              AS hash_type,
+    o.tx_id                                                                     AS transaction_id,
+    ROW_NUMBER()        OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn
+    FROM output o
+    left join script s ON o.lock_script_id = s.id
+    left join script type on o.type_script_id = type.id
+    WHERE
+    <if test="null != transactionIds">
+      o.tx_id in
+      <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
+        close=" )">
+        #{item}
+      </foreach>
+    </if>
+    ) t
+    WHERE rn &lt;= #{size}
+    ORDER BY transaction_id, cell_index ASC;
+  </select>
+
 </mapper>

@@ -155,4 +155,24 @@
     order by ${orderByStr} ${ascOrDesc}, tx_index desc
 
   </select>
+
+  <select id="selectContractTransactions"
+    resultType="com.ckb.explorer.domain.resp.ContractTransactionPageResponse">
+    SELECT ct.id,
+           ct.tx_index = 0                   as is_cellbase,
+           '0x' || encode(ct.tx_hash, 'hex') as transaction_hash,
+           ct.block_number,
+           ct.block_timestamp,
+           ct.input_count                    as display_inputs_count,
+           ct.output_count                   as display_outputs_count
+    FROM ckb_transaction ct
+    WHERE
+    <if test="null != txHashs">
+      tx_hash in
+      <foreach  item="item" index="index" collection="txHashs" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    order by ct.block_timestamp desc nulls last, ct.id desc
+  </select>
 </mapper>

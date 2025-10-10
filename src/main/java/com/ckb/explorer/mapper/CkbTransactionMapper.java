@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.TransactionDto;
 import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
+import com.ckb.explorer.domain.resp.ContractTransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import java.util.List;
@@ -27,4 +28,11 @@ public interface CkbTransactionMapper extends BaseMapper<CkbTransaction> {
 
   @Select("SELECT id,'0x' || encode(tx_hash, 'hex') as transaction_hash, block_number,block_timestamp,capacity_involved,output_count - input_count as live_cell_changes FROM ckb_transaction WHERE (tx_index <> 0) ORDER BY id DESC")
   Page<TransactionPageResponse> getPageTransactions(Page page);
+
+  /**
+   * 查询合约相关交易
+   * @param txHashs 交易哈希列表
+   * @return 合约交易列表
+   */
+  List<ContractTransactionPageResponse> selectContractTransactions(@Param("txHashs") List<byte[]> txHashs);
 }

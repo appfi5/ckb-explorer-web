@@ -24,4 +24,6 @@ public interface OutputMapper extends BaseMapper<Output> {
   List<CellOutputDto> getNormalTxDisplayOutputsByTransactionIds(@Param("transactionIds") List<Long> transactionIds, @Param("size")int size);
 
   Long countAddressTransactions(@Param("lockScriptId") Long lockScriptId);
+
+  List<CellOutputDto> getDaoDisplayOutputsByTransactionIds(@Param("transactionIds") List<Long> transactionIds, @Param("size")int size);
 }
