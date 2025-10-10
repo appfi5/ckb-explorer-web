@@ -152,3 +152,13 @@ ALTER TABLE statistic_infos
     DEFAULT '{}'::jsonb;
 ALTER TABLE statistic_infos
     ADD COLUMN IF NOT EXISTS last_n_days_transaction_fee_rates varchar(2000);
+
+CREATE TABLE dao_contracts (
+                                      id BIGSERIAL PRIMARY KEY,
+                                      total_deposit numeric(30,0) DEFAULT 0.0,
+                                      depositors_count integer DEFAULT 0,
+                                      claimed_compensation numeric(30,0) DEFAULT 0.0,
+                                      unclaimed_compensation numeric(30,0),
+                                      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                                      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

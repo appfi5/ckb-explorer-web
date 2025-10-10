@@ -2,6 +2,7 @@ package com.ckb.explorer.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.dto.EpochDto;
 import com.ckb.explorer.entity.Block;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
@@ -29,4 +30,7 @@ public interface BlockMapper extends BaseMapper<Block> {
       "</where>",
       "</script>"})
   List<Block> getAfterReward(@Param("afterNumbers") List<Long> afterNumbers);
+
+  @Select("SELECT epoch_number as number, block_number - start_number as index,  epoch_length as length  FROM block ORDER BY block_number DESC LIMIT 1")
+  EpochDto getRecentEpoch();
  }
