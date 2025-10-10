@@ -8,12 +8,15 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.dto.CellOutputDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
+import com.ckb.explorer.domain.req.ContractTransactionsPageReq;
 import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
+import com.ckb.explorer.mapper.DaoContractMapper;
+import com.ckb.explorer.mapper.DepositCellMapper;
 import com.ckb.explorer.mapper.InputMapper;
 import com.ckb.explorer.mapper.OutputMapper;
 import com.ckb.explorer.mapper.ScriptMapper;
@@ -60,6 +63,12 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Resource
   ScriptService scriptService;
+
+  @Resource
+  private DaoContractMapper daoContractMapper;
+
+  @Resource
+  private DepositCellMapper depositCellMapper;
 
   @Override
   public List<TransactionPageResponse> getHomePageTransactions(int size) {
@@ -172,6 +181,14 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     return baseMapper.selectOne(queryWrapper);
   }
 
+  private Script getAddress(String addressHash) {
+    // 计算地址的哈希
+    var addressScriptHash = Address.decode(addressHash).getScript().computeHash();
+    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+    queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+    return scriptMapper.selectOne(queryScriptWrapper);
+  }
+
   @Override
   public Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash,
       String addressHash, int page, int pageSize) {
@@ -183,11 +200,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     // 如果指定地址
     if (addressHash != null && !addressHash.isEmpty()) {
       // 查找地址
-      // 计算地址的哈希
-      var addressScriptHash = Address.decode(addressHash).getScript().computeHash();
-      LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-      queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
-      var script = scriptMapper.selectOne(queryScriptWrapper);
+      var script = getAddress(addressHash);
       if(script == null){
         throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
       }
@@ -359,7 +372,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     return result;
   }
 
-
   @Override
   public Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, UdtTransactionsPageReq req) {
     Integer page = req.getPage();
@@ -382,11 +394,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     Long lockScriptId = null;
     if (StringUtils.isNotEmpty(req.getAddressHash())) {
       // 查找地址
-      // 计算地址的哈希
-      var addressScriptHash = Address.decode(req.getAddressHash()).getScript().computeHash();
-      LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-      queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
-      var lockScript = scriptMapper.selectOne(queryScriptWrapper);
+      var lockScript = getAddress(req.getAddressHash());
       if(lockScript == null){
         throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
       }
@@ -476,5 +484,83 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     return result;
   }
 
+  @Override
+  public Page<ContractTransactionPageResponse> getContractTransactions(ContractTransactionsPageReq req) {
 
+    Integer page = req.getPage();
+    Integer pageSize = req.getPageSize();
+    Page<ContractTransactionPageResponse> resultPage = new Page<>(page, pageSize);
+    // 查DaoContract
+    var daoContract = daoContractMapper.defaultContract();
+    if(daoContract == null){
+      return resultPage.setTotal(0);
+    }
+
+    // 处理txHash参数
+    byte[] txHash = null;
+    if (StringUtils.isNotEmpty(req.getTxHash())) {
+      var ckbTransaction = getCkbTransaction(req.getTxHash());
+      if (ckbTransaction == null) {
+        throw new ServerException(I18nKey.CKB_TRANSACTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CKB_TRANSACTION_NOT_FOUND_MESSAGE));
+      }
+      txHash = Numeric.hexStringToByteArray(req.getTxHash());
+    }
+
+    // 处理addressHash参数
+    Long lockScriptId = null;
+    if (StringUtils.isNotEmpty(req.getAddressHash())) {
+      var script = getAddress(req.getAddressHash());
+      if (script == null) {
+        throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+      }
+      lockScriptId = script.getId();
+    }
+
+    Page txHashPage = new Page<>(page, pageSize);
+    // 从数据库查询合约交易 从Cell里查
+    txHashPage = depositCellMapper.getTxHashPage(txHashPage, txHash, lockScriptId);
+
+    List<byte[]> txHashs = txHashPage.getRecords();
+    if(txHashs.isEmpty()){
+      return resultPage.setTotal(0);
+    }
+
+    // 查具体交易信息
+    List<ContractTransactionPageResponse> transactions = baseMapper.selectContractTransactions(txHashs);
+    if (transactions.isEmpty()) {
+      return resultPage.setTotal(0);
+    }
+
+    // 分开处理cellbase和普通交易
+    var normalTransactionsIds = transactions.stream().map(ContractTransactionPageResponse::getId).collect(Collectors.toList());
+
+    Map<Long,List<CellInputDto>> normalInputsWithTrans ;
+    Map<Long,List<CellOutputDto>>  normalOutputsWithTrans;
+
+    // 普通交易获取input和output
+    if(normalTransactionsIds.size() > 0){
+      normalInputsWithTrans = inputMapper.getDaoDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      normalOutputsWithTrans = outputMapper.getDaoDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+    } else {
+      normalInputsWithTrans = new HashMap<>();
+      normalOutputsWithTrans = new HashMap<>();
+    }
+
+    transactions.stream().forEach(transaction -> {
+
+      // 组装交易
+      List<CellInputResponse> inputs = CellInputConvert.INSTANCE.toConvertList(normalInputsWithTrans.get(transaction.getId()));
+      transaction.setDisplayInputs(inputs);
+      transaction.setDisplayInputsCount(inputs != null ? inputs.size() : 0);
+
+      List<CellOutputResponse> outputs = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(normalOutputsWithTrans.get(transaction.getId()));
+      transaction.setDisplayOutputs(outputs);
+      transaction.setDisplayOutputsCount(outputs != null ? outputs.size() : 0);
+
+    });
+
+    resultPage.setRecords( transactions);
+    resultPage.setTotal(txHashPage.getTotal());
+    return resultPage;
+  }
 }

@@ -1,0 +1,56 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.DepositCellMapper">
+
+  <resultMap id="TxHashResultMap" type="byte[]">
+    <!-- column对应SQL查询的字段名 -->
+    <result column="tx_hash" javaType="byte[]" />
+  </resultMap>
+  <select id="getTxHashPage" resultMap="TxHashResultMap">
+    SELECT DISTINCT ON (tx_hash) tx_hash  -- 仅对tx_hash去重
+    FROM (
+           SELECT tx_hash, block_timestamp
+           FROM deposit_cell
+           <where>
+             tx_hash is not null
+             <if test="txHash != null and txHash != ''">
+               AND tx_hash = #{txHash}
+             </if>
+             <if test="lockScriptId != null">
+               AND lock_script_id = #{lockScriptId}
+             </if>
+           </where>
+
+           UNION ALL
+           SELECT tx_hash, block_timestamp
+           FROM withdraw_cell
+          <where>
+            tx_hash is not null
+            <if test="txHash != null and txHash != ''">
+              AND tx_hash = #{txHash}
+            </if>
+            <if test="lockScriptId != null">
+              AND lock_script_id = #{lockScriptId}
+            </if>
+          </where>
+
+           UNION ALL
+           SELECT consumed_tx_hash AS tx_hash, consumed_block_timestamp AS block_timestamp
+           FROM withdraw_cell
+          <where>
+            consumed_tx_hash is not null
+            and consumed_tx_hash != ''
+            <if test="txHash != null and txHash != ''">
+              AND consumed_tx_hash = #{txHash}
+            </if>
+            <if test="lockScriptId != null">
+              AND lock_script_id = #{lockScriptId}
+            </if>
+          </where>
+         ) AS combined_data
+
+    ORDER BY tx_hash, block_timestamp DESC
+  </select>
+</mapper>

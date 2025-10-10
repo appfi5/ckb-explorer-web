@@ -17,4 +17,5 @@ public interface InputMapper extends BaseMapper<Input> {
 
   List<CellInputDto> getNormalDisplayInputsByTransactionIds( @Param("transactionIds") List<Long> transactionIds, @Param("size")int size);
 
+  List<CellInputDto> getDaoDisplayInputsByTransactionIds( @Param("transactionIds") List<Long> transactionIds, @Param("size")int size);
 }

@@ -2,6 +2,7 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ckb.explorer.domain.req.ContractTransactionsPageReq;
 import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
@@ -82,4 +83,11 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @return
    */
   Page<UdtTransactionPageResponse> getUdtTransactions(String typeScriptHash, UdtTransactionsPageReq req);
+
+  /**
+   * 获取合约相关交易
+   * @param req 合约交易请求参数
+   * @return
+   */
+  Page<ContractTransactionPageResponse> getContractTransactions(ContractTransactionsPageReq req);
 }
