@@ -1,5 +1,6 @@
 package com.ckb.explorer.domain.dto;
 
+import com.ckb.explorer.entity.Script;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,12 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class NftTransfersDto {
 
     private Long id;
 
-    private byte[] data;
+    private Long typeScriptId;
 
     private Long lockScriptId;
 
@@ -24,6 +24,14 @@ public class NftTransfersDto {
     private Integer isSpent;
 
     private Long blockTimestamp;
+
+    private String action;
+
+    private String from;
+
+    private String to;
+
+    private String tokenId;
 
 
 
