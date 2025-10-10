@@ -3,6 +3,7 @@ package com.ckb.explorer.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ckb.explorer.entity.DailyStatistics;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 /**
 * @author dell
@@ -13,6 +14,8 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface DailyStatisticsMapper extends BaseMapper<DailyStatistics> {
 
+  @Select("select * from daily_statistics order by created_at_unixtimestamp desc limit 1")
+  DailyStatistics getLastDayDailyStatistics();
 }
 
 
