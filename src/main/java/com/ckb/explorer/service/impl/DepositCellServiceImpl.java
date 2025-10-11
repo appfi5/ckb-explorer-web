@@ -44,6 +44,7 @@ public class DepositCellServiceImpl implements DepositCellService {
             ? TypeConversionUtil.scriptToAddress(script.getCodeHash(), script.getArgs(), script.getHashType())
             : "";
         DaoDepositorResponse response = new DaoDepositorResponse();
+        response.setId(depositor.getLockScriptId());
         response.setAddressHash(address);
         response.setDaoDeposit(depositor.getDaoDeposit());
         return response;

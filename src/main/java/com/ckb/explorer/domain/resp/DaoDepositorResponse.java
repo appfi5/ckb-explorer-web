@@ -18,7 +18,13 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DaoDepositorResponse {
     private String type = "dao_depositor";
-    
+
+    /**
+     * 地址id
+     */
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
+
     /**
      * 地址哈希
      */
