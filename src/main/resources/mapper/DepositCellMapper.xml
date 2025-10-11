@@ -53,4 +53,15 @@
 
     ORDER BY tx_hash, block_timestamp DESC
   </select>
+
+  <select id="getTopDaoDepositors" resultType="com.ckb.explorer.domain.dto.DaoDepositorDto">
+    SELECT lock_script_id, sum(value) AS dao_deposit
+    FROM deposit_cell
+    WHERE lock_script_id IS NOT NULL
+      AND value > 0
+      AND consumed_tx_hash = '' -- 筛选未消费的
+    GROUP BY lock_script_id
+    ORDER BY dao_deposit DESC
+      LIMIT 100
+  </select>
 </mapper>
