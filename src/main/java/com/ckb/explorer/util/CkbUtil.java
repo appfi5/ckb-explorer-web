@@ -1,6 +1,7 @@
 package com.ckb.explorer.util;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 import lombok.AllArgsConstructor;
@@ -324,5 +325,89 @@ public class CkbUtil {
 
     }
 
+  /**
+   * DAO数据模型类，对应Ruby中的OpenStruct
+   */
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class DaoDto {
+    private BigInteger cI;
+    private BigInteger arI;
+    private BigInteger sI;
+    private BigInteger uI;
+  }
 
+  /**
+   * 解析DAO数据
+   * @param dao DAO字节数组
+   * @return DaoDto对象包含解析后的DAO数据
+   */
+  public static DaoDto parseDao(byte[] dao) {
+    if (dao == null || dao.length < 32) {
+      return null;
+    }
+
+    try {
+      // 解析cI (0-7字节)
+      byte[] cIBytes = new byte[8];
+      System.arraycopy(dao, 0, cIBytes, 0, 8);
+      BigInteger cI = BigInteger.valueOf(littleEndianBytesToLong(cIBytes));
+
+      // 解析arI (8-15字节)
+      byte[] arIBytes = new byte[8];
+      System.arraycopy(dao, 8, arIBytes, 0, 8);
+      BigInteger arI = BigInteger.valueOf(littleEndianBytesToLong(arIBytes));
+
+      // 解析sI (16-23字节)
+      byte[] sIBytes = new byte[8];
+      System.arraycopy(dao, 16, sIBytes, 0, 8);
+      BigInteger sI = BigInteger.valueOf(littleEndianBytesToLong(sIBytes));
+
+      // 解析uI (24-31字节)
+      byte[] uIBytes = new byte[8];
+      System.arraycopy(dao, 24, uIBytes, 0, 8);
+      BigInteger uI = BigInteger.valueOf(littleEndianBytesToLong(uIBytes));
+
+      return new DaoDto(cI, arI, sI, uI);
+    } catch (Exception e) {
+      // 发生任何异常时返回null
+      return null;
+    }
+  }
+
+  /**
+   * 将小端序字节数组转换为long值
+   * 对应Ruby中的unpack("Q<")操作
+   * @param bytes 小端序字节数组
+   * @return 转换后的long值
+   */
+  private static long littleEndianBytesToLong(byte[] bytes) {
+    // 严格校验：必须为8字节（64位），否则属于非法输入
+    if (bytes == null) {
+      throw new IllegalArgumentException("字节数组不能为null（需8字节小端序数组）");
+    }
+    if (bytes.length != 8) {
+      throw new IllegalArgumentException("字节数组长度必须为8（实际长度：" + bytes.length + "）");
+    }
+    return ByteBuffer.wrap(bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN).getLong();
+  }
+
+  /**
+   * 将字节数组转换为块号
+   * @param data 字节数组
+   * @return 块号
+   */
+  public static Long convertToBlockNumber(byte[] data) {
+
+    // 获取data并处理空值
+    if (data == null || data.length == 0) {
+      throw new IllegalArgumentException("data cannot be null or empty");
+    }
+
+    // 小端转换
+    Long bigIntValue = littleEndianBytesToLong(data);
+
+    return bigIntValue;
+  }
 }

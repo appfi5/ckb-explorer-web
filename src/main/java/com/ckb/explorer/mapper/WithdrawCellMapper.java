@@ -2,7 +2,9 @@ package com.ckb.explorer.mapper;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ckb.explorer.domain.dto.DaoCellDto;
 import com.ckb.explorer.entity.WithdrawCell;
+import java.util.List;
 
 /**
  * @description 针对表【withdraw_cell】的数据库操作Mapper
@@ -11,5 +13,5 @@ import com.ckb.explorer.entity.WithdrawCell;
 @DS("risingwave")
 public interface WithdrawCellMapper extends BaseMapper<WithdrawCell> {
 
-
+  List<DaoCellDto> getUnConsumedCellsByLockScriptId(Long lockScriptId);
 }

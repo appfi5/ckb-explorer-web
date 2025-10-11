@@ -2,6 +2,7 @@ package com.ckb.explorer.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.dto.BlockDaoDto;
 import com.ckb.explorer.domain.dto.EpochDto;
 import com.ckb.explorer.entity.Block;
 import org.apache.ibatis.annotations.Mapper;
@@ -33,4 +34,9 @@ public interface BlockMapper extends BaseMapper<Block> {
 
   @Select("SELECT epoch_number as number, block_number - start_number as index,  epoch_length as length  FROM block ORDER BY block_number DESC LIMIT 1")
   EpochDto getRecentEpoch();
+
+  List<BlockDaoDto> getBlockDaos(@Param("blockNumbers") List<Long> blockNumbers);
+
+  @Select("select max(block_number) from block")
+  Long getMaxBlockNumber();
  }

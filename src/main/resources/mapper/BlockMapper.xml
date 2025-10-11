@@ -4,6 +4,18 @@
 
 <mapper namespace="com.ckb.explorer.mapper.BlockMapper">
 
-
+  <select id="getBlockDaos" resultType="com.ckb.explorer.domain.dto.BlockDaoDto">
+    SELECT block_number ,
+    dao
+    FROM block
+    <where>
+      <if test="blockNumbers != null">
+        AND block_number IN
+        <foreach item="item" collection="blockNumbers" separator="," open="(" close=")" index="index">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
 
 </mapper>
