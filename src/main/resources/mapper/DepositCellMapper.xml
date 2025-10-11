@@ -64,4 +64,24 @@
     ORDER BY dao_deposit DESC
       LIMIT 100
   </select>
+
+  <select id="getDepositByLockScriptId" resultType="BigInteger">
+    SELECT sum(value)
+    FROM deposit_cell
+    WHERE lock_script_id = #{lockScriptId}
+      AND value > 0
+      AND consumed_tx_hash = '' -- 筛选未消费的
+  </select>
+
+  <select id="getUnConsumedCellsByLockScriptId" resultType="com.ckb.explorer.domain.dto.DaoCellDto">
+    SELECT output_id         AS output_id,
+           value             AS value,
+           data              AS data,
+           occupied_capacity AS occupied_capacity,
+           output_index      AS output_index,
+           block_number      AS block_number
+    FROM deposit_cell
+    WHERE lock_script_id = #{lockScriptId}
+      AND (consumed_tx_hash is NULL OR consumed_tx_hash = '')
+  </select>
 </mapper>

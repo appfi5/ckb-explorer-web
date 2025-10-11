@@ -5,18 +5,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
+import com.ckb.explorer.domain.dto.BlockDaoDto;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapstruct.BlockConvert;
 import com.ckb.explorer.service.BlockService;
+import com.ckb.explorer.util.CollectionUtils;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.utils.Numeric;
@@ -145,6 +148,31 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
     }
 
     return result;
+  }
+
+  @Override
+  public Map<Long, byte[]> getBlockDaos(Set<Long> blockNumbers) {
+    List<List<Long>> batches = CollectionUtils.splitIntoBatches(blockNumbers, 1000);
+    Map<Long, byte[]> blockDaos = new HashMap<>(blockNumbers.size()); // 预分配容量
+    // 分批查询并合并结果
+    for (List<Long> batch : batches) {
+      List<BlockDaoDto> batchResult = baseMapper.getBlockDaos(batch);
+      if(!batchResult.isEmpty()){
+        blockDaos.putAll(batchResult.stream()
+            .collect(Collectors.toMap(
+                BlockDaoDto::getBlockNumber, // key：blockNumber
+                BlockDaoDto::getDao,         // value：dao字段
+                (existingValue, newValue) -> newValue, // 若key重复，保留后者
+                HashMap::new                 // 指定Map实现（可选，默认是HashMap）
+            )));
+      }
+    }
+    return blockDaos;
+  }
+
+  @Override
+  public Long getMaxBlockNumber() {
+    return baseMapper.getMaxBlockNumber();
   }
 
 }

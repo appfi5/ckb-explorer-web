@@ -13,9 +13,10 @@ import com.ckb.explorer.entity.StatisticAddress;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
 import com.ckb.explorer.mapstruct.TypeScriptConvert;
-import com.ckb.explorer.service.OutputService;
+import com.ckb.explorer.service.DepositCellService;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.StatisticAddressService;
+import com.ckb.explorer.service.WithdrawCellService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
@@ -35,9 +36,12 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
   
   @Resource
   private StatisticAddressService statisticAddressService;
-  
+
   @Resource
-  private OutputService outputService;
+  private DepositCellService depositCellService;
+
+  @Resource
+  private WithdrawCellService withdrawCellService;
 
   @Resource
   private ScriptConfig scriptConfig;
@@ -87,9 +91,15 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
       addressResponse.setBalanceOccupied(addressStatistics.getBalanceOccupied());
     }
 
-    // 查询地址的交易总数
-//    var transactionCount = outputService.countAddressTransactions(script.getId());
-//    addressResponse.setTransactionsCount(transactionCount);
+    // 查询地址的Dao存款
+    var deposit = depositCellService.getDepositByLockScriptId(script.getId());
+    if (deposit != null) {
+      addressResponse.setDaoDeposit(deposit);
+    }
+
+    // 查询地址的Dao存款的阶段1未领取的补偿
+    addressResponse.setPhase1UnClaimedCompensation(withdrawCellService.phase1DaoInterestsByLockScriptId(script.getId()));
+    addressResponse.setDepositUnmadeCompensation(depositCellService.unmadeDaoInterestsByLockScriptId(script.getId()));
     
     return addressResponse;
   }
