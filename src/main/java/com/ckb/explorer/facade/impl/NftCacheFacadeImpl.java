@@ -87,7 +87,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         Page<CollectionsDto> collectionsPage = new Page<>(req.getPage(), req.getPageSize());
         String[] sortParts = req.getSort().split("\\.", 2);
         String orderBy = sortParts[0];
-        if(!Pattern.compile("^(block_timestamp|transaction_24h_count|holders_count|items_count)$").matcher(orderBy).matches()){
+        if(!Pattern.compile("^(block_timestamp|h24_ckb_transactions_count|holders_count|items_count)$").matcher(orderBy).matches()){
             orderBy = "block_timestamp";
         }
         String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
@@ -288,8 +288,8 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
 
     @Override
-    public NftItemDetailResponse itemInfo(String tokenId){
-          NftItemDto nftItemDto = dobExtendMapper.itemInfo(Numeric.hexStringToByteArray(tokenId));
+    public NftItemDetailResponse itemInfo(String typeScriptHash, String tokenId){
+          NftItemDto nftItemDto = dobExtendMapper.itemInfo(Numeric.hexStringToByteArray(typeScriptHash),Numeric.hexStringToByteArray(tokenId));
           if(nftItemDto==null){
               throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
           }

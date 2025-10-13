@@ -119,9 +119,9 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " dob_live_cells  dlc left join  dob_code dc " +
             " on dc.dob_code_script_id=dlc.type_script_id " +
             " left join dob_extend de on de.id= dc.dob_extend_id " +
-            "where dc.dob_code_script_args=#{args} order by dlc. block_timestamp desc limit 1 "
+            "where dc.dob_code_script_args=#{args} and de.dob_script_hash=#{dobScriptHash} order by dlc. block_timestamp desc limit 1 "
     )
-    NftItemDto  itemInfo(@Param("args") byte[] args);
+    NftItemDto  itemInfo(@Param("args") byte[] args,@Param("dobScriptHash") byte[] dobScriptHash);
 }
 
 

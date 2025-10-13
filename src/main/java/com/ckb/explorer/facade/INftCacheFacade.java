@@ -23,5 +23,5 @@ public interface INftCacheFacade {
 
     Page<NftItemResponse> nftItems(String typeScriptHash, BasePageReq req);
 
-    NftItemDetailResponse itemInfo(String tokenId);
+    NftItemDetailResponse itemInfo(String typeScriptHash, String tokenId);
 }
