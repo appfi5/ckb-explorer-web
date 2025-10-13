@@ -43,6 +43,9 @@ public class CollectionsResp {
     @Schema(description = "clusterId")
     private String clusterId;
 
+    @Schema(description = "typeScriptHash")
+    private String typeScriptHash;
+
 
 
 

@@ -25,7 +25,7 @@ public class NftTransfersDto {
 
     private Long blockTimestamp;
 
-    private String action;
+    private Integer action;
 
     private String from;
 

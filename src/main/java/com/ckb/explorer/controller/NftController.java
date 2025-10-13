@@ -30,36 +30,37 @@ public class NftController {
     }
 
 
-    @GetMapping("/collections/{id}")
+    @GetMapping("/collections/{typeScriptHash}")
     @Operation(summary = "获取collections详情")
-    public ResponseInfo<CollectionsResp> show(@PathVariable Long id){
-        return ResponseInfo.SUCCESS(iNftCacheFacade.findById(id));
+    public ResponseInfo<CollectionsResp> show(@PathVariable String typeScriptHash){
+        return ResponseInfo.SUCCESS(iNftCacheFacade.findByTypeScriptHash(typeScriptHash));
     }
 
-    @GetMapping("/collections/{id}/transfers")
+    @GetMapping("/collections/{typeScriptHash}/transfers")
     @Operation(summary = "获取transfers列表")
-    public  ResponseInfo<Page<NftTransfersResp>> transfers(@PathVariable Long id,NftTransfersPageReq req){
-        return ResponseInfo.SUCCESS(iNftCacheFacade.nftTransfersPage(id,req));
+    public  ResponseInfo<Page<NftTransfersResp>> transfers(@PathVariable String typeScriptHash,NftTransfersPageReq req){
+        return ResponseInfo.SUCCESS(iNftCacheFacade.nftTransfersPage(typeScriptHash,req));
     }
 
 
-    @GetMapping("/collections/{id}/holders")
+    @GetMapping("/collections/{typeScriptHash}/holders")
     @Operation(summary = "获取holders列表")
-    public  ResponseInfo<Page<NftHolderResp>> transfers(@PathVariable Long id, NftHoldersPageReq req){
-        return ResponseInfo.SUCCESS(iNftCacheFacade.nftHolders(id,req));
+    public  ResponseInfo<Page<NftHolderResp>> transfers(@PathVariable String typeScriptHash, NftHoldersPageReq req){
+        return ResponseInfo.SUCCESS(iNftCacheFacade.nftHolders(typeScriptHash,req));
     }
 
-    @GetMapping("/collections/{id}/items")
+    @GetMapping("/collections/{typeScriptHash}/items")
     @Operation(summary = "获取items列表")
-    public  ResponseInfo<Page<NftItemDetailResponse>> items(@PathVariable Long id, BasePageReq req){
-        return ResponseInfo.SUCCESS(iNftCacheFacade.nftItems(id,req));
+    public  ResponseInfo<Page<NftItemDetailResponse>> items(@PathVariable String typeScriptHash, BasePageReq req){
+        return ResponseInfo.SUCCESS(iNftCacheFacade.nftItems(typeScriptHash,req));
     }
 
 
-    @GetMapping("/items/{cellId}")
+    @GetMapping("/items/{tokenId}")
     @Operation(summary = "获取items详情")
-    public  ResponseInfo<Page<NftItemResponse>> items( @PathVariable Long cellId ){
-        return ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(cellId));
+    public  ResponseInfo<Page<NftItemResponse>> items( @PathVariable String tokenId ){
+
+        return ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(tokenId));
     }
 
 

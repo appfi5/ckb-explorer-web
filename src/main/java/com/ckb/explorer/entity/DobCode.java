@@ -10,4 +10,6 @@ public class DobCode {
     private Long dobExtendId;
 
     private Long dobCodeScriptId;
+
+    private byte dobCodeScriptArgs;
 }

@@ -17,6 +17,7 @@ public interface NftConvert {
 
     NftConvert INSTANCE = Mappers.getMapper(NftConvert.class);
 
+    @Mapping(source = "action", target = "action", qualifiedByName = "nftAction(Value)")
     @Mapping(source = "txHash", target = "txHash", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
     NftTransfersResp toNftTransfersResp(NftTransfersDto nftTransfersDto);
@@ -31,9 +32,14 @@ public interface NftConvert {
     Page<NftItemResponse> toNftItemsRespPage(Page<NftItemDto> page);
 
     @Mapping(source = "args", target = "clusterId", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "dobScriptHash", target = "typeScriptHash", qualifiedByName = "byteToStringHash(Value)")
     CollectionsResp toCollectionsResp(CollectionsDto collectionsDto);
 
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
     NftItemDetailResponse toNftItemDetailResp(NftItemDto nftItemDto);
+
+
+    Page<CollectionsResp> toNftCollectionsRespPage(Page<CollectionsDto> page);
+
 
 }

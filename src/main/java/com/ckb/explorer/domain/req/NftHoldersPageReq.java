@@ -11,5 +11,8 @@ public class NftHoldersPageReq extends BasePageReq {
     @Schema(description = "地址哈希")
     private String addressHash;
 
+    @Schema(description = "排序",example = "holders_count.desc")
+    private String sort="holders_count.desc";
+
 
 }

@@ -32,6 +32,8 @@ public class CollectionsDto {
 
      private byte[] args;
 
+     private byte[] dobScriptHash;
+
 
 
 

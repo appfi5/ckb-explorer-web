@@ -15,13 +15,13 @@ public interface INftCacheFacade {
 
     Page<CollectionsResp> collectionsPage(CollectionsPageReq req);
 
-    CollectionsResp findById(Long id);
+    CollectionsResp findByTypeScriptHash(String typeScriptHash);
 
-    Page<NftTransfersResp> nftTransfersPage(Long collectionId ,NftTransfersPageReq req);
+    Page<NftTransfersResp> nftTransfersPage(String typeScriptHash ,NftTransfersPageReq req);
 
-    Page<NftHolderResp> nftHolders(Long collectionId, NftHoldersPageReq req);
+    Page<NftHolderResp> nftHolders(String typeScriptHash, NftHoldersPageReq req);
 
-    Page<NftItemResponse> nftItems(Long collectionId, BasePageReq req);
+    Page<NftItemResponse> nftItems(String typeScriptHash, BasePageReq req);
 
-    NftItemDetailResponse itemInfo(Long cellId);
+    NftItemDetailResponse itemInfo(String tokenId);
 }

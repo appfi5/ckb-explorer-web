@@ -16,8 +16,10 @@ public class NftTransfersPageReq extends BasePageReq {
     private String addressHash;
 
 
-    @Schema(description = "cellId")
-    private Long cellId;
+    @Schema(description = "tokenId")
+    private String tokenId;
 
+    @Schema(description="action",example = "Mint、Burn、Transfer")
+    private  String action;
 
 }

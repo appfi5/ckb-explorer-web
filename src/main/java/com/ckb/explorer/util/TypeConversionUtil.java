@@ -1,6 +1,7 @@
 package com.ckb.explorer.util;
 
 import com.ckb.explorer.enums.NetWorkEnums;
+import com.ckb.explorer.enums.NftAction;
 import com.ckb.explorer.enums.UdtType;
 import jakarta.annotation.PostConstruct;
 import java.math.BigInteger;
@@ -192,5 +193,10 @@ public class TypeConversionUtil {
        return TOKEN_TYPE_SUDT;
      }
      return "";
+  }
+
+  @Named("nftAction(Value)")
+  public static String nftAction(Integer action){
+    return NftAction.getValueByCode(action);
   }
 }
