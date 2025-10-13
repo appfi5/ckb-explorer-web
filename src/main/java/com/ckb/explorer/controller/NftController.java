@@ -7,10 +7,7 @@ import com.ckb.explorer.domain.req.CollectionsPageReq;
 import com.ckb.explorer.domain.req.NftHoldersPageReq;
 import com.ckb.explorer.domain.req.NftTransfersPageReq;
 import com.ckb.explorer.domain.req.base.BasePageReq;
-import com.ckb.explorer.domain.resp.CollectionsResp;
-import com.ckb.explorer.domain.resp.NftHolderResp;
-import com.ckb.explorer.domain.resp.NftItemResponse;
-import com.ckb.explorer.domain.resp.NftTransfersResp;
+import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.facade.INftCacheFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
@@ -54,8 +51,15 @@ public class NftController {
 
     @GetMapping("/collections/{id}/items")
     @Operation(summary = "获取items列表")
-    public  ResponseInfo<Page<NftItemResponse>> items(@PathVariable Long id, BasePageReq req){
+    public  ResponseInfo<Page<NftItemDetailResponse>> items(@PathVariable Long id, BasePageReq req){
         return ResponseInfo.SUCCESS(iNftCacheFacade.nftItems(id,req));
+    }
+
+
+    @GetMapping("/items/{cellId}")
+    @Operation(summary = "获取items详情")
+    public  ResponseInfo<Page<NftItemResponse>> items( @PathVariable Long cellId ){
+        return ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(cellId));
     }
 
 

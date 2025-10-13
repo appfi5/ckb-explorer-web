@@ -2,12 +2,11 @@ package com.ckb.explorer.mapstruct;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.CollectionsDto;
 import com.ckb.explorer.domain.dto.NftHolderDto;
 import com.ckb.explorer.domain.dto.NftItemDto;
 import com.ckb.explorer.domain.dto.NftTransfersDto;
-import com.ckb.explorer.domain.resp.NftHolderResp;
-import com.ckb.explorer.domain.resp.NftItemResponse;
-import com.ckb.explorer.domain.resp.NftTransfersResp;
+import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.util.TypeConversionUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,6 +18,7 @@ public interface NftConvert {
     NftConvert INSTANCE = Mappers.getMapper(NftConvert.class);
 
     @Mapping(source = "txHash", target = "txHash", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
     NftTransfersResp toNftTransfersResp(NftTransfersDto nftTransfersDto);
 
     Page<NftTransfersResp> toNftTransfersRespPage(Page<NftTransfersDto> page);
@@ -29,5 +29,11 @@ public interface NftConvert {
     NftItemResponse toNftItemResp(NftItemDto nftItemDto);
 
     Page<NftItemResponse> toNftItemsRespPage(Page<NftItemDto> page);
+
+    @Mapping(source = "args", target = "clusterId", qualifiedByName = "byteToStringHash(Value)")
+    CollectionsResp toCollectionsResp(CollectionsDto collectionsDto);
+
+    @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    NftItemDetailResponse toNftItemDetailResp(NftItemDto nftItemDto);
 
 }

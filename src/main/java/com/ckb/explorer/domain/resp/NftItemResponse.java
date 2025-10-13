@@ -22,6 +22,6 @@ public class NftItemResponse {
     @Schema(description="tokenId")
     private String tokenId;
 
-    @Schema(description="data")
+    @Schema(description="cell data")
     private String data;
 }

@@ -8,7 +8,7 @@ import lombok.Data;
 public class CollectionsPageReq extends BasePageReq {
 
 
-    @Schema(description = "tags",example = "tags to filter tokens, availables are \"rgbpp-compatible\", \"layer-1-asset\", \"layer-2-asset\", \"supply-limited\", \"supply-unlimited\", \"suspicious\", \"invalid\"")
+    @Schema(description = "tags",example = "tags to filter tokens, availables are \"invalid\", \"suspicious\", \"out-of-length-range\", \"rgb++\", \"layer-1-asset\", \"layer-2-asset\", \"supply-limited\"")
     private String tags;
 
 

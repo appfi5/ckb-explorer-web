@@ -20,4 +20,10 @@ public class NftItemDto {
     private String tokenId;
 
     private byte[] data;
+
+    private String collectionName;
+
+    private Long collectionId;
+
+    private String creator;
 }

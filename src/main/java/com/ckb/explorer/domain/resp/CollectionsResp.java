@@ -40,6 +40,10 @@ public class CollectionsResp {
     @Schema(description = "创建人")
     private String creator;
 
+    @Schema(description = "clusterId")
+    private String clusterId;
+
+
 
 
 

@@ -191,4 +191,10 @@ public final class I18nKey {
 
   public static final int UDTS_NOT_FOUND_CODE = 2016;
   public static final String UDTS_NOT_FOUND_MESSAGE = "no_udts_found_by_given_type_script_hash";
+
+  public static final int NFT_COLLECTION_NOT_FOUND_CODE = 2017;
+  public static final String NFT_COLLECTION_NOT_FOUND_MESSAGE = "no_nft_collection_found_by_given_id";
+
+  public static final int NFT_ITEM_NOT_FOUND_CODE = 2018;
+  public static final String NFT_ITEM_NOT_FOUND_MESSAGE = "no_nft_item_found_by_given_id";
 }

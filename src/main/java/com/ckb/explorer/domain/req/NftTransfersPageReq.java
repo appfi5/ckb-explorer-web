@@ -16,4 +16,8 @@ public class NftTransfersPageReq extends BasePageReq {
     private String addressHash;
 
 
+    @Schema(description = "cellId")
+    private Long cellId;
+
+
 }

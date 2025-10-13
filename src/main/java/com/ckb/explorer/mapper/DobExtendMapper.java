@@ -3,6 +3,7 @@ package com.ckb.explorer.mapper;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.CollectionsDto;
 import com.ckb.explorer.domain.dto.NftHolderDto;
 import com.ckb.explorer.domain.dto.NftItemDto;
 import com.ckb.explorer.domain.dto.NftTransfersDto;
@@ -52,7 +53,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
                                   @Param("ascOrDesc") String ascOrDesc, @Param("tags") String tags);
 
 
-    @Select( "select dob.id,dob.name,dob.description,dob.tags,dob.block_timestamp,dob.creator,\n" +
+    @Select( "select dob.id,dob.name,dob.description,dob.tags,dob.block_timestamp,dob.creator,dob.args,\n" +
             " (select count(*) from (select count(*) from dob_live_cells  dlc\n" +
             " where exists (\n" +
             "select * from dob_code dc where \n" +
@@ -65,7 +66,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             ") as items_count \n" +
             " from dob_extend dob \n" +
             " where id = #{id}")
-    CollectionsResp findById( @Param("id") Long id);
+    CollectionsDto findById(@Param("id") Long id);
 
     @Select("<script>" +
             "select * from (select dob.*,case when dob.is_spent=0 then \n" +
@@ -82,8 +83,11 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " <if test='null != lockScriptId '>  \n" +
             "  and (lock_script_id = #{lockScriptId} or ft_lock_script_id = #{lockScriptId}) \n" +
             " </if> \n" +
+            " <if test='null != cellId '>  \n" +
+            "  and type_script_id = (select  type_script_id from dob_output  where id= #{cellId})  \n" +
+            " </if> \n" +
             "</script>")
-    Page<NftTransfersDto> transfersPage(Page page ,@Param("dobExtendId") Long dobExtendId,@Param("txHash") byte[] txHash,@Param("lockScriptId") Long lockScriptId);
+    Page<NftTransfersDto> transfersPage(Page page ,@Param("dobExtendId") Long dobExtendId,@Param("txHash") byte[] txHash,@Param("lockScriptId") Long lockScriptId,@Param("cellId") Long cellId);
 
     @Select("<script> " +
             "select dlc.lock_script_id,count(*) as holders_count from dob_live_cells dlc where exists (\n" +
@@ -100,6 +104,14 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "select * from dob_code dc where \n" +
             "dc.dob_code_script_id=dlc.type_script_id and dc.dob_extend_id=#{dobExtendId})")
     Page<NftItemDto> itemsPage(Page page ,@Param("dobExtendId") Long dobExtendId);
+
+    @Select("select dlc.id,dlc.data,dlc.type_script_id,dlc.lock_script_id,de.id as collection_id,de.name as collection_name,de.creator from \n" +
+            " dob_live_cells  dlc left join  dob_code dc " +
+            " on dc.dob_code_script_id=dlc.type_script_id " +
+            " left join dob_extend de on de.id= dc.dob_extend_id " +
+            "where dlc.id=#{cellId} "
+    )
+    NftItemDto  itemInfo(@Param("cellId") Long cellId);
 }
 
 

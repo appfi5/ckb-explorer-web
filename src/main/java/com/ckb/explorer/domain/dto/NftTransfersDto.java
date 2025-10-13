@@ -33,9 +33,7 @@ public class NftTransfersDto {
 
     private String tokenId;
 
-
-
-
+    private byte[] data;
 
 
 }
