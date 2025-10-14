@@ -34,6 +34,8 @@ public class CollectionsDto {
 
      private byte[] dobScriptHash;
 
+     private Long cellId;
+
 
 
 

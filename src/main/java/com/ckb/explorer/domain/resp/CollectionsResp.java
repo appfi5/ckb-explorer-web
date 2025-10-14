@@ -46,6 +46,9 @@ public class CollectionsResp {
     @Schema(description = "typeScriptHash")
     private String typeScriptHash;
 
+    @Schema(description = "cell id")
+    private Long cellId;
+
 
 
 

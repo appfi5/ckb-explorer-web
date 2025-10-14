@@ -26,4 +26,6 @@ public class NftItemDto {
     private Long collectionId;
 
     private String creator;
+
+    private Long createLockScriptId;
 }

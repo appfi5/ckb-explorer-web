@@ -111,8 +111,8 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
     @Override
     public Page<NftTransfersResp> nftTransfersPage(String typeScriptHash,NftTransfersPageReq req){
-        String cacheKey = String.format("%s%s:%s:page:%d:size:%d:txHash:%s:addressHash:%s:tokenId:%s:action:%d",
-                TRANSFERS_CACHE_PREFIX, CACHE_VERSION,typeScriptHash,req.getPage(), req.getPageSize(),req.getTxHash(), req.getAddressHash());
+        String cacheKey = String.format("%s%s:%s:page:%d:size:%d:txHash:%s:addressHash:%s:tokenId:%s:action:%s",
+                TRANSFERS_CACHE_PREFIX, CACHE_VERSION,typeScriptHash,req.getPage(), req.getPageSize(),req.getTxHash(), req.getAddressHash(),req.getTokenId(),req.getAction());
         return cacheUtils.getCache(
                 cacheKey,                    // 缓存键
                 () -> loadTransfersFromDatabase(typeScriptHash,req),  // 数据加载函数
@@ -293,10 +293,17 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
           if(nftItemDto==null){
               throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
           }
-          Script lockScript = scriptMapper.selectById(nftItemDto.getLockScriptId());
-          nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),lockScript.getArgs(),lockScript.getHashType()));
-          nftItemDto.setTokenId(tokenId);
-          return  NftConvert.INSTANCE.toNftItemDetailResp(nftItemDto);
+        Set<Long> scriptIds =  new HashSet<>();
+        scriptIds.add(nftItemDto.getLockScriptId());
+        scriptIds.add(nftItemDto.getCreateLockScriptId());
+        List<Script> scripts = scriptMapper.selectByIds(scriptIds);
+        Script lockScript = scripts.stream().filter(script -> script.getId()==nftItemDto.getLockScriptId()).findFirst().orElse(null);
+        Script createlockScript = scripts.stream().filter(script -> script.getId()==nftItemDto.getCreateLockScriptId()).findFirst().orElse(null);
+
+        nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),lockScript.getArgs(),lockScript.getHashType()));
+        nftItemDto.setCreator(TypeConversionUtil.scriptToAddress(createlockScript.getCodeHash(),createlockScript.getArgs(),createlockScript.getHashType()));
+        nftItemDto.setTokenId(tokenId);
+        return  NftConvert.INSTANCE.toNftItemDetailResp(nftItemDto);
     }
 
 

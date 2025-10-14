@@ -24,4 +24,7 @@ public class NftItemResponse {
 
     @Schema(description="cell data")
     private String data;
+
+    private String creator;
+
 }
