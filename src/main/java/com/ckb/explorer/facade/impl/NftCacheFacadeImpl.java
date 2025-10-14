@@ -111,7 +111,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
     @Override
     public Page<NftTransfersResp> nftTransfersPage(String typeScriptHash,NftTransfersPageReq req){
-        String cacheKey = String.format("%s%s:%s:page:%d:size:%d:txHash:%s:addressHash:%s",
+        String cacheKey = String.format("%s%s:%s:page:%d:size:%d:txHash:%s:addressHash:%s:tokenId:%s:action:%d",
                 TRANSFERS_CACHE_PREFIX, CACHE_VERSION,typeScriptHash,req.getPage(), req.getPageSize(),req.getTxHash(), req.getAddressHash());
         return cacheUtils.getCache(
                 cacheKey,                    // 缓存键
@@ -203,7 +203,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
     public Page<NftHolderResp> nftHolders(String typeScriptHash, NftHoldersPageReq req){
         req.setSort(StringUtils.defaultIfBlank(req.getSort(), "holders_count.desc"));
 
-        String cacheKey = String.format("%s%s:%s:page:%d:size:%daddressHash:%ssort:%s",
+        String cacheKey = String.format("%s%s:%s:page:%d:size:%d:addressHash:%s:sort:%s",
                 HOLDERS_CACHE_PREFIX, CACHE_VERSION,typeScriptHash,req.getPage(),req.getPageSize(),req.getAddressHash(),req.getSort());
         return cacheUtils.getCache(
                 cacheKey,                    // 缓存键

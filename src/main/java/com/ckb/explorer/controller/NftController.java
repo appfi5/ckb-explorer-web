@@ -58,7 +58,7 @@ public class NftController {
 
     @GetMapping("/collections/{typeScriptHash}/items/{tokenId}")
     @Operation(summary = "获取items详情")
-    public  ResponseInfo<Page<NftItemResponse>> items(@PathVariable String typeScriptHash, @PathVariable String tokenId ){
+    public  ResponseInfo<NftItemResponse> items(@PathVariable String typeScriptHash, @PathVariable String tokenId ){
 
         return ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(typeScriptHash,tokenId));
     }

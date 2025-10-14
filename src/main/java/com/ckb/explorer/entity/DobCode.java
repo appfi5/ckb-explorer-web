@@ -11,5 +11,5 @@ public class DobCode {
 
     private Long dobCodeScriptId;
 
-    private byte dobCodeScriptArgs;
+    private byte[] dobCodeScriptArgs;
 }
