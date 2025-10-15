@@ -16,7 +16,7 @@ public interface DailyStatisticsConvert {
   DailyStatisticsConvert INSTANCE = Mappers.getMapper(DailyStatisticsConvert.class);
 
   @Named("toConvertWithBurnt")
-  @Mapping(target = "burnt",expression = "java(dailyStatistics.getTreasuryAmount()!=null && isBurnt? new java.math.BigDecimal(dailyStatistics.getTreasuryAmount()).subtract(new java.math.BigDecimal(\"84\").multiply(new java.math.BigDecimal(\"10\").pow(16))): null)")
+  @Mapping(target = "burnt",expression = "java(dailyStatistics.getTreasuryAmount()!=null && isBurnt? new java.math.BigDecimal(dailyStatistics.getTreasuryAmount()).add(new java.math.BigDecimal(\"84\").multiply(new java.math.BigDecimal(\"10\").pow(16))): null)")
   @Mapping(target = "liquidity",expression = "java(dailyStatistics.getCirculatingSupply()!=null && dailyStatistics.getTotalDaoDeposit()!= null? dailyStatistics.getCirculatingSupply().subtract(new java.math.BigDecimal(dailyStatistics.getTotalDaoDeposit())): null)")
   @Mapping(target = "treasuryAmount",expression = "java(!isBurnt? dailyStatistics.getTreasuryAmount(): null)")
   DailyStatisticResponse toConvert(DailyStatistics dailyStatistics, boolean isBurnt);
