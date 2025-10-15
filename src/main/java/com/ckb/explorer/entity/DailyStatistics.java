@@ -6,6 +6,7 @@ import com.ckb.explorer.config.mybatis.ListStringTypeHandler;
 import com.ckb.explorer.config.mybatis.MapTypeHandler;
 import com.ckb.explorer.domain.dto.ListStringWrapper;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Map;
@@ -75,11 +76,11 @@ public class DailyStatistics implements Serializable {
 
   private BigInteger dailyDaoWithdraw;
 
-  private BigInteger circulationRatio;// 2
+  private BigDecimal circulationRatio;// 2
 
   private BigInteger totalSupply;// dao
 
-  private BigInteger circulatingSupply; // dao
+  private BigDecimal circulatingSupply; // dao
 
   @TableField(typeHandler = ListStringTypeHandler.class)
   private ListStringWrapper blockTimeDistribution; // 1
@@ -105,7 +106,7 @@ public class DailyStatistics implements Serializable {
 
   private Long holderCount; // 1
 
-  private Long knowledgeSize;// dao
+  private BigInteger knowledgeSize;// dao
 
   @TableField(typeHandler = MapTypeHandler.class)
   private Map<String, String> activityAddressContractDistribution;// 1

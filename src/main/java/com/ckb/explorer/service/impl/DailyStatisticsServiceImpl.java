@@ -33,6 +33,7 @@ public class DailyStatisticsServiceImpl extends
     
     // 根据指标名称添加额外需要查询的字段
     String[] parts = indicator.split("-");
+    boolean isBurnt = false;
     for (String part : parts) {
       switch (part) {
         case "transactions_count":
@@ -40,6 +41,9 @@ public class DailyStatisticsServiceImpl extends
           break;
         case "addresses_count":
           fields.add(DailyStatistics::getAddressesCount);
+          break;
+        case "total_dao_deposit":
+          fields.add(DailyStatistics::getTotalDaoDeposit);
           break;
         case "live_cells_count":
           fields.add(DailyStatistics::getLiveCellsCount);
@@ -56,17 +60,50 @@ public class DailyStatisticsServiceImpl extends
         case "uncle_rate":
           fields.add(DailyStatistics::getUncleRate);
           break;
+        case "total_depositors_count":
+          fields.add(DailyStatistics::getTotalDepositorsCount);
+          break;
         case "total_tx_fee":
           fields.add(DailyStatistics::getTotalTxFee);
           break;
+        case "daily_dao_deposit":
+          fields.add(DailyStatistics::getDailyDaoDeposit);
+          break;
+        case "daily_dao_depositors_count":
+          fields.add(DailyStatistics::getDailyDaoDepositorsCount);
+          break;
+        case "circulation_ratio":
+          fields.add(DailyStatistics::getCirculationRatio);
+          break;
+        case "circulating_supply":
+          fields.add(DailyStatistics::getCirculatingSupply);
+          break;
+        case "locked_capacity":
+          fields.add(DailyStatistics::getLockedCapacity);
+          break;
+        case "burnt":
+          isBurnt = true;
+        case "treasury_amount":
+          fields.add(DailyStatistics::getTreasuryAmount);
+          break;
         case "mining_reward":
           fields.add(DailyStatistics::getMiningReward);
+          break;
+        case "deposit_compensation":
+          fields.add(DailyStatistics::getDepositCompensation);
+          break;
+        case "liquidity":
+          fields.add(DailyStatistics::getCirculatingSupply);
+          fields.add(DailyStatistics::getTotalDaoDeposit);
           break;
         case "ckb_hodl_wave":
           fields.add(DailyStatistics::getCkbHodlWave);
           break;
         case "holder_count":
           fields.add(DailyStatistics::getHolderCount);
+          break;
+        case "knowledge_size":
+          fields.add(DailyStatistics::getKnowledgeSize);
           break;
         case "activity_address_contract_distribution":
           fields.add(DailyStatistics::getActivityAddressContractDistribution);
@@ -83,7 +120,7 @@ public class DailyStatisticsServiceImpl extends
     queryWrapper.orderByAsc(DailyStatistics::getCreatedAtUnixtimestamp);
     var result = baseMapper.selectList(queryWrapper);
     // 根据不同的指标名称实现不同的查询逻辑
-    return DailyStatisticsConvert.INSTANCE.toConvertList(result);
+    return DailyStatisticsConvert.INSTANCE.toConvertList(result, isBurnt);
 
   }
 }

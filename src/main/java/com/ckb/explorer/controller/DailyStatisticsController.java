@@ -24,30 +24,29 @@ public class DailyStatisticsController {
   public static final Set<String> VALID_INDICATORS = Set.of(
       "transactions_count",
       "addresses_count",
-//      "total_dao_deposit",dao
+      "total_dao_deposit",
       "live_cells_count",
       "dead_cells_count",
       "avg_hash_rate",
       "avg_difficulty",
       "uncle_rate",
-//      "total_depositors_count",dao
-//      "address_balance_distribution",从DistributionData取
+      "total_depositors_count",
       "total_tx_fee",
 //      "occupied_capacity",页面不展示
-//      "daily_dao_deposit",dao
-//      "daily_dao_depositors_count",dao
-//      "circulation_ratio",dao
-//      "circulating_supply",dao
-//      "burnt",
-//      "locked_capacity",dao
-//      "treasury_amount",dao
+      "daily_dao_deposit",
+      "daily_dao_depositors_count",
+      "circulation_ratio",
+      "circulating_supply",
+      "burnt",
+      "locked_capacity",
+      "treasury_amount",
       "mining_reward",
-//      "deposit_compensation",dao
-//      "liquidity",dao
+      "deposit_compensation",
+      "liquidity",
       "created_at_unixtimestamp",
       "ckb_hodl_wave",
       "holder_count",
-//      "knowledge_size",dao
+      "knowledge_size",
       "activity_address_contract_distribution"
   );
 
