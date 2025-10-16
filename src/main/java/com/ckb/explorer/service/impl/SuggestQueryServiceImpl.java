@@ -5,11 +5,14 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.AddressResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.domain.resp.LockScriptResponse;
+import com.ckb.explorer.domain.resp.NftResponse;
+import com.ckb.explorer.domain.resp.NftCollectionResponse;
 import com.ckb.explorer.domain.resp.TransactionResponse;
 import com.ckb.explorer.domain.resp.TypeScriptResponse;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.facade.ICkbTransactionCacheFacade;
 import com.ckb.explorer.facade.IScriptCacheFacade;
+import com.ckb.explorer.service.DobExtendService;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.SuggestQueryService;
 import com.ckb.explorer.util.I18n;
@@ -18,16 +21,10 @@ import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
 public class SuggestQueryServiceImpl implements SuggestQueryService {
 
   @Resource
@@ -51,11 +48,8 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   @Value("${ckb.typeIdCodeHash: 0x00000000000000000000000000000000000000000000000000545950455f4944}")
   private String typeIdCodeHash;
 
-  // @Resource
-  // private UdtService udtService;
-
-  // @Resource
-  // private TokenCollectionService tokenCollectionService;
+   @Resource
+   private DobExtendService dobExtendService;
 
   // @Resource
   // private BitcoinTransactionService bitcoinTransactionService;
@@ -113,7 +107,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
    * @param queryKey 查询关键字
    * @param filterBy 过滤条件
    *                 0-未指定；1-块哈希；2-地址LockHash；3-TypeHash；4-typeId的args；5-lock的codeHash；6-type的codeHash;
-   *                 7-比特币交易的txid；8-比特币地址哈希；9-Udt的name_or_symbol；10-nft_collections的sn；11-nft_collections的name；12-fiber_graph_nodes
+   *                 7-比特币交易的txid；8-比特币地址哈希；9-Udt的name_or_symbol；10-nft的tokenId；11-nft_collections的clusterName；12-nft_collections的clusterId;13-nft_collections的clusterTypeHash
    */
   private Object singleQuery(String queryKey, Integer filterBy) {
     Object result = null;
@@ -127,9 +121,9 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
         vaildHex(queryKey);
         result = findAddressByLockHash(queryKey);
         break;
-      case 3:// 按TypeScriptHash查询合约 TODO
-        vaildHex(queryKey);
-        result = findUdtByTypeHash(queryKey);
+      case 3:// 按TypeScriptHash查询合约 udt前端自己查了，其他不要
+        //vaildHex(queryKey);
+        //result = findUdtByTypeHash(queryKey);
         break;
       case 4:// 按typeId的args查询UDT
         vaildHex(queryKey);
@@ -154,16 +148,20 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
       case 9:// 按udt的name或symbol查询udt 前端自己查了
         //result = findUdtsByNameOrSymbol(queryKey);
         break;
-      case 10:// 按nft的sn查询nft TODO
+      case 10:// 10-nft的tokenId
         vaildHex(queryKey);
-        result = findNftCollectionsBySn(queryKey);
+        result = findNftByTokenId(queryKey);
         break;
-      case 11:// 按nft的name查询nft TODO
+      case 11:// 按nft的name查询nft
         result = findNftCollectionsByName(queryKey);
         break;
-      case 12:// 按fiber图节点查询fiber图
+      case 12:// nft_collections的clusterId
         vaildHex(queryKey);
-        result = findFiberGraphNodes(queryKey);
+        result = findNftCollectionsByClusterId(queryKey);
+        break;
+      case 13:// nft_collections的clusterTypeHash
+        vaildHex(queryKey);
+        result = findNftCollectionsByClusterTypeHash(queryKey);
         break;
     }
 
@@ -250,9 +248,14 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
    * 根据类型哈希查询UDT
    */
   private Object findUdtByTypeHash(String queryKey) {
-    // TODO 根据TypeHash查Script+typeScriptExtend+dob_ext
+    // 根据TypeHash查Script+typeScriptExtend+dob_ext 不需要查了，当前不用
     // 如果是udt 返回UdtSerializer
-    // 如果是Nft 查TokenItem
+    var script = scriptService.findByScriptHash(queryKey);
+    if (script == null || script.getIsTypescript() ==  0) {
+      return null;
+    }
+    // 判断是否是udt
+
     return null;
   }
 
@@ -303,7 +306,7 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据名称或符号查询UDT
+   * 根据名称或符号查询UDT 前端自查不用实现
    */
   private List<Object> findUdtsByNameOrSymbol(String queryKey) {
     // 注意：此处为示例实现，实际项目中需要根据具体情况调整
@@ -316,36 +319,25 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
   }
 
   /**
-   * 根据SN查询NFT集合
+   * 根据TokenId查询NFT信息
    */
-  private List<Object> findNftCollectionsBySn(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    // try {
-    //     return tokenCollectionService.findBySn(queryKey);
-    // } catch (Exception e) {
-    //     return null;
-    // }
-    return null; // 占位实现
+  private NftResponse findNftByTokenId(String queryKey) {
+
+    return dobExtendService.getNftByTokenId(queryKey);
   }
 
   /**
    * 根据名称查询NFT集合
    */
-  private List<Object> findNftCollectionsByName(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    // try {
-    //     return tokenCollectionService.findByName(queryKey);
-    // } catch (Exception e) {
-    //     return null;
-    // }
-    return null; // 占位实现
+  private List<NftCollectionResponse> findNftCollectionsByName(String queryKey) {
+    return dobExtendService.getNftCollectionsByName(queryKey);
   }
 
-  /**
-   * 查询Fiber图节点 二期不做
-   */
-  private List<Object> findFiberGraphNodes(String queryKey) {
-    // 注意：此处为示例实现，实际项目中需要根据具体情况调整
-    return null; // 占位实现
+  private List<NftCollectionResponse> findNftCollectionsByClusterId(String queryKey) {
+    return dobExtendService.getNftCollectionsByClusterId(queryKey);
+  }
+
+  private NftCollectionResponse findNftCollectionsByClusterTypeHash(String queryKey) {
+    return dobExtendService.getNftCollectionsByClusterTypeHash(queryKey);
   }
 }
