@@ -3,6 +3,7 @@ package com.ckb.explorer.mapstruct;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.CollectionsDto;
+import com.ckb.explorer.domain.dto.AccountNftDto;
 import com.ckb.explorer.domain.dto.NftHolderDto;
 import com.ckb.explorer.domain.dto.NftItemDto;
 import com.ckb.explorer.domain.dto.NftTransfersDto;
@@ -11,6 +12,8 @@ import com.ckb.explorer.util.TypeConversionUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {TypeConversionUtil.class})
 public interface NftConvert {
@@ -40,6 +43,14 @@ public interface NftConvert {
 
 
     Page<CollectionsResp> toNftCollectionsRespPage(Page<CollectionsDto> page);
+
+
+    @Mapping(source = "dobScriptHash", target = "collectionTypeHash", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "dobCodeScriptArgs", target = "tokenId", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "data", target = "nftIconFile", qualifiedByName = "byteToStringHash(Value)")
+    AccountNftResponse toAccountNftResponse(AccountNftDto dto);
+
+    List<AccountNftResponse> toAccountNftResponseList(List<AccountNftDto> dtos);
 
 
 }

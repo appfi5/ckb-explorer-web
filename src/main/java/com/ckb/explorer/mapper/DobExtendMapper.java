@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.CollectionsDto;
+import com.ckb.explorer.domain.dto.AccountNftDto;
 import com.ckb.explorer.domain.dto.NftHolderDto;
 import com.ckb.explorer.domain.dto.NftItemDto;
 import com.ckb.explorer.domain.dto.NftTransfersDto;
@@ -162,6 +163,14 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "from dob_extend\n" +
             "where dob_script_hash = #{clusterTypeHash} limit 1")
   NftCollectionResponse getNftCollectionsByClusterTypeHash(@Param("clusterTypeHash") byte[] clusterTypeHash);
+
+    @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id \n" +
+            " from dob_code dc  left join dob_live_cells dlc \n " +
+            " on dlc.type_script_id = dc.dob_code_script_id \n" +
+            " left join  dob_extend de on de.id= dc.dob_extend_id \n" +
+            " where dlc.lock_script_id = #{lockScriptId} ")
+    List<AccountNftDto> accountNftInfo(@Param("lockScriptId") Long lockScriptId);
+
 }
 
 

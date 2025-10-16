@@ -3,12 +3,16 @@ package com.ckb.explorer.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.common.dto.ResponseInfo;
+import com.ckb.explorer.config.ServerException;
+import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.req.CollectionsPageReq;
 import com.ckb.explorer.domain.req.NftHoldersPageReq;
 import com.ckb.explorer.domain.req.NftTransfersPageReq;
 import com.ckb.explorer.domain.req.base.BasePageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.facade.INftCacheFacade;
+import com.ckb.explorer.util.I18n;
+import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +26,12 @@ public class NftController {
 
     @Resource
     INftCacheFacade iNftCacheFacade;
+
+    @Resource
+    private QueryKeyUtils queryKeyUtils;
+
+    @Resource
+    private I18n i18n;
 
     @GetMapping("/collections")
     @Operation(summary = "获取collections列表")
@@ -39,6 +49,7 @@ public class NftController {
     @GetMapping("/collections/{typeScriptHash}/transfers")
     @Operation(summary = "获取transfers列表")
     public  ResponseInfo<Page<NftTransfersResp>> transfers(@PathVariable String typeScriptHash,NftTransfersPageReq req){
+        validAddress(req.getAddressHash());
         return ResponseInfo.SUCCESS(iNftCacheFacade.nftTransfersPage(typeScriptHash,req));
     }
 
@@ -46,6 +57,7 @@ public class NftController {
     @GetMapping("/collections/{typeScriptHash}/holders")
     @Operation(summary = "获取holders列表")
     public  ResponseInfo<Page<NftHolderResp>> transfers(@PathVariable String typeScriptHash, NftHoldersPageReq req){
+        validAddress(req.getAddressHash());
         return ResponseInfo.SUCCESS(iNftCacheFacade.nftHolders(typeScriptHash,req));
     }
 
@@ -63,5 +75,14 @@ public class NftController {
         return ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(typeScriptHash,tokenId));
     }
 
+    // 地址校验
+    private boolean validAddress(String address) {
+        // 检查是否为有效的十六进制字符串
+        if (!queryKeyUtils.isValidHex(address) && !queryKeyUtils.isValidAddress(address)) {
+            throw new ServerException(I18nKey.ADDRESS_HASH_INVALID_CODE,
+                    i18n.getMessage(I18nKey.ADDRESS_HASH_INVALID_MESSAGE));
+        }
+        return true;
+    }
 
 }

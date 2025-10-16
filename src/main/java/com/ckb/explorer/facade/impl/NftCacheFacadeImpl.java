@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.CollectionsDto;
+import com.ckb.explorer.domain.dto.AccountNftDto;
 import com.ckb.explorer.domain.dto.NftHolderDto;
 import com.ckb.explorer.domain.dto.NftItemDto;
 import com.ckb.explorer.domain.dto.NftTransfersDto;
@@ -30,6 +31,7 @@ import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +53,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
     private static final String ITEMS_CACHE_PREFIX = "nft:items:";
 
-
+    private static final String ACCOUNT_PREFIX= "nft:accounts:";
 
     private static final String CACHE_VERSION = "v1";
 
@@ -134,13 +136,8 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         if (org.springframework.util.StringUtils.hasLength(req.getAddressHash())) {
             // 查找地址
             // 计算地址的哈希
-            var addressScriptHash = Address.decode(req.getAddressHash()).getScript().computeHash();
-            LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-            queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
-            var lockScript = scriptMapper.selectOne(queryScriptWrapper);
-            if(lockScript == null){
-                throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
-            }
+            var lockScript = getAddressScript(req.getAddressHash());
+
             lockScriptId = lockScript.getId();
         }
 
@@ -225,13 +222,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         if (org.springframework.util.StringUtils.hasLength(req.getAddressHash())) {
             // 查找地址
             // 计算地址的哈希
-            var addressScriptHash = Address.decode(req.getAddressHash()).getScript().computeHash();
-            LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-            queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
-            var lockScript = scriptMapper.selectOne(queryScriptWrapper);
-            if(lockScript == null){
-                throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
-            }
+            var lockScript = getAddressScript(req.getAddressHash());
             lockScriptId = lockScript.getId();
         }
         nftHolderDtoPage = dobExtendMapper.holdersPage(nftHolderDtoPage,Numeric.hexStringToByteArray(typeScriptHash),lockScriptId,orderBy,ascOrDesc);
@@ -306,6 +297,37 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         return  NftConvert.INSTANCE.toNftItemDetailResp(nftItemDto);
     }
 
+
+    @Override
+    public List<AccountNftResponse> accountNftResponses(String address){
+        String cacheKey = String.format("%s%s:address:%s", ACCOUNT_PREFIX, CACHE_VERSION, address);
+
+        return cacheUtils.getCache(
+                cacheKey,                    // 缓存键
+                () -> loadAccountNftFromDatabase(address),  // 数据加载函数
+                TTL_SECONDS,                 // 缓存过期时间
+                TimeUnit.SECONDS             // 时间单位
+        );
+    }
+
+
+    private List<AccountNftResponse> loadAccountNftFromDatabase(String address){
+         var lockScript = getAddressScript(address);
+         List<AccountNftDto> accountNftDtos = dobExtendMapper.accountNftInfo(lockScript.getId());
+            return NftConvert.INSTANCE.toAccountNftResponseList(accountNftDtos);
+    }
+
+
+    private Script getAddressScript(String address){
+        var addressScriptHash = Address.decode(address).getScript().computeHash();
+        LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+        queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+        var lockScript = scriptMapper.selectOne(queryScriptWrapper);
+        if(lockScript == null){
+            throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+        }
+        return lockScript;
+    }
 
 
 }

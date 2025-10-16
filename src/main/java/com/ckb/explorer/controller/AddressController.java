@@ -3,8 +3,10 @@ package com.ckb.explorer.controller;
 import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
+import com.ckb.explorer.domain.resp.AccountNftResponse;
 import com.ckb.explorer.domain.resp.AddressResponse;
 import com.ckb.explorer.domain.resp.AccountUdtBalanceResponse;
+import com.ckb.explorer.facade.INftCacheFacade;
 import com.ckb.explorer.facade.IScriptCacheFacade;
 import com.ckb.explorer.facade.IUdtAccountsCacheFacade;
 import com.ckb.explorer.util.I18n;
@@ -31,6 +33,9 @@ public class AddressController {
   private IUdtAccountsCacheFacade udtAccountsCacheFacade;
 
   @Resource
+  private INftCacheFacade nftCacheFacade;
+
+  @Resource
   private QueryKeyUtils queryKeyUtils;
 
   @Resource
@@ -53,6 +58,14 @@ public class AddressController {
     validAddress(address);
     List<AccountUdtBalanceResponse> udtBalanceResponses = udtAccountsCacheFacade.getUdtBalance(address);
     return ResponseInfo.SUCCESS(udtBalanceResponses);
+  }
+
+  @GetMapping("/{address}/nfts")
+  @Operation(summary = "获取地址NFT信息")
+  public ResponseInfo<List<AccountNftResponse>> nfts(@PathVariable @NotNull String address) {
+    validAddress(address);
+    List<AccountNftResponse> accountNftResponses = nftCacheFacade.accountNftResponses(address);
+    return ResponseInfo.SUCCESS(accountNftResponses);
   }
 
   // 地址校验
