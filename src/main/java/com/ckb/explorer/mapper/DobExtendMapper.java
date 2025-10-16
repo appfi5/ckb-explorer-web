@@ -7,8 +7,10 @@ import com.ckb.explorer.domain.CollectionsDto;
 import com.ckb.explorer.domain.dto.NftHolderDto;
 import com.ckb.explorer.domain.dto.NftItemDto;
 import com.ckb.explorer.domain.dto.NftTransfersDto;
-import com.ckb.explorer.domain.resp.CollectionsResp;
+import com.ckb.explorer.domain.resp.NftCollectionResponse;
+import com.ckb.explorer.domain.resp.NftResponse;
 import com.ckb.explorer.entity.DobExtend;
+import java.util.List;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.type.ArrayTypeHandler;
 
@@ -126,6 +128,40 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " WINDOW w AS (PARTITION BY dobo.type_script_id  ORDER BY dobo.block_timestamp DESC) limit 1 "
     )
     NftItemDto  itemInfo(@Param("args") byte[] args,@Param("dobScriptHash") byte[] dobScriptHash);
+
+    @Select("select '0x' || encode(de.args, 'hex')                 as collection_id,\n" +
+            "       de.name                                        as collection_name,\n" +
+            "       '0x' || encode(de.dob_script_hash, 'hex')      as type_script_hash,\n" +
+            "       '0x' || encode(dc.dob_code_script_args, 'hex') as token_id\n" +
+            "from dob_extend de\n" +
+            "         left join dob_code dc on de.id = dc.dob_extend_id\n" +
+            "where dc.dob_code_script_args =#{args} \n" +
+            "limit 1")
+    NftResponse getNftByTokenId(@Param("args") byte[] args);
+
+    @Select("select id                                     as id,\n" +
+            "       '0x' || encode(args, 'hex')            as collection_id,\n" +
+            "       name                                   as collection_name,\n" +
+            "       '0x' || encode(dob_script_hash, 'hex') as type_script_hash\n" +
+            "from dob_extend\n" +
+            "where LOWER(name) LIKE #{name}")
+    List<NftCollectionResponse> getNftCollectionsByName(@Param("name") String name);
+
+    @Select("select id                                     as id,\n" +
+            "       '0x' || encode(args, 'hex')            as collection_id,\n" +
+            "       name                                   as collection_name,\n" +
+            "       '0x' || encode(dob_script_hash, 'hex') as type_script_hash\n" +
+            "from dob_extend\n" +
+            "where args = #{args}")
+    List<NftCollectionResponse> getNftCollectionsByClusterId(@Param("args") byte[] args);
+
+    @Select("select id                                     as id,\n" +
+            "       '0x' || encode(args, 'hex')            as collection_id,\n" +
+            "       name                                   as collection_name,\n" +
+            "       '0x' || encode(dob_script_hash, 'hex') as type_script_hash\n" +
+            "from dob_extend\n" +
+            "where dob_script_hash = #{clusterTypeHash} limit 1")
+  NftCollectionResponse getNftCollectionsByClusterTypeHash(@Param("clusterTypeHash") byte[] clusterTypeHash);
 }
 
 
