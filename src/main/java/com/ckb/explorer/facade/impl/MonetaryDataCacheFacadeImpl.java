@@ -6,6 +6,7 @@ import com.ckb.explorer.util.CacheUtils;
 import com.ckb.explorer.util.MonetaryData;
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -48,20 +49,20 @@ public class MonetaryDataCacheFacadeImpl implements IMonetaryDataCacheFacade {
     for (String queryKey : queryKeys) {
       if("nominal_apc".equals(queryKey)){
         var nominalApc = MonetaryData.nominalApc();
-        result.setNominalApc(nominalApc.stream().map(String::valueOf).toList());
+        result.setNominalApc(nominalApc.stream().map(apc -> apc.toPlainString()).toList());
       }
       if("nominal_inflation_rate".equals(queryKey)){
         var nominalInflationRate = MonetaryData.nominalInflationRate();
-        result.setNominalInflationRate(nominalInflationRate.stream().map(String::valueOf).toList());
+        result.setNominalInflationRate(nominalInflationRate.stream().map(rate -> rate.toPlainString()).toList());
       }
       if("real_inflation_rate".equals(queryKey)){
         var realInflationRate = MonetaryData.realInflationRate();
-        result.setRealInflationRate(realInflationRate.stream().map(BigDecimal::valueOf).map(BigDecimal::toPlainString).toList());
+        result.setRealInflationRate(realInflationRate.stream().map(rate -> rate.toPlainString()).toList());
       }
       if(queryKey.matches(MonetaryData.NOMINAL_APC_REGEX)){
         int maxYear = Integer.parseInt(queryKey.replace("nominal_apc", ""));
         var nominalApc = MonetaryData.nominalApc(maxYear);
-        result.setNominalApc(nominalApc.stream().map(String::valueOf).toList());
+        result.setNominalApc(nominalApc.stream().map( apc -> apc.toPlainString()).toList());
       }
     }
     return  result;
