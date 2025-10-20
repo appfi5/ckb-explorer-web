@@ -53,4 +53,6 @@ public class CellOutputDto {
   private Short hashType;
 
   private Long transactionId;
+
+  private byte[] data;
 }

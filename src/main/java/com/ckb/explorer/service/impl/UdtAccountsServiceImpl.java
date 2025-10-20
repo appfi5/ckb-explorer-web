@@ -64,7 +64,7 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
         item.setSymbol(typeScript.getSymbol());
         item.setDecimal(typeScript.getDecimal());
         //item.setUdtIconFile(typeScript.getUdtIconFile());
-        item.setUdtType(typeScript.getUdtType());
+        item.setUdtType(typeScript.getCellType()); //cellType 同udtType
         item.setTypeScriptHash(typeScript.getScriptHash());
       }
     });

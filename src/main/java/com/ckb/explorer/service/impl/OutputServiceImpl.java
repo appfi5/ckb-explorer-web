@@ -6,10 +6,8 @@ import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.domain.resp.CellInfoResponse;
 import com.ckb.explorer.domain.resp.ExtraInfoResponse;
 import com.ckb.explorer.entity.Output;
-import com.ckb.explorer.entity.OutputExtend;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.enums.CellType;
-import com.ckb.explorer.mapper.OutputExtendMapper;
 import com.ckb.explorer.mapper.OutputMapper;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
@@ -21,13 +19,13 @@ import jakarta.annotation.Resource;
 import java.util.Set;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> implements
     OutputService {
 
-  @Resource
-  private OutputExtendMapper outputExtendMapper;
+
 
   @Resource
   private ScriptMapper scriptMapper;
@@ -58,17 +56,6 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
     response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
 
-    // 获取cellType
-    OutputExtend outputExtend = outputExtendMapper.selectOne(new QueryWrapper<OutputExtend>().eq("output_id", id));
-    Integer cellType = null;
-    // 只有解析过的output才有cellType
-    if(outputExtend != null){
-      cellType = outputExtend.getCellType();
-      // ckb的cellType默认为0
-    } else if(cellOutput.getTypeScriptId() == null){
-      cellType = CellType.NORMAL.getValue();
-    }
-    response.setCellType(cellType);
 
     // 获取lock_script
     Script lockScript = scriptMapper.selectById(cellOutput.getLockScriptId());
@@ -84,14 +71,17 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
           lockScript.getHashType()));
     }
 
+
     // 获取type_script
     if(cellOutput.getTypeScriptId() != null){
+      Integer cellType = null;
       Script typeScript = scriptMapper.selectById(cellOutput.getTypeScriptId());
       if (typeScript != null) {
         var typeScriptResponse = TypeScriptConvert.INSTANCE.toConvert(typeScript);
         var script = scriptConfig.getTypeScriptByCodeHash(typeScriptResponse.getCodeHash(), typeScriptResponse.getArgs());
         typeScriptResponse.setVerifiedScriptName(script == null ? null : script.getName());
         response.setTypeScript(typeScriptResponse);
+        cellType = scriptConfig.cellType(script,response.getData());
 
         // 只有资产才有扩展信息
         if(cellType != null){
@@ -109,9 +99,16 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
           response.setExtraInfo(extraInfoResponse);
         }
+      }else {
+         cellType =CellType.NORMAL.getValue();
       }
+      response.setCellType(cellType);
+
     }
 
     return response;
   }
+
+
+
 }
