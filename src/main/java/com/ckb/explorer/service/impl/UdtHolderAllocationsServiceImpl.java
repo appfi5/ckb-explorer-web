@@ -12,6 +12,7 @@ import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
 import com.ckb.explorer.domain.resp.UdtsListResponse;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.entity.UdtHolderAllocations;
+import com.ckb.explorer.enums.CellType;
 import com.ckb.explorer.enums.LockType;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.UdtAccountsMapper;
@@ -76,7 +77,7 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
     @Override
     public List<UdtsListResponse> udtListStatistic() {
         List<ScriptConfig.TypeScript> typeScripts = lockScriptConfig.getTypeScripts().stream()
-                .filter(typeScript -> Objects.equals(typeScript.getUdt(), true)).toList();
+                .filter(typeScript -> typeScript.getCellType()!=null&&CellType.valueOf(typeScript.getCellType()).isUdtType()).toList();
         List<Long> typeScriptIds = typeScripts.stream().map(typeScript -> {
             return typeScript.getTypeScriptId();
         }).toList();
