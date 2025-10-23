@@ -66,7 +66,6 @@ spring:
 logging:
   level:
     com.ckb.explorer.mapper: DEBUG
-    org.springframework: DEBUG
     com.baomidou: DEBUG
 ckb:
   nodeUrl: https://testnet.ckb.dev
@@ -471,3 +470,6 @@ script:
       hashType: "type"
       udt: true
       udtType: 3
+remote:
+  worker:
+    url: http://localhost:8082

@@ -39,9 +39,11 @@ CREATE TABLE IF NOT EXISTS daily_statistics
     addresses_count                        BIGINT         NULL     DEFAULT NULL,
     total_dao_deposit                      VARCHAR(255)   NULL     DEFAULT NULL,
     block_timestamp                        BIGINT         NULL     DEFAULT NULL,
+    max_block_number                       BIGINT         NULL     DEFAULT NULL,
     created_at_unixtimestamp               BIGINT         NULL     DEFAULT NULL,
-    created_at                             TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at                             TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at                             TIMESTAMPTZ    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                             TIMESTAMPTZ    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version                                INTEGER        NOT NULL DEFAULT 0,
 
     -- DAO相关字段
     dao_depositors_count                   VARCHAR(255)   NULL     DEFAULT NULL,
@@ -88,7 +90,7 @@ CREATE TABLE IF NOT EXISTS daily_statistics
     );
 
 -- 创建索引以提高查询性能
-CREATE INDEX IF NOT EXISTS idx_daily_statistics_created_at_unixtimestamp ON daily_statistics (created_at_unixtimestamp);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_statistics_created_at_unixtimestamp ON daily_statistics (created_at_unixtimestamp);
 
 CREATE MATERIALIZED VIEW public.average_block_time_by_hour AS
 SELECT (block."timestamp" / 3600000) AS hour,
@@ -113,7 +115,7 @@ refresh materialized view average_block_time_by_hour;
 
 refresh materialized view rolling_avg_block_time;
 
-CREATE TABLE epoch_statistics
+CREATE TABLE IF NOT EXISTS epoch_statistics
 (
     -- 主键ID，自增
     id                   BIGSERIAL PRIMARY KEY,
@@ -134,15 +136,15 @@ CREATE TABLE epoch_statistics
     updated_at           TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_epoch_statistics_number ON epoch_statistics (epoch_number);
+CREATE INDEX IF NOT EXISTS idx_epoch_statistics_number ON epoch_statistics (epoch_number);
 
-CREATE INDEX idx_output_lockscript_txhash_full ON output (lock_script_id)
+CREATE INDEX IF NOT EXISTS idx_output_lockscript_txhash_full ON output (lock_script_id)
     INCLUDE (tx_hash) WHERE tx_hash IS NOT NULL;
 
-CREATE INDEX idx_output_lockscript_consumedtxhash_full ON output (lock_script_id)
+CREATE INDEX IF NOT EXISTS idx_output_lockscript_consumedtxhash_full ON output (lock_script_id)
     INCLUDE (consumed_tx_hash) WHERE consumed_tx_hash IS NOT NULL;
 
-CREATE INDEX idx_outputextend_outputid_cover
+CREATE INDEX IF NOT EXISTS idx_outputextend_outputid_cover
     ON output_extend (output_id)  -- 关联字段在前
     INCLUDE (cell_type);  -- 仅需查询 cell_type
 
@@ -153,7 +155,7 @@ ALTER TABLE statistic_infos
 ALTER TABLE statistic_infos
     ADD COLUMN IF NOT EXISTS last_n_days_transaction_fee_rates varchar(2000);
 
-CREATE TABLE dao_contracts (
+CREATE TABLE IF NOT EXISTS dao_contracts (
                                       id BIGSERIAL PRIMARY KEY,
                                       total_deposit numeric(30,0) DEFAULT 0.0,
                                       depositors_count integer DEFAULT 0,
@@ -162,3 +164,24 @@ CREATE TABLE dao_contracts (
                                       created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                                       updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS udt_daily_statistics (
+                                              id BIGSERIAL PRIMARY KEY,
+                                              script_id bigint NOT NULL,
+                                              ckb_transactions_count integer DEFAULT 0,
+                                              holders_count integer DEFAULT 0,
+                                              created_at_unixtimestamp integer,
+                                              version integer NOT NULL DEFAULT 0,
+                                              created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                                              updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS index_on_udt_id_and_unixtimestamp ON public.udt_daily_statistics USING btree (script_id, created_at_unixtimestamp);
+
+CREATE INDEX idx_output_final_covering
+    ON output (block_timestamp, consumed_timestamp, lock_script_id)
+    INCLUDE (occupied_capacity);
+
+CREATE INDEX idx_output_consumed_null_covering_legacy
+    ON output (block_timestamp, lock_script_id, occupied_capacity)
+    WHERE consumed_timestamp IS NULL;
