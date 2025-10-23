@@ -66,7 +66,6 @@ spring:
 logging:
   level:
     com.ckb.explorer.mapper: DEBUG
-    org.springframework: DEBUG
     com.baomidou: DEBUG
 ckb:
   nodeUrl: https://testnet.ckb.dev
