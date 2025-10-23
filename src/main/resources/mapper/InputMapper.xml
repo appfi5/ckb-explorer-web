@@ -15,18 +15,15 @@
            s.hash_type                           as lock_hash_type,
            '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
            o.output_index                        as cell_index,
-           CASE
-             WHEN oe.cell_type is null THEN 0
-             ELSE oe.cell_type END               as cell_type,
            '0x' || encode(i.since, 'hex')        as since_raw,
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
-           type.hash_type                        as hash_type
+           type.hash_type                        as hash_type,
+           o.data                                as data
     from input i
            inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
-           left join output_extend oe ON o.id = oe.output_id
     where consumed_tx_id = #{transactionId}
     order by o.id asc
   </select>
@@ -42,12 +39,12 @@
     lock_hash_type,
     generated_tx_hash,
     cell_index,
-    cell_type,
     since_raw,
     args,
     code_hash,
     hash_type,
-    transaction_id
+    transaction_id,
+    data
     FROM (select o.id,
            false                                 as from_cellbase,
            o.capacity                            as capacity,
@@ -57,20 +54,17 @@
            s.hash_type                           as lock_hash_type,
            '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
            o.output_index                        as cell_index,
-           CASE
-            WHEN oe.cell_type is null THEN 0
-                ELSE oe.cell_type END            as cell_type,
            '0x' || encode(i.since, 'hex')        as since_raw,
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
            type.hash_type                        as hash_type,
            i.consumed_tx_id                      as transaction_id,
-           ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn
+           ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
+           o.data                                as data
     from input i
            inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
-           left join output_extend oe ON o.id = oe.output_id
     where
     <if test="null != transactionIds">
       i.consumed_tx_id in

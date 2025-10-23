@@ -24,14 +24,11 @@
       -- 生成的交易哈希
       '0x' || encode(o.tx_hash, 'hex') AS generated_tx_hash,
       o.output_index AS cell_index,
-      CASE
-        WHEN oe.cell_type is null THEN 0
-        ELSE oe.cell_type END               as cell_type
+      o.data as data
     FROM
       output o
         left join script s ON o.lock_script_id = s.id
-        left join output_extend oe ON o.id = oe.output_id
-    WHERE 
+    WHERE
       o.tx_id = #{transactionId}
     ORDER BY 
       o.id ASC
@@ -56,16 +53,13 @@
            -- 生成的交易哈希
            '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
            o.output_index                                                              AS cell_index,
-           CASE
-             WHEN oe.cell_type is null THEN 0
-             ELSE oe.cell_type END                                                     as cell_type,
            '0x' || encode(type.args, 'hex')                                            as args,
            '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
-           type.hash_type                                                              as hash_type
+           type.hash_type                                                              as hash_type,
+           o.data                                                                      as data
     FROM output o
            left join script s ON o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
-           left join output_extend oe ON o.id = oe.output_id
     WHERE
       o.tx_id = #{transactionId}
     ORDER BY
@@ -88,14 +82,15 @@
     -- 生成的交易哈希
     '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
     o.output_index                                                              AS cell_index,
-    CASE
-      WHEN oe.cell_type is null THEN 0
-      ELSE oe.cell_type END                                                     as cell_type,
-    o.tx_id                                                                     as transaction_id
+    o.tx_id                                                                     as transaction_id,
+    '0x' || encode(type.args, 'hex')                                            as args,
+    '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
+    type.hash_type                                                              as hash_type,
+    o.data                                                                      as data
     FROM output o
       left join script s ON o.lock_script_id = s.id
-      left join output_extend oe ON o.id = oe.output_id
-    WHERE
+      left join script type on o.type_script_id = type.id
+      WHERE
     <if test="null != transactionIds">
       o.tx_id in
       <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
@@ -117,11 +112,11 @@
            consumed_tx_hash,
            generated_tx_hash,
            cell_index,
-           cell_type,
            args,
            code_hash,
            hash_type,
-           transaction_id
+           transaction_id,
+           data
     from (SELECT o.id,
                  o.capacity,
                  o.occupied_capacity,
@@ -138,18 +133,15 @@
                  -- 生成的交易哈希
                  '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
                  o.output_index                                                              AS cell_index,
-                 CASE
-                  WHEN oe.cell_type is null THEN 0
-                     ELSE oe.cell_type END                                                   AS cell_type,
                  '0x' || encode(type.args, 'hex')                                            AS args,
                  '0x' || encode(type.code_hash, 'hex')                                       AS code_hash,
                  type.hash_type                                                              AS hash_type,
                  o.tx_id                                                                     AS transaction_id,
-                 ROW_NUMBER()        OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn
+                 ROW_NUMBER()        OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn,
+                 o.data                                                                      AS data
           FROM output o
                  left join script s ON o.lock_script_id = s.id
                  left join script type on o.type_script_id = type.id
-                 left join output_extend oe ON o.id = oe.output_id
           WHERE
               <if test="null != transactionIds">
                 o.tx_id in

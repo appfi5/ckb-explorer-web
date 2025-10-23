@@ -3,6 +3,7 @@ package com.ckb.explorer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
@@ -69,6 +70,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Resource
   private DepositCellMapper depositCellMapper;
+
+  @Resource
+  ScriptConfig scriptConfig;
 
   @Override
   public List<TransactionPageResponse> getHomePageTransactions(int size) {
@@ -150,7 +154,11 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   private Page<CellInputResponse> getNormalTxDisplayInputs(Long transactionId, int page, int pageSize) {
     Page<CellInputDto> pageResult = new Page<>(page, pageSize);
     Page<CellInputDto> resultPage = inputMapper.getDisplayInputs(pageResult, transactionId);
-
+    resultPage.getRecords().forEach(cellInputDto -> {
+      ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellInputDto.getCodeHash(),cellInputDto.getArgs());
+      Integer cellType = scriptConfig.cellType(typeScript,Numeric.toHexString(cellInputDto.getData()));
+      cellInputDto.setCellType(cellType);
+    });
     return CellInputConvert.INSTANCE.toConvertPage(resultPage);
   }
 
@@ -162,6 +170,14 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     if(ckbTransaction.getTxIndex() == 0){
 
       Page<CellOutputDto> resultPage = outputMapper.getCellbaseDisplayOutputs(pageResult, ckbTransaction.getId());
+      resultPage.getRecords().forEach(cellOutputDto -> {
+        if(StringUtils.isNotEmpty(cellOutputDto.getCodeHash())){
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellOutputDto.getCodeHash(),cellOutputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript,Numeric.toHexString(cellOutputDto.getData()));
+          cellOutputDto.setCellType(cellType);
+        }
+
+      });
 
       Page<CellOutputResponse> result = CellOutputConvert.INSTANCE.toConvertPage(resultPage);
       List<CellOutputResponse> records = result.getRecords();
@@ -170,7 +186,13 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       // 普通交易
     } else {
       Page<CellOutputDto> resultPage = outputMapper.getNormalTxDisplayOutputs(pageResult, ckbTransaction.getId());
-
+      resultPage.getRecords().forEach(cellOutputDto -> {
+        if(StringUtils.isNotEmpty(cellOutputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellOutputDto.getCodeHash(), cellOutputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellOutputDto.getData()));
+          cellOutputDto.setCellType(cellType);
+        }
+      });
       return CellOutputConvert.INSTANCE.toConvertPage(resultPage);
     }
   }
@@ -230,8 +252,24 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 普通交易获取input和output
     if(normalTransactionsIds.size() > 0){
-      normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
-      normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+      List<CellInputDto> normalInputs = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize);
+      normalInputs.forEach(cellInputDto -> {
+        if(StringUtils.isNotEmpty(cellInputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellInputDto.getCodeHash(), cellInputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellInputDto.getData()));
+          cellInputDto.setCellType(cellType);
+        }
+      });
+      normalInputsWithTrans = normalInputs.stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      List<CellOutputDto> normalOutputs = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize);
+      normalOutputs.forEach(cellOutputDto -> {
+        if(StringUtils.isNotEmpty(cellOutputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellOutputDto.getCodeHash(), cellOutputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellOutputDto.getData()));
+          cellOutputDto.setCellType(cellType);
+        }
+      });
+      normalOutputsWithTrans = normalOutputs.stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
     } else{
       normalInputsWithTrans = new HashMap<>();
       normalOutputsWithTrans = new HashMap<>();
@@ -327,8 +365,24 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 普通交易获取input和output
     if(normalTransactionsIds.size() > 0){
-      normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
-      normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+      List<CellInputDto> normalInputs = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize);
+      normalInputs.forEach(cellInputDto -> {
+        if(StringUtils.isNotEmpty(cellInputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellInputDto.getCodeHash(), cellInputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellInputDto.getData()));
+          cellInputDto.setCellType(cellType);
+        }
+      });
+      normalInputsWithTrans = normalInputs.stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      List<CellOutputDto> normalOutputs = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize);
+      normalOutputs.forEach(cellOutputDto -> {
+        if(StringUtils.isNotEmpty(cellOutputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellOutputDto.getCodeHash(), cellOutputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellOutputDto.getData()));
+          cellOutputDto.setCellType(cellType);
+        }
+      });
+      normalOutputsWithTrans = normalOutputs.stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
     } else{
       normalInputsWithTrans = new HashMap<>();
       normalOutputsWithTrans = new HashMap<>();
@@ -439,8 +493,24 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 普通交易获取input和output
     if(normalTransactionsIds.size() > 0){
-      normalInputsWithTrans = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
-      normalOutputsWithTrans = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+      List<CellInputDto> normalInputs = inputMapper.getNormalDisplayInputsByTransactionIds(normalTransactionsIds, pageSize);
+      normalInputs.forEach(cellInputDto -> {
+        if(StringUtils.isNotEmpty(cellInputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellInputDto.getCodeHash(), cellInputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellInputDto.getData()));
+          cellInputDto.setCellType(cellType);
+        }
+      });
+      normalInputsWithTrans = normalInputs.stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      List<CellOutputDto> normalOutputs = outputMapper.getNormalTxDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize);
+      normalOutputs.forEach(cellOutputDto -> {
+        if(StringUtils.isNotEmpty(cellOutputDto.getCodeHash())) {
+          ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellOutputDto.getCodeHash(), cellOutputDto.getArgs());
+          Integer cellType = scriptConfig.cellType(typeScript, Numeric.toHexString(cellOutputDto.getData()));
+          cellOutputDto.setCellType(cellType);
+        }
+      });
+      normalOutputsWithTrans = normalOutputs.stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
     } else{
       normalInputsWithTrans = new HashMap<>();
       normalOutputsWithTrans = new HashMap<>();

@@ -2,6 +2,7 @@ package com.ckb.explorer.config;
 
 
 import com.ckb.explorer.domain.resp.ScriptResponse;
+import com.ckb.explorer.enums.CellType;
 import lombok.Data;
 
 import org.apache.commons.lang3.StringUtils;
@@ -67,9 +68,7 @@ public class ScriptConfig {
 
     private String scriptHash;
 
-    private Boolean udt=false;
-
-    private Integer udtType;
+    private Integer cellType;
   }
 
   public LockScript getLockScriptByCodeHash(String codeHash) {
@@ -98,6 +97,35 @@ public class ScriptConfig {
       return null;
     return typeScripts.stream()
         .filter(typeScript -> Objects.equals(typeScript.getTypeScriptId(), TypeScriptId)).findFirst().orElse(null);
+  }
+
+  public TypeScript getTypeScriptByCellType(Integer cellType, String codeHash) {
+    List<TypeScript> typeScriptList=  typeScripts.stream()
+            .filter(typeScript -> Objects.equals(typeScript.getCellType(), cellType)).toList();
+    if(typeScriptList.size() > 1 && !org.springframework.util.StringUtils.isEmpty(codeHash) ){
+      return typeScriptList.stream().filter(typeScript -> Objects.equals(typeScript.getCodeHash(), codeHash)).findFirst().orElse(null);
+    }
+    return typeScriptList.size() > 0 ? typeScriptList.get(0) : null;
+  }
+
+
+  public Integer cellType(ScriptConfig.TypeScript typeScript, String outputData) {
+    if(typeScript==null){
+      return CellType.NORMAL.getValue();
+    }
+
+    if(typeScript.getCellType()==null){
+      return CellType.NORMAL.getValue();
+    }
+
+    if(CellType.NERVOS_DAO_DEPOSIT.getValue()==typeScript.getCellType()){
+      if("0x0000000000000000".equals(outputData)){
+        return CellType.NERVOS_DAO_DEPOSIT.getValue();
+      }else {
+        return CellType.NERVOS_DAO_WITHDRAWING.getValue();
+      }
+    }
+    return typeScript.getCellType();
   }
 
 }

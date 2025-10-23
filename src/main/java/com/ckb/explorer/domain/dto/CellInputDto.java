@@ -56,4 +56,6 @@ public class CellInputDto {
   private Short hashType;
 
   private Long transactionId;
+
+  private byte[] data;
 }
