@@ -175,4 +175,27 @@
     </if>
     order by ct.block_timestamp desc nulls last, ct.id desc
   </select>
+
+  <select id="getPageContractTransactions"
+    resultType="com.ckb.explorer.domain.resp.ContractTransactionPageResponse">
+    SELECT ct.id,
+            ct.tx_index = 0                   as is_cellbase,
+            '0x' || encode(ct.tx_hash, 'hex') as transaction_hash,
+            ct.block_number,
+            ct.block_timestamp,
+            ct.input_count                    as display_inputs_count,
+            ct.output_count                   as display_outputs_count
+    FROM ckb_transaction ct
+    -- 子查询：找到同时满足两个条件的tx_id
+    JOIN (
+      SELECT DISTINCT o1.tx_id
+      FROM output o1
+      -- 关联同表中type_script_id的记录（同一tx_id）
+      INNER JOIN output o2 ON o1.tx_id = o2.tx_id
+      WHERE
+        o1.lock_script_id = #{lockScriptId}  -- 第一个条件
+        AND o2.type_script_id = #{typeScriptId}    -- 第二个条件
+    ) AS valid_tx ON ct.id = valid_tx.tx_id
+    Order by ct.id desc
+  </select>
 </mapper>
