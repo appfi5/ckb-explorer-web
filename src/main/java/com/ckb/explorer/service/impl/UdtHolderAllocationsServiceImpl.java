@@ -23,7 +23,6 @@ import com.ckb.explorer.mapper.UdtHolderAllocationsMapper;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -83,8 +82,8 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         }).toList();
         List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
 
-        //TODO debezium CDC模式保持取数一致 如果使用risingWave需要替换
-        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNumByScriptIds(typeScriptIds);
+        // 当前数据库数量比配置少，如果后续数量多需要分页,按照udt账户数量进行分页，不再读取配置
+        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum();
         Long oneDayAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(24);
         List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptIds(typeScriptIds);
 
