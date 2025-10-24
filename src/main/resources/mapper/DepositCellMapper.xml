@@ -18,9 +18,6 @@
              <if test="txHash != null and txHash != ''">
                AND tx_hash = #{txHash}
              </if>
-             <if test="lockScriptId != null">
-               AND lock_script_id = #{lockScriptId}
-             </if>
            </where>
 
            UNION ALL
@@ -30,9 +27,6 @@
             tx_hash is not null
             <if test="txHash != null and txHash != ''">
               AND tx_hash = #{txHash}
-            </if>
-            <if test="lockScriptId != null">
-              AND lock_script_id = #{lockScriptId}
             </if>
           </where>
 
@@ -44,9 +38,6 @@
             and consumed_tx_hash != ''
             <if test="txHash != null and txHash != ''">
               AND consumed_tx_hash = #{txHash}
-            </if>
-            <if test="lockScriptId != null">
-              AND lock_script_id = #{lockScriptId}
             </if>
           </where>
          ) AS combined_data

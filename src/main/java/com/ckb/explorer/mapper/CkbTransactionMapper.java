@@ -35,4 +35,6 @@ public interface CkbTransactionMapper extends BaseMapper<CkbTransaction> {
    * @return 合约交易列表
    */
   List<ContractTransactionPageResponse> selectContractTransactions(@Param("txHashs") List<byte[]> txHashs);
+
+  Page<ContractTransactionPageResponse> getPageContractTransactions(Page page, @Param("lockScriptId") Long lockScriptId, @Param("typeScriptId") Long typeScriptId);
 }

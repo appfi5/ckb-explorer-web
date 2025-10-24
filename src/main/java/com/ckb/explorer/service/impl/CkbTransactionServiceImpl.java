@@ -30,6 +30,7 @@ import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -63,7 +65,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   private ScriptMapper scriptMapper;
 
   @Resource
-  ScriptService scriptService;
+  private ScriptService scriptService;
 
   @Resource
   private DaoContractMapper daoContractMapper;
@@ -72,7 +74,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   private DepositCellMapper depositCellMapper;
 
   @Resource
-  ScriptConfig scriptConfig;
+  private ScriptConfig scriptConfig;
+
+  @Value("${ckb.daoCodeHash}")
+  private String daoCodeHashList;
 
   @Override
   public List<TransactionPageResponse> getHomePageTransactions(int size) {
@@ -211,6 +216,16 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     return scriptMapper.selectOne(queryScriptWrapper);
   }
 
+  private Script getDaoTypeScript(){
+    var codeHashs = Arrays.stream(daoCodeHashList.split( ",")).toList();
+    var codeHash = codeHashs.stream().map(Numeric::hexStringToByteArray).collect(Collectors.toList());
+    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+    queryScriptWrapper.in(Script::getCodeHash, codeHash);
+    queryScriptWrapper.eq(Script::getIsTypescript, 1);
+    queryScriptWrapper.eq(Script::getHashType, 1);
+    queryScriptWrapper.last("limit 1");
+    return scriptMapper.selectOne(queryScriptWrapper);
+  }
   @Override
   public Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash,
       String addressHash, int page, int pageSize) {
@@ -576,6 +591,13 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       txHash = Numeric.hexStringToByteArray(req.getTxHash());
     }
 
+    // 查询Dao 的typeScriptId
+    var typeScript = getDaoTypeScript();
+    Long typeScriptId = typeScript.getId();
+    if(typeScriptId == null){
+      return resultPage.setTotal(0);
+    }
+
     // 处理addressHash参数
     Long lockScriptId = null;
     if (StringUtils.isNotEmpty(req.getAddressHash())) {
@@ -586,19 +608,32 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       lockScriptId = script.getId();
     }
 
-    Page txHashPage = new Page<>(page, pageSize);
-    // 从数据库查询合约交易 从Cell里查
-    txHashPage = depositCellMapper.getTxHashPage(txHashPage, txHash, lockScriptId);
+    List<ContractTransactionPageResponse> transactions ;
+    if(lockScriptId != null){
+      Page txPage = new Page<>(page, pageSize);
+      resultPage = baseMapper.getPageContractTransactions(txPage, lockScriptId, typeScriptId);
+      transactions = resultPage.getRecords();
 
-    List<byte[]> txHashs = txHashPage.getRecords();
-    if(txHashs.isEmpty()){
-      return resultPage.setTotal(0);
-    }
+      // 查具体交易信息
+      if (transactions.isEmpty()) {
+        return resultPage;
+      }
+    } else{
+      Page txHashPage = new Page<>(page, pageSize);
+      // 从数据库查询合约交易 从Cell里查
+      txHashPage = depositCellMapper.getTxHashPage(txHashPage, txHash);
+      List<byte[]> txHashs = txHashPage.getRecords();
+      if(txHashs.isEmpty()){
+        return resultPage.setTotal(0);
+      }
+      transactions = baseMapper.selectContractTransactions(txHashs);
 
-    // 查具体交易信息
-    List<ContractTransactionPageResponse> transactions = baseMapper.selectContractTransactions(txHashs);
-    if (transactions.isEmpty()) {
-      return resultPage.setTotal(0);
+      // 查具体交易信息
+      if (transactions.isEmpty()) {
+        return resultPage.setTotal(0);
+      }
+
+      resultPage.setTotal(txHashPage.getTotal());
     }
 
     // 分开处理cellbase和普通交易
@@ -609,8 +644,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 普通交易获取input和output
     if(normalTransactionsIds.size() > 0){
-      normalInputsWithTrans = inputMapper.getDaoDisplayInputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
-      normalOutputsWithTrans = outputMapper.getDaoDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
+      normalInputsWithTrans = inputMapper.getDaoDisplayInputsByTransactionIds(normalTransactionsIds, pageSize, typeScriptId).stream().collect(Collectors.groupingBy(CellInputDto::getTransactionId));
+      normalOutputsWithTrans = outputMapper.getDaoDisplayOutputsByTransactionIds(normalTransactionsIds, pageSize, typeScriptId).stream().collect(Collectors.groupingBy(CellOutputDto::getTransactionId));
     } else {
       normalInputsWithTrans = new HashMap<>();
       normalOutputsWithTrans = new HashMap<>();
@@ -630,7 +665,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     });
 
     resultPage.setRecords( transactions);
-    resultPage.setTotal(txHashPage.getTotal());
+
     return resultPage;
   }
 }

@@ -17,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
 @DS("risingwave")
 public interface DepositCellMapper extends BaseMapper<DepositCell> {
 
-  Page<byte[]> getTxHashPage(Page page, @Param("txHash") byte[] txHash, @Param("lockScriptId") Long lockScriptId);
+  Page<byte[]> getTxHashPage(Page page, @Param("txHash") byte[] txHash);
 
   List<DaoDepositorDto> getTopDaoDepositors();
 
