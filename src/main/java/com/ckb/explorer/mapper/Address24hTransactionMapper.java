@@ -56,7 +56,7 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
             + "       and ckb_transaction_id = #{txId}\n"
             + "     </if> "
             + "     <if test='null != lockScriptId'>\n"
-            + "       and lock_script_id = #{lockScriptId}\n "
+            + "       and (lock_script_id = #{lockScriptId} or exists (select 1 from address_24h_transaction adl where adl.ckb_transaction_id =ad.ckb_transaction_id and adl.lock_script_id = #{lockScriptId} ))\n "
             + "      </if> "
             + ")\n"
             + "SELECT ckb_transaction_id\n"
