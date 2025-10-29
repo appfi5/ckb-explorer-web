@@ -26,7 +26,11 @@ CREATE TABLE IF NOT EXISTS statistic_infos
     created_at                    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- 系统字段：更新时间
-    updated_at                    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at                    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    transaction_fee_rates         jsonb            DEFAULT '{}'::jsonb,
+
+    last_n_days_transaction_fee_rates varchar(2000)
     );
 
 -- DailyStatistics 表创建SQL语句 - PostgreSQL版本
@@ -92,29 +96,6 @@ CREATE TABLE IF NOT EXISTS daily_statistics
 -- 创建索引以提高查询性能
 CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_statistics_created_at_unixtimestamp ON daily_statistics (created_at_unixtimestamp);
 
-CREATE MATERIALIZED VIEW public.average_block_time_by_hour AS
-SELECT (block."timestamp" / 3600000) AS hour,
-    avg(block.block_interval) AS avg_block_time_per_hour
-FROM public.block where block_number > 1
-GROUP BY (block."timestamp" / 3600000)
-WITH NO DATA;
-
-CREATE UNIQUE INDEX index_average_block_time_by_hour_on_hour ON public.average_block_time_by_hour USING btree (hour);
-
-
-CREATE MATERIALIZED VIEW rolling_avg_block_time AS
-SELECT (average_block_time_by_hour.hour * 3600) AS "timestamp",
-       avg(average_block_time_by_hour.avg_block_time_per_hour) OVER (ORDER BY average_block_time_by_hour.hour ROWS BETWEEN 24 PRECEDING AND CURRENT ROW) AS avg_block_time_daily,
-    avg(average_block_time_by_hour.avg_block_time_per_hour) OVER (ORDER BY average_block_time_by_hour.hour ROWS BETWEEN (7 * 24) PRECEDING AND CURRENT ROW) AS avg_block_time_weekly
-FROM public.average_block_time_by_hour
-    WITH NO DATA;
-
-CREATE UNIQUE INDEX index_rolling_avg_block_time_on_timestamp ON public.rolling_avg_block_time USING btree ("timestamp");
-
-refresh materialized view average_block_time_by_hour;
-
-refresh materialized view rolling_avg_block_time;
-
 CREATE TABLE IF NOT EXISTS epoch_statistics
 (
     -- 主键ID，自增
@@ -138,23 +119,6 @@ CREATE TABLE IF NOT EXISTS epoch_statistics
 
 CREATE INDEX IF NOT EXISTS idx_epoch_statistics_number ON epoch_statistics (epoch_number);
 
-CREATE INDEX IF NOT EXISTS idx_output_lockscript_txhash_full ON output (lock_script_id)
-    INCLUDE (tx_hash) WHERE tx_hash IS NOT NULL;
-
-CREATE INDEX IF NOT EXISTS idx_output_lockscript_consumedtxhash_full ON output (lock_script_id)
-    INCLUDE (consumed_tx_hash) WHERE consumed_tx_hash IS NOT NULL;
-
-CREATE INDEX IF NOT EXISTS idx_outputextend_outputid_cover
-    ON output_extend (output_id)  -- 关联字段在前
-    INCLUDE (cell_type);  -- 仅需查询 cell_type
-
-ALTER TABLE statistic_infos
-    ADD COLUMN IF NOT EXISTS transaction_fee_rates jsonb
--- 可选1：设置默认值为空JSON对象（避免NULL，便于后续统一处理）
-    DEFAULT '{}'::jsonb;
-ALTER TABLE statistic_infos
-    ADD COLUMN IF NOT EXISTS last_n_days_transaction_fee_rates varchar(2000);
-
 CREATE TABLE IF NOT EXISTS dao_contracts (
                                       id BIGSERIAL PRIMARY KEY,
                                       total_deposit numeric(30,0) DEFAULT 0.0,
@@ -177,11 +141,3 @@ CREATE TABLE IF NOT EXISTS udt_daily_statistics (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_on_udt_id_and_unixtimestamp ON public.udt_daily_statistics USING btree (script_id, created_at_unixtimestamp);
-
-CREATE INDEX idx_output_final_covering
-    ON output (block_timestamp, consumed_timestamp, lock_script_id)
-    INCLUDE (occupied_capacity);
-
-CREATE INDEX idx_output_consumed_null_covering_legacy
-    ON output (block_timestamp, lock_script_id, occupied_capacity)
-    WHERE consumed_timestamp IS NULL;
