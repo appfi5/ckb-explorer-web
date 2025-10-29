@@ -69,6 +69,8 @@ public class ScriptConfig {
     private String scriptHash;
 
     private Integer cellType;
+
+    private Integer version;
   }
 
   public LockScript getLockScriptByCodeHash(String codeHash) {
