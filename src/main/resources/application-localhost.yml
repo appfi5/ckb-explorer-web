@@ -39,25 +39,26 @@ spring:
           # 虚拟线程下建议关闭连接池（每个请求短平快）
           #     max-active: 200
       #password: abcdefg
-      redisson:
-        config: |
-          singleServerConfig:
-            #address: redis://localhost:6379
-            #password: abcdefg
-            address: redis://192.168.10.143:6350
-            database: 4
-            idleConnectionTimeout: 10000
-            connectTimeout: 10000
-            timeout: 3000
-            retryAttempts: 3
-            retryInterval: 1500
-            subscriptionsPerConnection: 5
-            clientName: ckb-explorer-web
-            # 降低连接池
-            connectionMinimumIdleSize: 4
-            connectionPoolSize: 16
-            dnsMonitoringInterval: 5000
-            codec: !<org.redisson.codec.JsonJacksonCodec> {}
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          #address: redis://localhost:6379
+          #password: abcdefg
+          address: redis://192.168.10.143:6350
+          database: 4
+          idleConnectionTimeout: 10000
+          connectTimeout: 10000
+          timeout: 3000
+          retryAttempts: 3
+          retryInterval: 1500
+          subscriptionsPerConnection: 5
+          clientName: ckb-explorer-web
+          # 降低连接池
+          connectionMinimumIdleSize: 4
+          connectionPoolSize: 16
+          dnsMonitoringInterval: 5000
+        codec: !<org.redisson.codec.JsonJacksonCodec> {}
   liquibase:
     enabled: false
     change-log: classpath:liquibase/changelog.yml
@@ -74,9 +75,6 @@ ckb:
   default-with-prefix-hash-length: 66
   typeIdCodeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944"
   daoCodeHash: "0x516be0333273bbe12a723f3be583c524f0b6089326f89c49fc61e24d1f56be21,0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"
-statistic:
-  averageBlockTimeInterval: 100
-  hashRateStatisticalInterval: 100
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
