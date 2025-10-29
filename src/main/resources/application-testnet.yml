@@ -453,7 +453,3 @@ script:
       scriptHash: "0xdbfd8e50c62549e24ced774e012b1ea34559ee5e1676fddc63ebd7e3618b3e2c"
       cellType: 3
       typeScriptId: 8590
-# Controller configuration
-reset:
-  statistics:
-    password: ${RESET_TOKEN}  # 生产环境请修改为安全的密码

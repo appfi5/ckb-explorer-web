@@ -20,7 +20,7 @@ public class ResetDailyStatisticsController {
   @Resource
   WorkerService workerService;
 
-  @Value("${reset.statistics.password}")
+  @Value("${reset.statistics.password: 123456}")
   private String expectedPassword;
 
   /**
