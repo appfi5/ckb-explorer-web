@@ -302,7 +302,3 @@ script:
       hashType: ""
       cellType: 12
       version: 1
-# Controller configuration
-reset:
-  statistics:
-    password: ${RESET_TOKEN}  # 生产环境请修改为安全的密码
