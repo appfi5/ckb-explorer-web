@@ -453,3 +453,8 @@ script:
       scriptHash: "0xdbfd8e50c62549e24ced774e012b1ea34559ee5e1676fddc63ebd7e3618b3e2c"
       cellType: 3
       typeScriptId: 8590
+springdoc:
+  api-docs:
+    enabled: false  # 禁用API文档数据端点（/v3/api-docs）
+  swagger-ui:
+    enabled: false  # 禁用Swagger UI界面（/api/swagger-ui.html）
