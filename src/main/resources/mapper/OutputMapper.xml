@@ -1,0 +1,240 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.OutputMapper">
+
+  <!--
+    根据交易ID获取cellbase交易的输出单元格列表
+    对应Ruby中的cellbase_display_outputs方法
+  -->
+  <select id="getCellbaseDisplayOutputs" resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT
+      o.id,
+      o.capacity,
+      o.occupied_capacity ,
+      -- 从script表获取地址信息
+      s.code_hash                           as lock_code_hash,
+      s.args                                as lock_args,
+      s.hash_type                           as lock_hash_type,
+      -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+      o.is_spent                             AS status,
+      -- 消耗的交易哈希
+      CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
+      -- 生成的交易哈希
+      '0x' || encode(o.tx_hash, 'hex') AS generated_tx_hash,
+      o.output_index AS cell_index,
+      o.data as data
+    FROM
+      output o
+        left join script s ON o.lock_script_id = s.id
+    WHERE
+      o.tx_id = #{transactionId}
+    ORDER BY 
+      o.id ASC
+  </select>
+
+  <!--
+    根据交易ID获取普通交易的输出单元格列表
+    对应Ruby中的normal_tx_display_outputs方法
+  -->
+  <select id="getNormalTxDisplayOutputs" resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT o.id,
+           o.capacity,
+           o.occupied_capacity,
+           -- 从script表获取地址信息
+           s.code_hash                                                                 as lock_code_hash,
+           s.args                                                                      as lock_args,
+           s.hash_type                                                                 as lock_hash_type,
+           -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+           o.is_spent                                                                  AS status,
+           -- 消耗的交易哈希
+           CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
+           -- 生成的交易哈希
+           '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+           o.output_index                                                              AS cell_index,
+           '0x' || encode(type.args, 'hex')                                            as args,
+           '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
+           type.hash_type                                                              as hash_type,
+           o.data                                                                      as data
+    FROM output o
+           left join script s ON o.lock_script_id = s.id
+           left join script type on o.type_script_id = type.id
+    WHERE
+      o.tx_id = #{transactionId}
+    ORDER BY
+      o.id ASC
+  </select>
+
+  <select id="getCellbaseDisplayOutputsByTransactionIds"
+    resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT o.id,
+    o.capacity,
+    o.occupied_capacity,
+    -- 从script表获取地址信息
+    s.code_hash                                                                 as lock_code_hash,
+    s.args                                                                      as lock_args,
+    s.hash_type                                                                 as lock_hash_type,
+    -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+    o.is_spent                                                                  AS status,
+    -- 消耗的交易哈希
+    CASE WHEN o.is_spent = 1 THEN '0x' || encode(o.consumed_tx_hash, 'hex') END AS consumed_tx_hash,
+    -- 生成的交易哈希
+    '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+    o.output_index                                                              AS cell_index,
+    o.tx_id                                                                     as transaction_id,
+    '0x' || encode(type.args, 'hex')                                            as args,
+    '0x' || encode(type.code_hash, 'hex')                                       as code_hash,
+    type.hash_type                                                              as hash_type,
+    o.data                                                                      as data
+    FROM output o
+      left join script s ON o.lock_script_id = s.id
+      left join script type on o.type_script_id = type.id
+      WHERE
+    <if test="null != transactionIds">
+      o.tx_id in
+      <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
+        close=" )">
+        #{item}
+      </foreach>
+    </if>
+  </select>
+
+  <select id="getNormalTxDisplayOutputsByTransactionIds"
+    resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT id,
+           capacity,
+           occupied_capacity,
+           lock_code_hash,
+           lock_args,
+           lock_hash_type,
+           status,
+           consumed_tx_hash,
+           generated_tx_hash,
+           cell_index,
+           args,
+           code_hash,
+           hash_type,
+           transaction_id,
+           data
+    from (SELECT o.id,
+                 o.capacity,
+                 o.occupied_capacity,
+                 -- 从script表获取地址信息
+                 s.code_hash                                                                 AS lock_code_hash,
+                 s.args                                                                      AS lock_args,
+                 s.hash_type                                                                 AS lock_hash_type,
+                 -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+                 o.is_spent                                                                  AS status,
+                 -- 消耗的交易哈希
+                 CASE
+                   WHEN o.is_spent = 1
+                     THEN '0x' || encode(o.consumed_tx_hash, 'hex') END                      AS consumed_tx_hash,
+                 -- 生成的交易哈希
+                 '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+                 o.output_index                                                              AS cell_index,
+                 '0x' || encode(type.args, 'hex')                                            AS args,
+                 '0x' || encode(type.code_hash, 'hex')                                       AS code_hash,
+                 type.hash_type                                                              AS hash_type,
+                 o.tx_id                                                                     AS transaction_id,
+                 ROW_NUMBER()        OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn,
+                 o.data                                                                      AS data
+          FROM output o
+                 left join script s ON o.lock_script_id = s.id
+                 left join script type on o.type_script_id = type.id
+          WHERE
+              <if test="null != transactionIds">
+                o.tx_id in
+                <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
+                  close=" )">
+                  #{item}
+                </foreach>
+              </if>
+          ) t
+    WHERE rn &lt;= #{size}
+    ORDER BY transaction_id, cell_index ASC;
+  </select>
+
+  <select id="countAddressTransactions"
+    resultType="java.lang.Long">
+    SELECT COUNT(combined.tx_hash) AS transaction_count
+    FROM (
+           -- 直接用 UNION 合并并去重（UNION 自动去重，避免外层 DISTINCT 处理大量数据）
+           SELECT tx_hash
+           FROM output
+           WHERE lock_script_id = #{lockScriptId}
+             AND tx_hash IS NOT NULL
+
+           UNION -- 替换 UNION ALL + 子查询 GROUP BY，减少中间数据量
+
+           SELECT consumed_tx_hash AS tx_hash
+           FROM output
+           WHERE lock_script_id = #{lockScriptId}
+             AND consumed_tx_hash IS NOT NULL
+         ) AS combined;
+  </select>
+
+  <select id="getDaoDisplayOutputsByTransactionIds"
+    resultType="com.ckb.explorer.domain.dto.CellOutputDto">
+    SELECT id,
+    capacity,
+    occupied_capacity,
+    lock_code_hash,
+    lock_args,
+    lock_hash_type,
+    status,
+    consumed_tx_hash,
+    generated_tx_hash,
+    cell_index,
+    cell_type,
+    args,
+    code_hash,
+    hash_type,
+    transaction_id
+    from (SELECT o.id,
+    o.capacity,
+    o.occupied_capacity,
+    -- 从script表获取地址信息
+    s.code_hash                                                                 AS lock_code_hash,
+    s.args                                                                      AS lock_args,
+    s.hash_type                                                                 AS lock_hash_type,
+    -- 状态判断：如果is_spent为1则表示已消耗，否则为活动状态
+    o.is_spent                                                                  AS status,
+    -- 消耗的交易哈希
+    CASE
+    WHEN o.is_spent = 1
+    THEN '0x' || encode(o.consumed_tx_hash, 'hex') END                      AS consumed_tx_hash,
+    -- 生成的交易哈希
+    '0x' || encode(o.tx_hash, 'hex')                                            AS generated_tx_hash,
+    o.output_index                                                              AS cell_index,
+    CASE
+      WHEN type.id = #{typeScriptId}
+      and type.hash_type = 1
+      and o.data = '\x0000000000000000'  THEN 1
+      WHEN type.id = #{typeScriptId}
+      and type.hash_type = 1
+      and o.data != '\x0000000000000000'  THEN 2
+      ELSE 0
+    END                                                                         AS cell_type,
+    '0x' || encode(type.args, 'hex')                                            AS args,
+    '0x' || encode(type.code_hash, 'hex')                                       AS code_hash,
+    type.hash_type                                                              AS hash_type,
+    o.tx_id                                                                     AS transaction_id,
+    ROW_NUMBER()        OVER (PARTITION BY o.tx_id ORDER BY o.output_index ASC) AS rn
+    FROM output o
+    left join script s ON o.lock_script_id = s.id
+    left join script type on o.type_script_id = type.id
+    WHERE
+    <if test="null != transactionIds">
+      o.tx_id in
+      <foreach item="item" index="index" collection=" transactionIds" open="(" separator=","
+        close=" )">
+        #{item}
+      </foreach>
+    </if>
+    ) t
+    WHERE rn &lt;= #{size}
+    ORDER BY transaction_id, cell_index ASC;
+  </select>
+
+</mapper>

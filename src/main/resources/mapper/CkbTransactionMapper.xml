@@ -1,0 +1,201 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.CkbTransactionMapper">
+
+  <resultMap id="BaseResultMap" type="com.ckb.explorer.entity.CkbTransaction">
+    <id property="id" column="id" jdbcType="BIGINT"/>
+    <result property="txHash" column="tx_hash" jdbcType="OTHER"/>
+    <result property="version" column="version" jdbcType="OTHER"/>
+    <result property="inputCount" column="input_count" jdbcType="INTEGER"/>
+    <result property="outputCount" column="output_count" jdbcType="INTEGER"/>
+    <result property="witnesses" column="witnesses" jdbcType="OTHER"/>
+    <result property="blockId" column="block_id" jdbcType="BIGINT"/>
+    <result property="blockNumber" column="block_number" jdbcType="BIGINT"/>
+    <result property="blockHash" column="block_hash" jdbcType="OTHER"/>
+    <result property="blockTimestamp" column="block_timestamp" jdbcType="BIGINT"/>
+    <result property="txIndex" column="tx_index" jdbcType="INTEGER"/>
+    <result property="headerDeps" column="header_deps" jdbcType="OTHER"/>
+    <result property="cycles" column="cycles" jdbcType="INTEGER"/>
+    <result property="transactionFee" column="transaction_fee" jdbcType="BIGINT"/>
+    <result property="bytes" column="bytes" jdbcType="BIGINT"/>
+    <result property="capacityInvolved" column="capacity_involved" jdbcType="BIGINT"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id,tx_hash,version,
+        input_count,output_count,witnesses,
+        block_id,block_number,block_hash, block_timestamp,
+        tx_index,header_deps,cycles,
+        transaction_fee,bytes, capacity_involved
+  </sql>
+
+  <!-- 定义 resultMap 支持一对多映射 -->
+  <resultMap id="transactionDtoResultMap" type="com.ckb.explorer.domain.dto.TransactionDto">
+    <id property="id" column="id"/>
+    <result property="isCellbase" column="is_cellbase"/>
+    <result property="witnesses" column="witnesses"/>
+    <result property="headerDeps" column="header_deps"/>
+    <result property="txHash" column="tx_hash"/>
+    <result property="transactionFee" column="transaction_fee"/>
+    <result property="blockNumber" column="block_number"/>
+    <result property="version" column="version"/>
+    <result property="blockTimestamp" column="block_timestamp"/>
+    <result property="cycles" column="cycles"/>
+    <result property="bytes" column="bytes"/>
+
+    <!-- 一对多映射：cellDeps -->
+    <collection property="cellDeps" ofType="com.ckb.explorer.domain.resp.CellDependencyResponse">
+      <id property="id" column="dep_id"/>
+      <result property="depType" column="dep_type"/>
+      <!-- 使用 association 映射嵌套对象 outPoint -->
+      <association property="outPoint" javaType="com.ckb.explorer.domain.resp.OutPoint">
+        <result property="txHash" column="outpoint_tx_hash"/>
+        <result property="index" column="outpoint_index"/>
+      </association>
+    </collection>
+  </resultMap>
+
+  <select id="selectTransactionWithCellDeps"
+    resultMap="transactionDtoResultMap">
+    SELECT ct.id,
+           ct.tx_index = 0 as is_cellbase,
+           ct.witnesses,
+           ct.header_deps,
+           '0x' || encode(ct.tx_hash, 'hex') as tx_hash,
+           ct.transaction_fee,
+           ct.block_number,
+           COALESCE(NULLIF(ltrim(encode(ct.version, 'hex'), '0'), ''), '0') AS version,
+           ct.block_timestamp,
+           ct.cycles,
+           ct.bytes,
+           acd.id as dep_id,
+           '0x' || encode(acd.outpoint_tx_hash, 'hex') as outpoint_tx_hash,
+           acd.outpoint_index,
+           CASE
+             WHEN acd.dep_type = 0 THEN 'code'
+             WHEN acd.dep_type = 1 THEN 'dep_group'
+             END           AS dep_type
+    FROM ckb_transaction ct
+           LEFT JOIN tx_association_cell_dep acd on ct.id = acd.tx_id
+    WHERE ct.tx_hash = #{txHash}
+    order by dep_id
+  </select>
+
+  <select id="selectPageByAddressScriptId"
+    resultType="com.ckb.explorer.domain.resp.AddressTransactionPageResponse">
+    SELECT ct.id,
+           ct.tx_index = 0                   as is_cellbase,
+           '0x' || encode(ct.tx_hash, 'hex') as transaction_hash,
+           ct.block_number,
+           ct.block_timestamp,
+           ct.input_count                    as display_inputs_count,
+           ct.output_count                   as display_outputs_count
+    FROM ckb_transaction ct
+    WHERE EXISTS(
+      -- lock_script_id 创建 cell的交易
+      SELECT 1
+      FROM output o1
+      WHERE o1.tx_hash = ct.tx_hash
+        AND o1.lock_script_id = #{addressScriptId}
+    )
+       OR EXISTS(
+      -- lock_script_id 消费了 cell的交易
+      SELECT 1
+      FROM output o2
+      WHERE o2.consumed_tx_hash = ct.tx_hash
+        AND o2.lock_script_id = #{addressScriptId}
+    )
+    order by ${orderByStr} ${ascOrDesc}, tx_index desc
+
+  </select>
+  <select id="selectPageByBlockHash"
+    resultType="com.ckb.explorer.entity.CkbTransaction">
+    SELECT
+        <include refid="Base_Column_List"></include>
+        FROM ckb_transaction ct
+    WHERE ct.block_hash = #{blockHash}
+    <if test="txHash != null">
+      AND ct.tx_hash = #{txHash}
+    </if>
+    <if test="lockScriptId != null">
+      AND (EXISTS(
+        SELECT 1
+        FROM output o1
+        WHERE o1.tx_hash = ct.tx_hash
+          AND o1.lock_script_id = #{lockScriptId}
+      )
+      OR EXISTS(
+        SELECT 1
+        FROM output o2
+        WHERE o2.consumed_tx_hash = ct.tx_hash
+        AND o2.lock_script_id = #{lockScriptId}
+      ))
+    </if>
+    order by tx_index asc
+  </select>
+  <select id="selectByTransactionIds"
+    resultType="com.ckb.explorer.domain.resp.AddressTransactionPageResponse">
+    SELECT id,
+           tx_index = 0                   as is_cellbase,
+           '0x' || encode(tx_hash, 'hex') as transaction_hash,
+           block_number,
+           block_timestamp,
+           input_count                    as display_inputs_count,
+           output_count                   as display_outputs_count
+    FROM ckb_transaction
+    WHERE
+    <if test="null != transactionIds">
+      id in
+      <foreach  item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    order by ${orderByStr} ${ascOrDesc}, tx_index desc
+
+  </select>
+
+  <select id="selectContractTransactions"
+    resultType="com.ckb.explorer.domain.resp.ContractTransactionPageResponse">
+    SELECT ct.id,
+           ct.tx_index = 0                   as is_cellbase,
+           '0x' || encode(ct.tx_hash, 'hex') as transaction_hash,
+           ct.block_number,
+           ct.block_timestamp,
+           ct.input_count                    as display_inputs_count,
+           ct.output_count                   as display_outputs_count
+    FROM ckb_transaction ct
+    WHERE
+    <if test="null != txHashs">
+      tx_hash in
+      <foreach  item="item" index="index" collection="txHashs" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    order by ct.block_timestamp desc nulls last, ct.id desc
+  </select>
+
+  <select id="getPageContractTransactions"
+    resultType="com.ckb.explorer.domain.resp.ContractTransactionPageResponse">
+    SELECT ct.id,
+            ct.tx_index = 0                   as is_cellbase,
+            '0x' || encode(ct.tx_hash, 'hex') as transaction_hash,
+            ct.block_number,
+            ct.block_timestamp,
+            ct.input_count                    as display_inputs_count,
+            ct.output_count                   as display_outputs_count
+    FROM ckb_transaction ct
+    -- 子查询：找到同时满足两个条件的tx_id
+    JOIN (
+      SELECT DISTINCT o1.tx_id
+      FROM output o1
+      -- 关联同表中type_script_id的记录（同一tx_id）
+      INNER JOIN output o2 ON o1.tx_id = o2.tx_id
+      WHERE
+        o1.lock_script_id = #{lockScriptId}  -- 第一个条件
+        AND o2.type_script_id = #{typeScriptId}    -- 第二个条件
+    ) AS valid_tx ON ct.id = valid_tx.tx_id
+    Order by ct.id desc
+  </select>
+</mapper>

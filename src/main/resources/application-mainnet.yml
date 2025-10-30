@@ -1,0 +1,351 @@
+spring:
+  application:
+    name: ckb-explorer-web
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    dynamic:
+      primary: postgres  # 默认数据源（PostgreSQL）
+      strict: false      # 非严格模式，允许未指定数据源时使用默认数据源
+      datasource:
+        # PostgreSQL 数据源配置
+        postgres:
+          driver-class-name: org.postgresql.Driver
+          url: ${PG_URL}
+          username: ${PG_USERNAME}
+          password: ${PG_PASSWORD}
+        # RisingWave 数据源配置（兼容PostgreSQL协议）
+        risingwave:
+          driver-class-name: org.postgresql.Driver
+          url: ${RISINGWAVE_URL}
+          username: ${RISINGWAVE_USERNAME}
+          password: ${RISINGWAVE_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DB}
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: redis://${REDIS_HOST}:${REDIS_PORT}   
+          database: ${REDIS_DB}
+          idleConnectionTimeout: 10000
+          connectTimeout: 10000
+          timeout: 3000
+          retryAttempts: 3
+          retryInterval: 1500
+          subscriptionsPerConnection: 5
+          clientName: ckb-explorer-worker
+          # 降低连接池
+          connectionMinimumIdleSize: 4
+          connectionPoolSize: 16
+          dnsMonitoringInterval: 5000
+        codec: !<org.redisson.codec.JsonJacksonCodec> {}
+  liquibase:
+    enabled: true
+    change-log: classpath:liquibase/changelog.yml
+    database-change-log-lock-table: liquibase-lock
+    database-change-log-table: liquibase-changelog
+logging:
+  level:
+    com.ckb.explorer.mapper: ERROR
+    com.baomidou: ERROR
+ckb:
+  nodeUrl: https://mainnet.ckb.dev
+  netWork: 1 #
+  default-hash-prefix: 0x
+  default-with-prefix-hash-length: 66
+  typeIdCodeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944"
+  daoCodeHash: "0x516be0333273bbe12a723f3be583c524f0b6089326f89c49fc61e24d1f56be21,0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+remote:
+  worker:
+    url: http://ckb-explorer-worker:8080
+script:
+  lockScripts:
+    - name: "SECP256K1/blake160"
+      codeHash: "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0x71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c",
+          index: 0,
+          depType: "depGroup"
+        }
+      ]
+    - name: "SECP256k1/Multisig(@5c5069eb)"
+      codeHash: "0x5c5069eb0857efc65e1bca0c07df34c31663b3622fd3876c876320fc9634e2a8"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0x71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c",
+          index: 1,
+          depType: "depGroup"
+        }
+      ]
+    - name: "SECP256k1/Multisig(@36c971b8)"
+      codeHash: "0x36c971b8d41fbd94aabca77dc75e826729ac98447b46f91e00796155dddb0d29"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x6888aa39ab30c570c2c30d9d5684d3769bf77265a7973211a3c087fe8efbf738",
+          index: 0,
+          depType: "depGroup"
+        }
+      ]
+    - name: "iCKB Logic"
+      codeHash: "0x2a8100ab5990fa055ab1b50891702e1e895c7bd1df6322cd725c1a6115873bd3"
+      hashType: "data1"
+    - name: "Anyone-Can-Pay Lock"
+      codeHash: "0xd369597ff47f29fbc0d47d2e3775370d1250b85140c670e4718af712983a2354"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0x4153a2014952d7cac45f285ce9a7c5c0c0e1b21f2d378b82ac1433cb11c25c4d",
+          index: 0,
+          depType: "depGroup"
+        }
+      ]
+    - name: "CHEQUE"
+      codeHash: "0xe4d4ecc6e5f9a059bf2f7a82cca292083aebc0c421566a52484fe2ec51a9fb0c"
+      hashType: "type"
+    - name: "JoyId"
+      codeHash: "0xd00c84f0ec8fd441c38bc3f87a371f547190f2fcff88e642bc5bf54b9e318323"
+      hashType: "type"
+      cellDeps: []
+    - name: "OMNI Lock V2"
+      codeHash: "0x9b819793a64463aed77c615d6cb226eea5487ccfc0783043a587254cda2b6f26"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0x71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c",
+          index: 0,
+          depType: "depGroup"
+        },
+        {
+          txHash: "0xc76edf469816aa22f416503c38d0b533d2a018e253e379f134c3985b3472c842",
+          index: 0,
+          depType: "code",
+          type: {
+            codeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944",
+            hashType: "type",
+            args: "0x855508fe0f0ca25b935b070452ecaee48f6c9f1d66cd15f046616b99e948236a"
+          }
+        }
+      ]
+    - name: "OMNI Lock V1"
+      codeHash: "0xa4398768d87bd17aea1361edc3accd6a0117774dc4ebc813bfa173e8ac0d086d"
+      hashType: "type"
+    - name: "PW Lock"
+      codeHash: "0xbf43c3602455798c1a61a596e0d95278864c552fafe231c063b3fabf97a8febc"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0x71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c",
+          index: 0,
+          depType: "depGroup"
+        },
+        {
+          txHash: "0x1d60cb8f4666e039f418ea94730b1a8c5aa0bf2f7781474406387462924d15d4",
+          index: 0,
+          depType: "code",
+          type: {
+            codeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944",
+            hashType: "type",
+            args: "0x42ade2f25eb938b5dbfd3d8f07b8b07aa593d848e7ff14bdfbbea5aeb6175261"
+          }
+        }
+      ]
+    - name: "Nostr"
+      codeHash: "0x641a89ad2f77721b803cd50d01351c1f308444072d5fa20088567196c0574c68"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0x1911208b136957d5f7c1708a8835edfe8ae1d02700d5cb2c3a6aacf4d5906306",
+          index: 0,
+          depType: "code",
+          type: {
+            codeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944",
+            hashType: "type",
+            args: "0xfad8cb75eb0bb01718e2336002064568bc05887af107f74ed5dd501829e192f8"
+          }
+        }
+      ]
+    - name: "RgbppLock"
+      codeHash: "0xbc6c568a1a0d0a09f6844dc9d74ddb4343c32143ff25f727c59edf4fb72d6936"
+      hashType: "type"
+    - name: "BtcTimeLock"
+      codeHash: "0x70d64497a075bd651e98ac030455ea200637ee325a12ad08aff03f1a117e5a62"
+      hashType: "type"
+    - name: "AlwaysSuccess"
+      codeHash: "0x3b521cc4b552f109d092d8cc468a8048acb53c5952dbe769d2b2f9cf6e47f7f1"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x10d63a996157d32c01078058000052674ca58d15f921bec7f1dcdac2160eb66b",
+          index: 0,
+          depType: "code"
+        }
+      ]
+    - name: "InputTypeProxyLock"
+      codeHash: "0x5123908965c711b0ffd8aec642f1ede329649bda1ebdca6bd24124d3796f768a"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x10d63a996157d32c01078058000052674ca58d15f921bec7f1dcdac2160eb66b",
+          index: 1,
+          depType: "code"
+        }
+      ]
+    - name: "OutputTypeProxyLock"
+      codeHash: "0x2df53b592db3ae3685b7787adcfef0332a611edb83ca3feca435809964c3aff2"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x10d63a996157d32c01078058000052674ca58d15f921bec7f1dcdac2160eb66b",
+          index: 2,
+          depType: "code"
+        }
+      ]
+    - name: "LockProxyLock"
+      codeHash: "0x5d41e32e224c15f152b7e6529100ebeac83b162f5f692a5365774dad2c1a1d02"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x10d63a996157d32c01078058000052674ca58d15f921bec7f1dcdac2160eb66b",
+          index: 3,
+          depType: "code"
+        }
+      ]
+    - name: "Single Use Lock"
+      codeHash: "0x8290467a512e5b9a6b816469b0edabba1f4ac474e28ffdd604c2a7c76446bbaf"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x10d63a996157d32c01078058000052674ca58d15f921bec7f1dcdac2160eb66b",
+          index: 4,
+          depType: "code"
+        }
+      ]
+    - name: "TypeBurnLock"
+      codeHash: "0xff78bae0abf17d7a404c0be0f9ad9c9185b3f88dcc60403453d5ba8e1f22f53a"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0x10d63a996157d32c01078058000052674ca58d15f921bec7f1dcdac2160eb66b",
+          index: 5,
+          depType: "code"
+        }
+      ]
+    - name: "EasyToDiscoverType"
+      codeHash: "0xaba4430cc7110d699007095430a1faa72973edf2322ddbfd4d1d219cacf237af"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0xb0ed754fb27d67fd8388c97fed914fb7998eceaa01f3e6f967e498de1ba0ac9b",
+          index: 0,
+          depType: "code"
+        }
+      ]
+    - name: "TimeLock"
+      codeHash: "0x6fac4b2e89360a1e692efcddcb3a28656d8446549fb83da6d896db8b714f4451"
+      hashType: "data1"
+      cellDeps: [
+        {
+          txHash: "0xb0ed754fb27d67fd8388c97fed914fb7998eceaa01f3e6f967e498de1ba0ac9b",
+          index: 1,
+          depType: "code"
+        }
+      ]
+  typeScripts:
+    - name: "Nervos Dao"
+      codeHash: "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0xe2fb199810d49a4d8beec56718ba2593b665db9d52299a0f9e6e75416d73ff5c",
+          index: 2,
+          depType: "code"
+        }
+      ]
+      scriptHash: "0xcc77c4deac05d68ab5b26828f0bf4565a8d73113d7bb7e92b8362b8a74e58e58"
+      cellType: 1
+    - name: "TypeId"
+      codeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944"
+      hashType: "type"
+      cellDeps: [ ]
+    - name: "xUDT"
+      codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
+      hashType: "data1"
+      cellType: 15
+      cellDeps: [
+        {
+          txHash: "0xc07844ce21b38e4b071dd0e1ee3b0e27afd8d7532491327f39b786343f558ab7",
+          index: 0,
+          depType: "code"
+        }
+      ]
+    - name: "USDI"
+      codeHash: "0xbfa35a9c38a676682b65ade8f02be164d48632281477e36f8dc2f41f79e56bfc"
+      hashType: "type"
+      cellDeps: [
+        {
+          txHash: "0xf6a5eef65101899db9709c8de1cc28f23c1bee90d857ebe176f6647ef109e20d",
+          index: 0,
+          depType: "code",
+        }
+      ]
+      symbol: "USDI"
+      decimal: 6
+      scriptHash: "0x7f3fba3fb8d6e000176f7e1ae22e8cd02841dec6a8341dc69aeef46387a20664"
+      cellType: 15
+    - name: "RUSD"
+      codeHash: "0x26a33e0815888a4a0614a0b7d09fa951e0993ff21e55905510104a0b1312032b"
+      hashType: "type"
+      symbol: "RUSD"
+      decimal: 8
+      scriptHash: "0x71ff665b40ba044b1981ea9a8965189559c8e01e8cdfa34a3cc565e1f870a95c"
+      cellType: 15
+    - name: "BTC"
+      codeHash: "0x092c2c4a26ea475a8e860c29cf00502103add677705e2ccd8d6fe5af3caa5ae3"
+      hashType: "type"
+      cellType: 15
+      args: "0x68e64ba4b0daeeec45c1f983d6d574fca370442cafb805bc4265ef74870a4ac8"
+      symbol: "BTC"
+      decimal: 8
+      scriptHash: "0x3cd44aecea36e0a27e671f1fc79e65add7bf2f0e8b368389dc810ec81c63fa57"
+    - name: "COTA"
+      codeHash: "0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"
+      hashType: "type"
+      cellType: 10
+    - name: "Unique Cell"
+      codeHash: "0x2c8c11c985da60b0a330c61a85507416d6382c130ba67f0c47ab071e00aec628"
+      hashType: "data1"
+      cellType: 16
+      cellDeps: [
+        {
+          txHash: "0x67524c01c0cb5492e499c7c7e406f2f9d823e162d6b0cf432eacde0c9808c2ad",
+          index: 0,
+          depType: "code"
+        }
+      ]
+    - name: "Spore Cluster"
+      codeHash: "0x7366a61534fa7c7e6225ecc0d828ea3b5366adec2b58206f2ee84995fe030075"
+      hashType: "data1"
+      cellType: 11
+      version: 1
+    - name: "Spore"
+      codeHash: "0x4a4dce1df3dffff7f8b2cd7dff7303df3b6150c9788cb75dcf6747247132b9f5"
+      hashType: "data1"
+      cellType: 12
+      version: 1
+springdoc:
+  api-docs:
+    enabled: false  # 禁用API文档数据端点（/v3/api-docs）
+  swagger-ui:
+    enabled: false  # 禁用Swagger UI界面（/api/swagger-ui.html）
