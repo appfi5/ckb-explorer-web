@@ -107,7 +107,7 @@ script:
     - name: "iCKB Logic"
       codeHash: "0x2a8100ab5990fa055ab1b50891702e1e895c7bd1df6322cd725c1a6115873bd3"
       hashType: "data1"
-    - name: "AnyoneCanPay"
+    - name: "Anyone-Can-Pay Lock"
       codeHash: "0x3419a1c09eb2567f6552ee7a8ecffd64155cffe0f1796e6e61ec088d740c1356"
       hashType: "type"
       cellDeps: [
