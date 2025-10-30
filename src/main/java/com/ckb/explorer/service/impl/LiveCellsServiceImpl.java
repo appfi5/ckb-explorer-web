@@ -17,6 +17,8 @@ import com.ckb.explorer.service.LiveCellsService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.utils.Numeric;
@@ -85,11 +87,22 @@ public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells
     Page<LiveCellsResponse> result;
     if("others".equals(typeHash)){
       result = baseMapper.getOthersLiveCellsByLockScriptId(pageResult,script.getId());
-    } else {
+    } else {// ckb 或 udt
       result = baseMapper.getLiveCellsByLockScriptIdWithTypeScriptId(pageResult, script.getId(), typeScriptId);
     }
 
-    result.getRecords().stream().map(liveCells -> {
+    var liveCellList = result.getRecords();
+    if(liveCellList.isEmpty()){
+      return result;
+    }
+    var typeScriptIds = liveCellList.stream().map(LiveCellsResponse::getTypeScriptId).collect(Collectors.toSet());
+    Map<Long, Script> typeScriptMap;
+    if(!typeScriptIds.isEmpty()){
+      typeScriptMap = scriptMapper.selectBatchIds(typeScriptIds).stream().collect(Collectors.toMap(Script::getId, typeScript -> typeScript));
+    } else {
+      typeScriptMap = new HashMap<Long, Script>();
+    }
+    liveCellList.stream().map(liveCells -> {
 
       var extraInfo = liveCells.getExtraInfo();
       if(extraInfo == null){
@@ -99,12 +112,15 @@ public class LiveCellsServiceImpl extends ServiceImpl<LiveCellsMapper, LiveCells
       if (liveCells.getCellType() !=null && liveCells.getCellType().intValue() == CellType.NORMAL.getValue()) {
         extraInfo.setCapacity(liveCells.getCapacity());
       } else if(liveCells.getTypeScriptId() != null){
-        var typeScript = scriptConfig.getTypeScriptById(liveCells.getTypeScriptId());
-        if(typeScript != null){
-          extraInfo.setSymbol(typeScript.getSymbol());
-          extraInfo.setDecimal(typeScript.getDecimal());
-          extraInfo.setPublished(true);
-          liveCells.setTypeHash(typeScript.getScriptHash());
+        var scriptData = typeScriptMap.get(liveCells.getTypeScriptId());
+        if(scriptData != null){
+          var typeScript = scriptConfig.getTypeScriptByCodeHash(Numeric.toHexString(scriptData.getCodeHash()), Numeric.toHexString(scriptData.getArgs()));
+          if(typeScript != null){
+            extraInfo.setSymbol(typeScript.getSymbol());
+            extraInfo.setDecimal(typeScript.getDecimal());
+            extraInfo.setPublished(true);
+            liveCells.setTypeHash(typeScript.getScriptHash());
+          }
         }
       }
       liveCells.setExtraInfo(extraInfo);

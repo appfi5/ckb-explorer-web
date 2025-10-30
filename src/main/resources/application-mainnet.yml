@@ -274,7 +274,6 @@ script:
         }
       ]
       scriptHash: "0xcc77c4deac05d68ab5b26828f0bf4565a8d73113d7bb7e92b8362b8a74e58e58"
-      typeScriptId:
       cellType: 1
     - name: "TypeId"
       codeHash: "0x00000000000000000000000000000000000000000000000000545950455f4944"
@@ -291,8 +290,6 @@ script:
           depType: "code"
         }
       ]
-      scriptHash: "0x2fa1efd0a1763de4d9f6176ce78dad05476ff6c9a56aec3a0c4e1426d887edac"
-      typeScriptId:
     - name: "USDI"
       codeHash: "0xbfa35a9c38a676682b65ade8f02be164d48632281477e36f8dc2f41f79e56bfc"
       hashType: "type"
@@ -307,7 +304,6 @@ script:
       decimal: 6
       scriptHash: "0x7f3fba3fb8d6e000176f7e1ae22e8cd02841dec6a8341dc69aeef46387a20664"
       cellType: 15
-      typeScriptId:
     - name: "RUSD"
       codeHash: "0x26a33e0815888a4a0614a0b7d09fa951e0993ff21e55905510104a0b1312032b"
       hashType: "type"
@@ -315,7 +311,6 @@ script:
       decimal: 8
       scriptHash: "0x71ff665b40ba044b1981ea9a8965189559c8e01e8cdfa34a3cc565e1f870a95c"
       cellType: 15
-      typeScriptId:
     - name: "BTC"
       codeHash: "0x092c2c4a26ea475a8e860c29cf00502103add677705e2ccd8d6fe5af3caa5ae3"
       hashType: "type"
@@ -324,7 +319,6 @@ script:
       symbol: "BTC"
       decimal: 8
       scriptHash: "0x3cd44aecea36e0a27e671f1fc79e65add7bf2f0e8b368389dc810ec81c63fa57"
-      typeScriptId:
     - name: "COTA"
       codeHash: "0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"
       hashType: "type"

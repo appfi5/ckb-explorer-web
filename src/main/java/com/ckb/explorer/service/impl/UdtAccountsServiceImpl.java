@@ -16,7 +16,10 @@ import com.ckb.explorer.service.UdtAccountsService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Service;
@@ -57,15 +60,28 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
     List<AccountUdtBalanceDto> list = udtAccountsMapper.getUdtBalanceByLockScriptId(script.getId());
 
     List<AccountUdtBalanceResponse> result = AccountUdtBalanceConvert.INSTANCE.toConvert(list);
+
+    var typeScriptIds = result.stream().map(AccountUdtBalanceResponse::getTypeScriptId).collect(Collectors.toSet());
+
+    Map<Long, Script> typeScriptMap;
+    if(!typeScriptIds.isEmpty()){
+      typeScriptMap = scriptMapper.selectBatchIds(typeScriptIds).stream().collect(
+          Collectors.toMap(Script::getId, typeScript -> typeScript));
+    } else {
+      typeScriptMap = new HashMap<>();
+    }
     result.forEach(item -> {
-      var typeScript = scriptConfig.getTypeScriptById(item.getTypeScriptId());
-      if(typeScript != null){
-        item.setFullName(typeScript.getName());
-        item.setSymbol(typeScript.getSymbol());
-        item.setDecimal(typeScript.getDecimal());
-        //item.setUdtIconFile(typeScript.getUdtIconFile());
-        item.setUdtType(typeScript.getCellType()); //cellType 同udtType
-        item.setTypeScriptHash(typeScript.getScriptHash());
+      var scriptData = typeScriptMap.get(item.getTypeScriptId());
+      if(scriptData != null){
+        var typeScript = scriptConfig.getTypeScriptByCodeHash(Numeric.toHexString(scriptData.getCodeHash()), Numeric.toHexString(scriptData.getArgs()));
+        if(typeScript != null){
+          item.setFullName(typeScript.getName());
+          item.setSymbol(typeScript.getSymbol());
+          item.setDecimal(typeScript.getDecimal());
+          //item.setUdtIconFile(typeScript.getUdtIconFile());
+          item.setUdtType(typeScript.getCellType()); //cellType 同udtType
+          item.setTypeScriptHash(typeScript.getScriptHash());
+        }
       }
     });
     return result;
