@@ -93,6 +93,7 @@ public class ScriptConfig {
     return typeScriptList.size() > 0 ? typeScriptList.get(0) : null;
   }
 
+  // 尽量不依赖根据TypeScriptId获取TypeScript信息
   public TypeScript getTypeScriptById(Long TypeScriptId) {
 
     if(TypeScriptId == null)

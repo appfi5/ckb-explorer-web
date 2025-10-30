@@ -79,10 +79,14 @@
     from live_cells lc
     where lc.lock_script_id = #{lockScriptId}
       and lc.type_script_id is not null
-      and NOT EXISTS (
+      and NOT EXISTS ( -- 不是udt
       SELECT 1
       FROM type_script_extend tse
       WHERE tse.script_id = lc.type_script_id -- 仅需判断是否存在匹配，无需返回数据
+    ) and NOT EXISTS ( -- 不是nft
+      SELECT 1
+      FROM dob_live_cells dlc
+      WHERE dlc.id = lc.id
     )
       order by lc.block_number desc, lc.output_index asc
   </select>
