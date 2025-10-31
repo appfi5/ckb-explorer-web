@@ -15,6 +15,7 @@ import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,6 +78,9 @@ public class NftController {
 
     // 地址校验
     private boolean validAddress(String address) {
+        if(!StringUtils.hasLength(address)){
+            return true;
+        }
         // 检查是否为有效的十六进制字符串
         if (!queryKeyUtils.isValidHex(address) && !queryKeyUtils.isValidAddress(address)) {
             throw new ServerException(I18nKey.ADDRESS_HASH_INVALID_CODE,
