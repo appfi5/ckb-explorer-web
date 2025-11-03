@@ -165,9 +165,9 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
   NftCollectionResponse getNftCollectionsByClusterTypeHash(@Param("clusterTypeHash") byte[] clusterTypeHash);
 
     @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id \n" +
-            " from dob_code dc  left join dob_live_cells dlc \n " +
+            " from  dob_live_cells dlc left join dob_code dc  \n " +
             " on dlc.type_script_id = dc.dob_code_script_id \n" +
-            " left join  dob_extend de on de.id= dc.dob_extend_id \n" +
+            " left join  dob_extend de on de.dob_script_id= dlc.type_script_id \n" +
             " where dlc.lock_script_id = #{lockScriptId} ")
     List<AccountNftDto> accountNftInfo(@Param("lockScriptId") Long lockScriptId);
 

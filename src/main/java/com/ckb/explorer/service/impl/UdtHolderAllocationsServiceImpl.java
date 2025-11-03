@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +84,10 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
 
         List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum();
+
+        if(addressesCounts==null|| addressesCounts.isEmpty()){
+            return new ArrayList<>();
+        }
 
         List<Long> typeScriptIds = addressesCounts.stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
         List<Script> scripts = scriptService.listByIds(typeScriptIds);
