@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 索引统计响应类
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class IndexStatisticResponse {
 
   private String type = "index_statistic";
