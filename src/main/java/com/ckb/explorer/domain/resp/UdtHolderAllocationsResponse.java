@@ -1,11 +1,15 @@
 package com.ckb.explorer.domain.resp;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.io.Serializable;
+import lombok.NoArgsConstructor;
 
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UdtHolderAllocationsResponse  {
 
 
