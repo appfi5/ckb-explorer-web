@@ -93,6 +93,5 @@ code-quality-audit:
     policy: pull
   only:
     - /^sonar.*$/
-    - master
   tags:
     - docker_maven-3.6.2_k8s01
