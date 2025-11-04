@@ -31,10 +31,7 @@ import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -171,9 +168,9 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         page.getRecords().forEach(nftTransfersDto -> {
             Script ftLockScript = null;
             if(nftTransfersDto.getFtLockScriptId()!=null){
-                ftLockScript = scripts.stream().filter(script -> script.getId()==nftTransfersDto.getFtLockScriptId()).findFirst().orElse(null);
+                ftLockScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftTransfersDto.getFtLockScriptId())).findFirst().orElse(null);
             }
-            Script lockScript = scripts.stream().filter(script -> script.getId()==nftTransfersDto.getLockScriptId()).findFirst().orElse(null);
+            Script lockScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftTransfersDto.getLockScriptId())).findFirst().orElse(null);
             String from = null;
             String to = null;
            if(nftTransfersDto.getIsSpent()==0){
@@ -189,7 +186,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
            }
             nftTransfersDto.setFrom(from);
             nftTransfersDto.setTo(to);
-           Script typeScript = scripts.stream().filter(script -> script.getId()==nftTransfersDto.getTypeScriptId()).findFirst().orElse(null);
+           Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftTransfersDto.getTypeScriptId())).findFirst().orElse(null);
             nftTransfersDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
         });
         Page<NftTransfersResp> transfersRespPage = NftConvert.INSTANCE.toNftTransfersRespPage(page);
@@ -235,7 +232,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         }
         List<Script> scripts = scriptMapper.selectByIds(scriptIds);
         nftHolderDtoPage.getRecords().forEach(nftHolderDto -> {
-            Script lockScript = scripts.stream().filter(script -> script.getId()==nftHolderDto.getLockScriptId()).findFirst().orElse(null);
+            Script lockScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftHolderDto.getLockScriptId())).findFirst().orElse(null);
             String addressHash = TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),lockScript.getArgs(),lockScript.getHashType());
             nftHolderDto.setAddressHash(addressHash);
         });
@@ -268,9 +265,9 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         }
         List<Script> scripts = scriptMapper.selectByIds(scriptIds);
         nftItemDtoPage.getRecords().forEach(nftItemDto -> {
-            Script lockScript = scripts.stream().filter(script -> script.getId()==nftItemDto.getLockScriptId()).findFirst().orElse(null);
+            Script lockScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftItemDto.getLockScriptId())).findFirst().orElse(null);
             nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),lockScript.getArgs(),lockScript.getHashType()));
-            Script typeScript = scripts.stream().filter(script -> script.getId()==nftItemDto.getTypeScriptId()).findFirst().orElse(null);
+            Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftItemDto.getTypeScriptId())).findFirst().orElse(null);
             nftItemDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
         });
         Page<NftItemResponse> nftItemResponsePage = NftConvert.INSTANCE.toNftItemsRespPage(nftItemDtoPage);
@@ -288,8 +285,8 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         scriptIds.add(nftItemDto.getLockScriptId());
         scriptIds.add(nftItemDto.getCreateLockScriptId());
         List<Script> scripts = scriptMapper.selectByIds(scriptIds);
-        Script lockScript = scripts.stream().filter(script -> script.getId()==nftItemDto.getLockScriptId()).findFirst().orElse(null);
-        Script createlockScript = scripts.stream().filter(script -> script.getId()==nftItemDto.getCreateLockScriptId()).findFirst().orElse(null);
+        Script lockScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftItemDto.getLockScriptId())).findFirst().orElse(null);
+        Script createlockScript = scripts.stream().filter(script -> Objects.equals(script.getId(),nftItemDto.getCreateLockScriptId())).findFirst().orElse(null);
 
         nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(),lockScript.getArgs(),lockScript.getHashType()));
         nftItemDto.setCreator(TypeConversionUtil.scriptToAddress(createlockScript.getCodeHash(),createlockScript.getArgs(),createlockScript.getHashType()));
