@@ -146,7 +146,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         if (org.springframework.util.StringUtils.hasLength(req.getTokenId())) {
             DobCode dobCode = dobCodeMapper.findByDobCodeScriptArgs(Numeric.hexStringToByteArray(req.getTokenId()));
             if (dobCode == null) {
-
+                throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
             }
             typeScriptId = dobCode.getDobCodeScriptId();
         }
@@ -193,6 +193,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
             Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftTransfersDto.getTypeScriptId())).findFirst().orElse(null);
             nftTransfersDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
         });
+        setBigDataForNftTransfer(page.getRecords());
         Page<NftTransfersResp> transfersRespPage = NftConvert.INSTANCE.toNftTransfersRespPage(page);
         return transfersRespPage;
     }
@@ -380,6 +381,30 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
                     OutputData bigData = outputDataList.stream().filter(outputData -> Objects.equals(nftItemDto.getId(), outputData.getOutputId())).findFirst().orElse(null);
                     if (bigData != null) {
                         nftItemDto.setData(bigData.getData());
+                    }
+                }
+            });
+        }
+    }
+
+
+    private void setBigDataForNftTransfer(List<NftTransfersDto> nftTransfersDtos) {
+        if (CollectionUtils.isEmpty(nftTransfersDtos)) {
+            return;
+        }
+        List<OutputData> outputDataList;
+        List<Long> outputIds = nftTransfersDtos.stream().filter(nftItemDto -> !ByteUtils.hasLength(nftItemDto.getData())).map(NftTransfersDto::getId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(outputIds)) {
+            outputDataList = outputDataMapper.selectByOutputIds(outputIds);
+        } else {
+            outputDataList = null;
+        }
+        if (!CollectionUtils.isEmpty(outputDataList)) {
+            nftTransfersDtos.forEach(nftTransfersDto -> {
+                if (!ByteUtils.hasLength(nftTransfersDto.getData())) {
+                    OutputData bigData = outputDataList.stream().filter(outputData -> Objects.equals(nftTransfersDto.getId(), outputData.getOutputId())).findFirst().orElse(null);
+                    if (bigData != null) {
+                        nftTransfersDto.setData(bigData.getData());
                     }
                 }
             });
