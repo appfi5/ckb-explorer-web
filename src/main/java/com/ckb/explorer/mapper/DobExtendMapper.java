@@ -78,7 +78,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "case when is_spent=0 and ft_lock_script_id is null then 0 \n" +
             "when is_spent=1 and ft_lock_script_id is null then 2 \n" +
             "else 1 end as action \n" +
-            "  from (select id,type_script_id,lock_script_id,tx_hash,is_spent,block_timestamp,data,consumed_timestamp,case when dob.is_spent=0 then \n" +
+            "  from (select id,type_script_id,lock_script_id, consumed_tx_hash as tx_hash,is_spent,block_timestamp,data,consumed_timestamp,case when dob.is_spent=0 then \n" +
             "LAG(lock_script_id) over w --寻找from 前一行的 lock_script_id 为null为铸造 \n" +
             "  when dob.is_spent=1 then\n" +
             "   LEAD(lock_script_id) over w--寻找 to 后一行的  lock_script_id  为null为销毁 \n" +
