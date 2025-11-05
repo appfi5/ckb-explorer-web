@@ -35,5 +35,7 @@ public class NftTransfersDto {
 
     private byte[] data;
 
+    private Long consumedTimestamp;
+
 
 }

@@ -187,6 +187,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
                     to = TypeConversionUtil.scriptToAddress(ftLockScript.getCodeHash(), ftLockScript.getArgs(), ftLockScript.getHashType());
                 }
                 from = TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(), lockScript.getArgs(), lockScript.getHashType());
+                nftTransfersDto.setBlockTimestamp(nftTransfersDto.getConsumedTimestamp());
             }
             nftTransfersDto.setFrom(from);
             nftTransfersDto.setTo(to);
