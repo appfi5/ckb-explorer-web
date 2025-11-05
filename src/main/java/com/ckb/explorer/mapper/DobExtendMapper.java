@@ -128,7 +128,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "where dc.dob_code_script_args=#{args} and de.dob_script_hash=#{dobScriptHash} \n" +
             " WINDOW w AS (PARTITION BY dobo.type_script_id  ORDER BY dobo.block_timestamp DESC) limit 1 "
     )
-    NftItemDto  itemInfo(@Param("args") byte[] args,@Param("dobScriptHash") byte[] dobScriptHash);
+    NftItemDto  itemInfo(@Param("dobScriptHash") byte[] dobScriptHash,@Param("args") byte[] args);
 
     @Select("select '0x' || encode(de.args, 'hex')                 as collection_id,\n" +
             "       de.name                                        as collection_name,\n" +
@@ -165,7 +165,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
   NftCollectionResponse getNftCollectionsByClusterTypeHash(@Param("clusterTypeHash") byte[] clusterTypeHash);
 
     @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id \n" +
-            " from dob_code dc  left join dob_live_cells dlc \n " +
+            " from  dob_live_cells dlc left join dob_code dc  \n " +
             " on dlc.type_script_id = dc.dob_code_script_id \n" +
             " left join  dob_extend de on de.id= dc.dob_extend_id \n" +
             " where dlc.lock_script_id = #{lockScriptId} ")

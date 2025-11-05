@@ -427,34 +427,6 @@ script:
           depType: "code"
         }
       ]
-    - name: ""
-      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
-      hashType: "type"
-      args: "0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902"
-      scriptHash: "0x788c79191970e313693351531930b46a708b1ca58f6d414ddc8a8827afb554ff"
-      cellType: 3
-      typeScriptId: 5530
-    - name: ""
-      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
-      hashType: "type"
-      args: "0x17d4dd69794ba8074ab69718ab569a98ad89ab806f4b2ad95ef760595235ade6"
-      scriptHash: "0xc6c3add6d90a3d1eab9ec478bfa0647012989fb7ccf4a01b9dc0ed0910585a2b"
-      cellType: 3
-      typeScriptId: 8881
-    - name: ""
-      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
-      hashType: "type"
-      args: "0x8462b20277bcbaa30d821790b852fb322d55c2b12e750ea91ad7059bc98dda4b"
-      scriptHash: "0x5e4229de7f1a6304099385638e4ef3e85ab7a02b0ed4d4a95783ebd982edb691"
-      cellType: 3
-      typeScriptId: 8543
-    - name: ""
-      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
-      hashType: "type"
-      args: "0x9c3da505eac9e15cb7986c064728a130e75ab746416be0debf593e9e54f19464"
-      scriptHash: "0xdbfd8e50c62549e24ced774e012b1ea34559ee5e1676fddc63ebd7e3618b3e2c"
-      cellType: 3
-      typeScriptId: 8590
 springdoc:
   api-docs:
     enabled: false  # 禁用API文档数据端点（/v3/api-docs）
