@@ -84,7 +84,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "  end as ft_lock_script_id\n" +
             "  from dob_output  dob where  exists (\n" +
             "select * from dob_code dc left join dob_extend dobe on dc.dob_extend_id = dobe.id  where dc.dob_code_script_id=dob.type_script_id \n" +
-            "  and dobe.dob_script_hash= #{dobScriptHash}) WINDOW w AS (PARTITION BY type_script_id  ORDER BY block_timestamp DESC) )  ) where 1=1 \n" +
+            "  and dobe.dob_script_hash= #{dobScriptHash}) WINDOW w AS (PARTITION BY type_script_id  ORDER BY block_timestamp asc) )  ) where 1=1 \n" +
             " <if test='null != txHash '>  \n" +
             "  and txHash = #{txHash}\n" +
             " </if> \n" +
@@ -126,7 +126,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " on dc.dob_code_script_id=dobo.type_script_id \n" +
             " left join dob_extend de on de.id= dc.dob_extend_id \n" +
             "where dc.dob_code_script_args=#{args} and de.dob_script_hash=#{dobScriptHash} \n" +
-            " WINDOW w AS (PARTITION BY dobo.type_script_id  ORDER BY dobo.block_timestamp DESC) limit 1 "
+            " WINDOW w AS (PARTITION BY dobo.type_script_id  ORDER BY dobo.block_timestamp asc) limit 1 "
     )
     NftItemDto  itemInfo(@Param("dobScriptHash") byte[] dobScriptHash,@Param("args") byte[] args);
 
