@@ -85,7 +85,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "  end as ft_lock_script_id\n" +
             "  from dob_output  dob where  exists (\n" +
             "select * from dob_code dc left join dob_extend dobe on dc.dob_extend_id = dobe.id  where dc.dob_code_script_id=dob.type_script_id \n" +
-            "  and dobe.dob_script_hash= #{dobScriptHash}) WINDOW w AS (PARTITION BY type_script_id  ORDER BY block_timestamp asc)" +
+            "  and dobe.dob_script_hash= #{dobScriptHash}) and is_spent=1 WINDOW w AS (PARTITION BY type_script_id  ORDER BY block_timestamp asc)" +
             "union all \n" +
             "select id,type_script_id,lock_script_id,tx_hash,0 as is_spent,block_timestamp,data,0 as consumed_timestamp,\n" +
             "null as ft_lock_script_id from (\n" +
