@@ -126,7 +126,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " on dc.dob_code_script_id=dobo.type_script_id \n" +
             " left join dob_extend de on de.id= dc.dob_extend_id \n" +
             "where dc.dob_code_script_args=#{args} and de.dob_script_hash=#{dobScriptHash} \n" +
-            " WINDOW w AS (PARTITION BY dobo.type_script_id  ORDER BY dobo.block_timestamp asc) limit 1 "
+            " WINDOW w AS (PARTITION BY dobo.type_script_id  ORDER BY dobo.block_timestamp asc ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) limit 1 "
     )
     NftItemDto  itemInfo(@Param("dobScriptHash") byte[] dobScriptHash,@Param("args") byte[] args);
 

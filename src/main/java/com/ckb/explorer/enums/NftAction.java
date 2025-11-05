@@ -3,6 +3,9 @@ package com.ckb.explorer.enums;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import org.springframework.util.StringUtils;
+
+import java.util.Locale;
 
 @Getter
 @AllArgsConstructor
@@ -31,9 +34,12 @@ public enum NftAction {
     }
 
     public static int getCodeByValue(String value){
+        if(!StringUtils.hasLength(value)){
+            return TRANSFER.code;
+        }
         NftAction[] nftActions = NftAction.values();
         for (NftAction nftAction : nftActions) {
-            if(nftAction.getValue().equals(value)){
+            if(nftAction.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))){
                 return nftAction.getCode();
             }
         }
