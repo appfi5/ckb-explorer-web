@@ -1,6 +1,7 @@
 package com.ckb.explorer.facade.impl;
 
 import com.ckb.explorer.domain.resp.CellInfoResponse;
+import com.ckb.explorer.domain.resp.CellOutputDataResponse;
 import com.ckb.explorer.facade.ICellInfoCacheFacade;
 import com.ckb.explorer.service.OutputService;
 import com.ckb.explorer.util.CacheUtils;
@@ -21,6 +22,7 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
   private OutputService outputService;
 
   private static final String Cell_INFO_CACHE_PREFIX = "cellInfo:";
+  private static final String Cell_INFO_DATA_CACHE_PREFIX = "cellInfo:data:";
   private static final String CACHE_VERSION = "v1";
 
   // 缓存 TTL
@@ -34,6 +36,19 @@ public class CellInfoCacheFacadeImpl implements ICellInfoCacheFacade {
     return cacheUtils.getCache(
         cacheKey,                    // 缓存键
         () -> loadFromDatabase(id),  // 数据加载函数
+        TTL_SECONDS,                 // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
+  }
+
+  @Override
+  public CellOutputDataResponse getOutputDataById(String id) {
+    // 创建缓存键
+    String cacheKey = String.format("%s%s:id:%s", Cell_INFO_DATA_CACHE_PREFIX, CACHE_VERSION, id);
+
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> outputService.getData(Long.parseLong(id)),  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
