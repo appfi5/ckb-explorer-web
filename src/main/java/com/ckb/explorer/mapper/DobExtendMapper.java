@@ -79,17 +79,15 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "when is_spent=1 and ft_lock_script_id is null then 2 \n" +
             "else 1 end as action \n" +
             "  from ( select * from (select id,type_script_id,lock_script_id, \n" +
-            "case when is_spent=0 then tx_hash else  consumed_tx_hash end as tx_hash \n" +
-            ",is_spent,block_timestamp,data,consumed_timestamp,case when dob.is_spent=0 then \n" +
-            "LAG(lock_script_id) over w --寻找from 前一行的 lock_script_id 为null为铸造 \n" +
-            "  when dob.is_spent=1 then\n" +
-            "   LEAD(lock_script_id) over w--寻找 to 后一行的  lock_script_id  为null为销毁 \n" +
-            "  end as ft_lock_script_id\n" +
+            "   consumed_tx_hash  as tx_hash \n" +
+            ",is_spent,consumed_timestamp as block_timestamp,data,\n" +
+             "   LEAD(lock_script_id) over w--寻找 to 后一行的  lock_script_id  为null为销毁 \n" +
+            "   as ft_lock_script_id\n" +
             "  from dob_output  dob where  exists (\n" +
             "select * from dob_code dc left join dob_extend dobe on dc.dob_extend_id = dobe.id  where dc.dob_code_script_id=dob.type_script_id \n" +
             "  and dobe.dob_script_hash= #{dobScriptHash})  WINDOW w AS (PARTITION BY type_script_id  ORDER BY block_timestamp asc)) where is_spent=1 " +
             "union all \n" +
-            "select id,type_script_id,lock_script_id,tx_hash,0 as is_spent,block_timestamp,data,0 as consumed_timestamp,\n" +
+            "select id,type_script_id,lock_script_id,tx_hash,0 as is_spent,block_timestamp,data,\n" +
             "null as ft_lock_script_id from (\n" +
             "select dob.*,ROW_NUMBER() OVER w  AS rn from dob_output dob where  exists (\n" +
             "select * from dob_code dc left join dob_extend dobe on dc.dob_extend_id = dobe.id \n" +
@@ -107,7 +105,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " <if test='null != action '>  \n" +
             "  and action = #{action}  \n" +
             " </if> \n" +
-            "  order by block_timestamp,consumed_timestamp  desc  " +
+            "  order by block_timestamp  desc  " +
             "</script>")
     Page<NftTransfersDto> transfersPage(Page page ,@Param("dobScriptHash") byte[] dobScriptHash,@Param("txHash") byte[] txHash,@Param("lockScriptId") Long lockScriptId,@Param("typeScriptId") Long typeScriptId,@Param("action") Integer action);
 
