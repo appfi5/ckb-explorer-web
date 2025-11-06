@@ -90,7 +90,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "where dc.dob_code_script_id=dob.type_script_id and dobe.dob_script_hash= #{dobScriptHash}) \n" +
             "WINDOW w AS (PARTITION BY type_script_id ORDER BY block_timestamp asc) ) WHERE rn = 1 )  ) where 1=1 \n" +
             "<if test='null != txHash '>  \n" +
-            "  and txHash = #{txHash}\n" +
+            "  and tx_hash = #{txHash}\n" +
             "</if> \n" +
             "<if test='null != lockScriptId '>  \n" +
             "  and (lock_script_id = #{lockScriptId} or ft_lock_script_id = #{lockScriptId}) \n" +
