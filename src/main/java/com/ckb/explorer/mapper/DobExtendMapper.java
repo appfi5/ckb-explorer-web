@@ -28,9 +28,9 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
 
     @Select("<script> \n" +
             "select dob.*,\n" +
-            "(select count(*) from dob_output  dop where  exists (\n" +
-            "select * from dob_code dc where dc.dob_code_script_id=dop.type_script_id and dc.dob_extend_id=dob.id) and dop.block_timestamp> #{oneDayAgo} ) as h24_ckb_transactions_count \n" +
-            " ,\n" +
+            //"(select count(*) from dob_output  dop where  exists (\n" +
+            //"select * from dob_code dc where dc.dob_code_script_id=dop.type_script_id and dc.dob_extend_id=dob.id) and dop.block_timestamp> #{oneDayAgo} ) as h24_ckb_transactions_count \n" +
+           // " ,\n" +
             " (select count(*) from (select count(*) from dob_live_cells  dlc\n" +
             " where exists (\n" +
             "select * from dob_code dc where \n" +
@@ -62,6 +62,10 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "(select count(*) from dob_code  dc where dc.dob_extend_id = dob.id) as items_count \n" +
             "from dob_extend dob \n" +
             "where dob_script_hash = #{dobScriptHash}")
+    @Results({
+            // 对数组类型指定自定义 TypeHandler
+            @Result(column = "tags", property = "tags", typeHandler = ArrayTypeHandler.class)
+    })
     CollectionsDto findDetailByScriptHash(@Param("dobScriptHash") byte[] dobScriptHash);
 
     @Select("<script>" +
