@@ -59,11 +59,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "select * from dob_code dc where \n" +
             "dc.dob_code_script_id=dlc.type_script_id and dc.dob_extend_id=dob.id) \n" +
             "group by dlc.lock_script_id )) as holders_count,\n" +
-            "(select count(*) from dob_live_cells  dlc\n" +
-            " where exists (\n" +
-            "select * from dob_code dc where \n" +
-            "dc.dob_code_script_id=dlc.type_script_id and dc.dob_extend_id=dob.id) \n" +
-            ") as items_count \n" +
+            "(select count(*) from dob_code  dc where dc.dob_extend_id = dob.id) as items_count \n" +
             "from dob_extend dob \n" +
             "where dob_script_hash = #{dobScriptHash}")
     CollectionsDto findDetailByScriptHash(@Param("dobScriptHash") byte[] dobScriptHash);

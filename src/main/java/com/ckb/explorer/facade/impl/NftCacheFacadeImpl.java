@@ -178,9 +178,6 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
             String from = null;
             String to = null;
             if (nftTransfersDto.getIsSpent() == 0) {
-                if (ftLockScript != null) {
-                    from = TypeConversionUtil.scriptToAddress(ftLockScript.getCodeHash(), ftLockScript.getArgs(), ftLockScript.getHashType());
-                }
                 to = TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(), lockScript.getArgs(), lockScript.getHashType());
             } else if (nftTransfersDto.getIsSpent() == 1) {
                 if (ftLockScript != null) {
