@@ -28,17 +28,10 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
 
     @Select("<script> \n" +
             "select dob.*,\n" +
-            //"(select count(*) from dob_output  dop where  exists (\n" +
-            //"select * from dob_code dc where dc.dob_code_script_id=dop.type_script_id and dc.dob_extend_id=dob.id) and dop.block_timestamp> #{oneDayAgo} ) as h24_ckb_transactions_count \n" +
-           // " ,\n" +
-            //" (select count(*) from (select count(*) from dob_live_cells  dlc\n" +
-            //" where exists (\n" +
-            //"select * from dob_code dc where \n" +
-            //"dc.dob_code_script_id=dlc.type_script_id and dc.dob_extend_id=dob.id) \n" +
-            //"group by dlc.lock_script_id )) as holders_count,\n" +
-            "0 as holders_count,0 as h24_ckb_transactions_count, \n"+
-            "(select count(*) from dob_code  dc where dc.dob_extend_id = dob.id) as items_count\n" +
-            " from dob_extend dob \n" +
+            "COALESCE(dos.holders_count,0) as holders_count,COALESCE(dos.items_count,0) as items_count ,\n" +
+            "COALESCE(dos24.h24_ckb_transactions_count,0) as h24_ckb_transactions_count \n"+
+            " from dob_extend dob left join dob_statistic dos on dob.id = dos.dob_extend_id " +
+            "left join dob_24h_statistic dos24 on dob.id = dos24.dob_extend_id \n" +
             " where 1=1 \n"+
             " <if test=\" null != tags and tags !='' \"> \n" +
             "   and  tags @>  string_to_array(#{tags}, ',')::varchar[] \n"+
@@ -54,14 +47,9 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
 
 
     @Select( "select dob.*,\n" +
-            "(select max(dobo.id) from dob_output dobo where dobo.type_script_id=dob.id ) as cell_id ," +
-            "(select count(*) from (select count(*) from dob_live_cells  dlc\n" +
-            " where exists (\n" +
-            "select * from dob_code dc where \n" +
-            "dc.dob_code_script_id=dlc.type_script_id and dc.dob_extend_id=dob.id) \n" +
-            "group by dlc.lock_script_id )) as holders_count,\n" +
-            "(select count(*) from dob_code  dc where dc.dob_extend_id = dob.id) as items_count \n" +
-            "from dob_extend dob \n" +
+            "(select max(dobo.id) from dob_output dobo where dobo.type_script_id=dob.id ) as cell_id ,\n" +
+            "COALESCE(dos.holders_count,0) as holders_count,COALESCE(dos.items_count,0) as items_count \n" +
+            "from dob_extend dob left join dob_statistic dos on dob.id = dos.dob_extend_id  \n" +
             "where dob_script_hash = #{dobScriptHash}")
     @Results({
             // 对数组类型指定自定义 TypeHandler
