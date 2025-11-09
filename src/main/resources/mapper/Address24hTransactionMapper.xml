@@ -23,7 +23,6 @@
         <foreach  item="item" index="index" collection="scriptIds" open="(" separator="," close=")">
             #{item}
         </foreach>
-         and at.block_timestamp >= (SELECT MAX(block_timestamp) - 86400000 FROM address_24h_transaction)
         group by at.type_script_id
     </select>
 </mapper>
