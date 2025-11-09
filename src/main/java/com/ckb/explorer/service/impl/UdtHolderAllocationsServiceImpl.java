@@ -1,6 +1,7 @@
 package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.repository.AbstractRepository;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
@@ -78,20 +79,28 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
 
     @Override
     public List<UdtsListResponse> udtListStatistic() {
+
+        long start = System.currentTimeMillis();
         List<ScriptConfig.TypeScript> typeScripts = lockScriptConfig.getTypeScripts().stream()
                 .filter(typeScript -> typeScript.getCellType() != null && CellType.valueOf(typeScript.getCellType()).isUdtType()).toList();
 
         List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
 
         List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum();
-
+        long addressEnd = System.currentTimeMillis();
+        log.info("getAddressNum spent : {}" ,start - addressEnd );
         if(addressesCounts==null|| addressesCounts.isEmpty()){
             return new ArrayList<>();
         }
 
         List<Long> typeScriptIds = addressesCounts.stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
-        List<Script> scripts = scriptService.listByIds(typeScriptIds);
         List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptIds(typeScriptIds);
+        long transactionsEnd = System.currentTimeMillis();
+        log.info("getTransactionsCountByScriptIds spent : {}" ,addressEnd - transactionsEnd );
+
+        List<Script> scripts = scriptService.listByIds(typeScriptIds);
+        long scriptsEnd = System.currentTimeMillis();
+        log.info("listByIds spent : {}" ,transactionsEnd - scriptsEnd );
 
         typeScripts.stream().forEach(typeScript -> {
             Long typeScriptId;
