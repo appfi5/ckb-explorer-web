@@ -90,7 +90,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   public Page<TransactionPageResponse> getCkbTransactionsByPage(int pageNum, int pageSize, String sort) {
 
     // 创建分页对象
-    Page<CkbTransaction> pageResult = new Page<>(pageNum, pageSize);
+    Page<TransactionPageResponse> pageResult = new Page<>(pageNum, pageSize);
+    pageResult.setSearchCount(false);
+    var total = baseMapper.countTransactions();
+    pageResult.setTotal(total);
 
     // 执行分页查询
     return baseMapper.getPageTransactions(pageResult);

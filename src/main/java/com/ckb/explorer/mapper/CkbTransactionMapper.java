@@ -29,6 +29,9 @@ public interface CkbTransactionMapper extends BaseMapper<CkbTransaction> {
   @Select("SELECT id,'0x' || encode(tx_hash, 'hex') as transaction_hash, block_number,block_timestamp,capacity_involved,output_count - input_count as live_cell_changes FROM ckb_transaction WHERE (tx_index <> 0) ORDER BY id DESC")
   Page<TransactionPageResponse> getPageTransactions(Page page);
 
+  @Select("SELECT MAX(id) FROM ckb_transaction")
+  Long countTransactions();
+
   /**
    * 查询合约相关交易
    * @param txHashs 交易哈希列表

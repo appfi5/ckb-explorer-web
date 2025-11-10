@@ -22,8 +22,8 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
   @Resource
   private CacheUtils cacheUtils;
 
-  // 缓存 TTL：5 秒
-  private static final long TTL_SECONDS = 5;
+  // 缓存 TTL：10 秒
+  private static final long TTL_SECONDS = 10;
 
   private static final long DETAIL_TTL_SECONDS = 5 * 60;
 
