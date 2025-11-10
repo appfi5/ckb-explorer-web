@@ -7,7 +7,6 @@ import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.UdtAddressCountDto;
-import com.ckb.explorer.domain.dto.UdtH24TransactionsCountDto;
 import com.ckb.explorer.domain.resp.UdtDetailResponse;
 import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
 import com.ckb.explorer.domain.resp.UdtsListResponse;
@@ -29,10 +28,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -88,19 +85,15 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
 
         List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum();
         long addressEnd = System.currentTimeMillis();
-        log.info("getAddressNum spent : {}" ,start - addressEnd );
+        log.info("getAddressNum spent : {}" ,addressEnd - start );
         if(addressesCounts==null|| addressesCounts.isEmpty()){
             return new ArrayList<>();
         }
 
         List<Long> typeScriptIds = addressesCounts.stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
-        List<UdtH24TransactionsCountDto> transactionsCounts = address24hTransactionMapper.getTransactionsCountByScriptIds(typeScriptIds);
-        long transactionsEnd = System.currentTimeMillis();
-        log.info("getTransactionsCountByScriptIds spent : {}" ,addressEnd - transactionsEnd );
+
 
         List<Script> scripts = scriptService.listByIds(typeScriptIds);
-        long scriptsEnd = System.currentTimeMillis();
-        log.info("listByIds spent : {}" ,transactionsEnd - scriptsEnd );
 
         typeScripts.stream().forEach(typeScript -> {
             Long typeScriptId;
@@ -116,9 +109,8 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
             udtsListResponse.setTypeScriptHash(typeScript.getScriptHash());
             UdtAddressCountDto udtAddressCountDto = addressesCounts.stream().filter(addressesCount -> Objects.equals(addressesCount.getTypeScriptId(), typeScriptId)).findFirst().orElse(null);
             Long addressCount = udtAddressCountDto == null ? 0L : udtAddressCountDto.getAddressesCount();
+            Long h24CkbTransactionsCount = udtAddressCountDto == null ? 0L : udtAddressCountDto.getH24CkbTransactionsCount();
             udtsListResponse.setAddressesCount(addressCount);
-            UdtH24TransactionsCountDto udtH24TransactionsCountDto = transactionsCounts.stream().filter(transactionsCount -> Objects.equals(transactionsCount.getTypeScriptId(), typeScriptId)).findFirst().orElse(null);
-            Long h24CkbTransactionsCount = udtH24TransactionsCountDto == null ? 0L : udtH24TransactionsCountDto.getH24CkbTransactionsCount();
             udtsListResponse.setH24CkbTransactionsCount(h24CkbTransactionsCount);
             udtsListResponses.add(udtsListResponse);
         });

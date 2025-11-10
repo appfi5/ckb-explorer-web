@@ -10,19 +10,5 @@
         <result property="ckbTransactionId" column="ckb_transaction_id" jdbcType="BIGINT"/>
     </resultMap>
 
-    <resultMap id="transactionsCount" type="com.ckb.explorer.domain.dto.UdtH24TransactionsCountDto">
-        <result property="typeScriptId" column="typeScriptId" />
-        <result property="h24CkbTransactionsCount" column="h24CkbTransactionsCount" />
-    </resultMap>
 
-    <select id="getTransactionsCountByScriptIds" resultMap="transactionsCount">
-        select  at.type_script_id as typeScriptId,
-        count(distinct  at.ckb_transaction_id) as h24CkbTransactionsCount
-        from address_24h_transaction at
-        where at.type_script_id in
-        <foreach  item="item" index="index" collection="scriptIds" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        group by at.type_script_id
-    </select>
 </mapper>

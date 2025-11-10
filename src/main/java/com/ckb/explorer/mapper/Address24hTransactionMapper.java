@@ -3,7 +3,6 @@ package com.ckb.explorer.mapper;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ckb.explorer.domain.dto.UdtH24TransactionsCountDto;
 import com.ckb.explorer.entity.Address24hTransaction;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -36,8 +35,6 @@ public interface Address24hTransactionMapper extends BaseMapper<Address24hTransa
       + "ORDER BY rt.${orderByStr} ${ascOrDesc}")
   Page<Long> getTransactionsLast24hrsByLockScriptIdWithSort(Page page, @Param("lockScriptId") Long lockScriptId , @Param("orderByStr") String orderByStr, @Param("ascOrDesc") String ascOrDesc);
 
-
-    List<UdtH24TransactionsCountDto> getTransactionsCountByScriptIds(@Param("scriptIds") List<Long> scriptIds);
 
 
   @Select("<script>" +
