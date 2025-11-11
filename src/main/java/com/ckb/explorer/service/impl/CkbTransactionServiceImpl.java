@@ -95,8 +95,19 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     var total = baseMapper.countTransactions();
     pageResult.setTotal(total);
 
+    List<TransactionPageResponse> transactions;
+    if(pageNum <= 1){
+      pageResult = baseMapper.getPageTransactions(pageResult);
+    } else{
+      var last = total - (pageNum - 1) * pageSize + 1;
+      if(last < 0){
+        return pageResult;
+      }
+      transactions = baseMapper.getLargePageTransactions(last, pageSize);
+      pageResult.setRecords( transactions);
+    }
     // 执行分页查询
-    return baseMapper.getPageTransactions(pageResult);
+    return pageResult;
   }
 
   @Override

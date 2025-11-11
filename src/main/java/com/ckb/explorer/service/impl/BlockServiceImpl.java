@@ -81,14 +81,15 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
   public Page<BlockListResponse> getBlocksByPage(int pageNum, int pageSize, String sort) {
     long start = System.currentTimeMillis();
     Page<Block> page = new Page<>(pageNum, pageSize);
+    page.setSearchCount(false);
+    var total = baseMapper.getTotalCount();
+    page.setTotal(total);
     // 创建分页对象
     if(pageNum <= 1){
       page = baseMapper.getPageBlocks(page);
     } else{
-      var total = baseMapper.getTotalCount();
-      page.setTotal(total);
       var last = total - (pageNum - 1) * pageSize + 1;
-      if(last >= total){
+      if(last < 0){
         return new Page<>(pageNum, pageSize, total);
       }
       List< Block> blocks = baseMapper.getLargePageBlocks(total - (pageNum - 1) * pageSize + 1 ,pageSize);
