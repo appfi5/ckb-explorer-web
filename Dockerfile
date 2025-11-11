@@ -1,4 +1,4 @@
-FROM registry.devops.rivtower.com/library/maven:3.9.11-eclipse-temurin-21-alpine
+FROM docker.io/library/maven:3.9.11-eclipse-temurin-21-alpine
 
 WORKDIR /
 COPY target/ckb-explorer-web.jar app.jar
