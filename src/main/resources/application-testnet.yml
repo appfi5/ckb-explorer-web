@@ -4,12 +4,6 @@ spring:
   threads:
     virtual:
       enabled: true
-#  rabbitmq:
-#    host: 127.0.0.1
-#    port: 5672
-#    username: rivtower
-#    password: rivtower
-#    virtual-host: /
   datasource:
     dynamic:
       primary: postgres  # 默认数据源（PostgreSQL）
@@ -21,12 +15,26 @@ spring:
           url: ${PG_URL}
           username: ${PG_USERNAME}
           password: ${PG_PASSWORD}
+          # 连接池配置（HikariCP）
+          hikari:
+            maximum-pool-size: 60  # 最大连接数（略高于20并发，留冗余）
+            minimum-idle: 10       # 最小空闲连接（预热连接，避免冷启动）
+            connection-timeout: 60000  # 连接超时时间（60秒，适配压测排队）
+            idle-timeout: 600000    # 空闲连接超时（10分钟，回收闲置连接）
+            max-lifetime: 1800000   # 连接最大生命周期（30分钟，避免连接老化）
           # RisingWave 数据源配置（兼容PostgreSQL协议）
         risingwave:
           driver-class-name: org.postgresql.Driver
           url: ${RISINGWAVE_URL}
           username: ${RISINGWAVE_USERNAME}
           password: ${RISINGWAVE_PASSWORD}
+          # 连接池配置（HikariCP）
+          hikari:
+            maximum-pool-size: 30  # 最大连接数（略高于20并发，留冗余）
+            minimum-idle: 5       # 最小空闲连接（预热连接，避免冷启动）
+            connection-timeout: 60000  # 连接超时时间（60秒，适配压测排队）
+            idle-timeout: 600000    # 空闲连接超时（10分钟，回收闲置连接）
+            max-lifetime: 1800000   # 连接最大生命周期（30分钟，避免连接老化）
       data:
         redis:
           host: ${REDIS_HOST}

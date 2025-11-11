@@ -8,4 +8,6 @@ public class UdtAddressCountDto {
     private Long typeScriptId;
 
     private Long addressesCount;
+
+    private Long h24CkbTransactionsCount;
 }

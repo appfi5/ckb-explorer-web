@@ -4,14 +4,12 @@ import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.resp.CellOutputDataResponse;
-import com.ckb.explorer.entity.Output;
-import com.ckb.explorer.service.OutputService;
+import com.ckb.explorer.facade.ICellInfoCacheFacade;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.nervos.ckb.utils.Numeric;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,13 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * CellOutputDataController控制器，用于处理CellOutput的数据相关请求
  */
-@Deprecated
 @RestController
 @RequestMapping("/api/v1/cell_output_data")
 public class CellOutputDataController {
 
     @Resource
-    private OutputService outputService;
+    private ICellInfoCacheFacade cellInfoCacheFacade;
 
     @Resource
     private QueryKeyUtils queryKeyUtils;
@@ -46,13 +43,13 @@ public class CellOutputDataController {
         validateQueryParams(id);
 
         // 根据ID查询CellOutput
-        Output cellOutput = outputService.getById(Long.parseLong(id));
-        if (cellOutput == null) {
-            throw new ServerException(I18nKey.CELL_OUTPUT_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CELL_OUTPUT_NOT_FOUND_MESSAGE));
-        }
+        CellOutputDataResponse data = cellInfoCacheFacade.getOutputDataById(id);
 
+        if (data == null) {
+          throw new ServerException(I18nKey.CELL_OUTPUT_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CELL_OUTPUT_NOT_FOUND_MESSAGE));
+        }
         // 序列化并返回
-        return ResponseInfo.SUCCESS(new CellOutputDataResponse(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null));
+        return ResponseInfo.SUCCESS(data);
     }
 
     /**

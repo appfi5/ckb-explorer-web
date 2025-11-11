@@ -24,6 +24,8 @@ public interface UdtHolderAllocationsMapper extends BaseMapper<UdtHolderAllocati
 
     List<UdtAddressCountDto> getAddressNum();
 
+
+
 }
 
 

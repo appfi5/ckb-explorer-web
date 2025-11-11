@@ -2,6 +2,7 @@ package com.ckb.explorer;
 
 
 import com.ckb.explorer.domain.dto.DaoCellDto;
+import com.ckb.explorer.util.CkbUtil;
 import com.ckb.explorer.util.DaoCompensationCalculator;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -28,7 +29,8 @@ public class CkbTests {
 
     //System.out.println(ConvertToUInt256(Numeric.hexStringToByteArray("0x00000000000000000000000000000000000000000000000000000000029BFB50")));
     //getTransaction();
-    daoCompensationCalculator();
+    // daoCompensationCalculator();
+    occupiedCapacity();
   }
   private static void testWitness(){
     var witnesses = "4d000000080000004100000055f49d7979ba246aa2f05a6e9afd25a23dc39ed9085a0b1e33b6b3bb80d34dbd4031a04ea389d6d8ff5604828889aa06a827e930a7e89411b80f6c3e1404951f00";
@@ -100,5 +102,18 @@ public class CkbTests {
         depositBlockDao);
     // 理论上= 10646265
     System.out.println(value);
+  }
+
+  public static void occupiedCapacity() throws IOException {
+    // 时间1639612780336 块高3766946 每日统计表里41527936800000000
+    CkbRpcApi ckbApi = new Api("https://testnet.ckb.dev");
+    var blockNumber = 3766946L;
+    var block = ckbApi.getBlockByNumber(blockNumber);
+    var dao = block.header.dao;
+    var parsedDao = CkbUtil.parseDao(dao);
+    System.out.println("s_i:" +parsedDao.getSI());
+    System.out.println("ar_i:" +parsedDao.getArI());
+    System.out.println("c_i:" +parsedDao.getCI());
+    System.out.println("u_i:" +parsedDao.getUI());
   }
 }

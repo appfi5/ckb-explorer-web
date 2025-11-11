@@ -22,8 +22,9 @@
 
     <select id="getAddressNum" resultMap="addressCount">
         select  uh.type_script_id as typeScriptId,
-        sum(uh.holder_count) as addressesCount
-        from udt_holder_allocations uh
+        sum(uh.holder_count) as addressesCount,count(distinct  at.ckb_transaction_id) as h24CkbTransactionsCount
+        from udt_holder_allocations uh left join address_24h_transaction at on at.type_script_id = uh.type_script_id
         group by uh.type_script_id
     </select>
+
 </mapper>

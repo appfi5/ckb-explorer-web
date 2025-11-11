@@ -1,13 +1,14 @@
 package com.ckb.explorer.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.domain.resp.CellInfoResponse;
+import com.ckb.explorer.domain.resp.CellOutputDataResponse;
 import com.ckb.explorer.domain.resp.ExtraInfoResponse;
 import com.ckb.explorer.entity.Output;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.enums.CellType;
+import com.ckb.explorer.mapper.OutputDataMapper;
 import com.ckb.explorer.mapper.OutputMapper;
 import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.LockScriptConvert;
@@ -19,7 +20,6 @@ import jakarta.annotation.Resource;
 import java.util.Set;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 @Service
 public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> implements
@@ -32,6 +32,9 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
 
   @Resource
   private ScriptConfig scriptConfig;
+
+  @Resource
+  private OutputDataMapper outputDataMapper;
 
   @Override
   public Long countAddressTransactions(Long scriptId) {
@@ -55,6 +58,7 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
     response.setConsumedTxHash(cellOutput.getConsumedTxHash() != null && cellOutput.getConsumedTxHash().length > 0? Numeric.toHexString(cellOutput.getConsumedTxHash()) : null);
 
     response.setData(cellOutput.getData() != null ? Numeric.toHexString(cellOutput.getData()) : null);
+    response.setDataSize(cellOutput.getDataSize());
 
 
     // 获取lock_script
@@ -109,6 +113,22 @@ public class OutputServiceImpl extends ServiceImpl<OutputMapper, Output> impleme
     return response;
   }
 
+  @Override
+  public CellOutputDataResponse getData(Long id) {
+
+    Output output = baseMapper.selectById(id);
+    if(output == null){
+      return null;
+    }
+    if(output.getDataSize() <= 1024 && output.getData() != null){
+      return new CellOutputDataResponse(Numeric.toHexString(output.getData()));
+    }
+    var data = outputDataMapper.selectByOutputId(id);
+    if(data != null){
+      return new CellOutputDataResponse(Numeric.toHexString(data.getData()));
+    }
+    return null;
+  }
 
 
 }

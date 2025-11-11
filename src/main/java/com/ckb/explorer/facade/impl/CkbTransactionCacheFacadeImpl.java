@@ -36,9 +36,9 @@ public class CkbTransactionCacheFacadeImpl implements ICkbTransactionCacheFacade
   private static final String TRANSACTIONS_OUTPUT_CACHE_PREFIX = "transactions:output:page:";
   private static final String CACHE_VERSION = "v1";
 
-  // 缓存 TTL：5 秒
-  private static final long TTL_SECONDS = 5;
-  private static final long TTL_SECONDS_DETAIL = 10;
+  // 缓存 TTL：10 秒
+  private static final long TTL_SECONDS = 10;
+  private static final long TTL_SECONDS_DETAIL = 30;
 
   @Override
   public List<TransactionPageResponse> getHomePageTransactions(int size) {

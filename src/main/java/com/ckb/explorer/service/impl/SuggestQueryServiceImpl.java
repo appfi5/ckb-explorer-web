@@ -190,6 +190,10 @@ public class SuggestQueryServiceImpl implements SuggestQueryService {
       result = findCachedBlock(queryKey);
     }
 
+    if(result != null){
+      return result;
+    }
+
     // 如果字符串长度小于2，查询结果为空
     if (queryKey.length() < 2) {
       throw new ServerException(I18nKey.SUGGEST_QUERY_RESULT_NOT_FOUND_CODE,
