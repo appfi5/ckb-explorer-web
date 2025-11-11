@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20250902001
+      author: liangyaqian
+      changes:
+        - sqlFile:
+            path: sql-scripts/20250902001-create-statistic-address-table.sql
+            relativeToChangelogFile: true
+

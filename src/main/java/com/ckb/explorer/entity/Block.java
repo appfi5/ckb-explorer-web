@@ -1,0 +1,78 @@
+package com.ckb.explorer.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
+@Data
+@TableName("block")
+public class Block {
+
+  @TableId(type = IdType.AUTO)
+  private Long id;
+
+  private byte[] blockHash;
+
+  private Long blockNumber;
+
+  private byte[] compactTarget;
+
+  private byte[] parentHash;
+
+  private byte[] nonce;
+
+  private byte[] difficulty;
+
+  private Long timestamp;
+
+  private byte[] version;
+
+  private byte[] transactionsRoot;
+
+  private Integer transactionsCount;
+
+  private byte[] epoch;
+
+  private Long startNumber;
+
+  private Integer epochLength;
+
+  private Long epochNumber;
+
+  private byte[] dao;
+
+  private byte[] proposalsHash;
+
+  private byte[] extraHash;
+
+  private byte[] extension;
+
+  private byte[] proposals;
+
+  private Integer proposalsCount;
+
+  private Integer unclesCount;
+
+  private byte[] uncleBlockHashes;
+
+  private byte[] minerScript;
+
+  private byte[] minerMessage;
+
+  private Long reward; // 是11个块之前的奖励
+
+  private Long totalTransactionFee;
+
+  private Long cellConsumed;
+
+  private Long totalCellCapacity;
+
+  private Integer blockSize;
+
+  private Long cycles;
+
+  private Integer liveCellChanges;
+
+  private Long blockInterval;
+}

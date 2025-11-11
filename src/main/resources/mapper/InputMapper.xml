@@ -1,0 +1,139 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.InputMapper">
+
+
+  <select id="getDisplayInputs" resultType="com.ckb.explorer.domain.dto.CellInputDto">
+    select o.id,
+           false                                 as from_cellbase,
+           o.capacity                            as capacity,
+           o.occupied_capacity                   as occupied_capacity,
+           s.code_hash                           as lock_code_hash,
+           s.args                                as lock_args,
+           s.hash_type                           as lock_hash_type,
+           '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
+           o.output_index                        as cell_index,
+           '0x' || encode(i.since, 'hex')        as since_raw,
+           '0x' || encode(type.args, 'hex')      as args,
+           '0x' || encode(type.code_hash, 'hex') as code_hash,
+           type.hash_type                        as hash_type,
+           o.data                                as data
+    from input i
+           inner join output o on o.id = i.output_id
+           left join script s on o.lock_script_id = s.id
+           left join script type on o.type_script_id = type.id
+    where consumed_tx_id = #{transactionId}
+    order by o.id asc
+  </select>
+
+  <select id="getNormalDisplayInputsByTransactionIds" resultType="com.ckb.explorer.domain.dto.CellInputDto">
+    SELECT
+    id,
+    from_cellbase,
+    capacity,
+    occupied_capacity,
+    lock_code_hash,
+    lock_args,
+    lock_hash_type,
+    generated_tx_hash,
+    cell_index,
+    since_raw,
+    args,
+    code_hash,
+    hash_type,
+    transaction_id,
+    data
+    FROM (select o.id,
+           false                                 as from_cellbase,
+           o.capacity                            as capacity,
+           o.occupied_capacity                   as occupied_capacity,
+           s.code_hash                           as lock_code_hash,
+           s.args                                as lock_args,
+           s.hash_type                           as lock_hash_type,
+           '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
+           o.output_index                        as cell_index,
+           '0x' || encode(i.since, 'hex')        as since_raw,
+           '0x' || encode(type.args, 'hex')      as args,
+           '0x' || encode(type.code_hash, 'hex') as code_hash,
+           type.hash_type                        as hash_type,
+           i.consumed_tx_id                      as transaction_id,
+           ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
+           o.data                                as data
+    from input i
+           inner join output o on o.id = i.output_id
+           left join script s on o.lock_script_id = s.id
+           left join script type on o.type_script_id = type.id
+    where
+    <if test="null != transactionIds">
+      i.consumed_tx_id in
+      <foreach  item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+    ) t
+    WHERE rn &lt;= #{size}
+    ORDER BY transaction_id, cell_index ASC;
+
+  </select>
+
+  <select id="getDaoDisplayInputsByTransactionIds" resultType="com.ckb.explorer.domain.dto.CellInputDto">
+    SELECT
+    id,
+    from_cellbase,
+    capacity,
+    occupied_capacity,
+    lock_code_hash,
+    lock_args,
+    lock_hash_type,
+    generated_tx_hash,
+    cell_index,
+    cell_type,
+    since_raw,
+    args,
+    code_hash,
+    hash_type,
+    transaction_id
+    FROM (select o.id,
+      false                                 as from_cellbase,
+      o.capacity                            as capacity,
+      o.occupied_capacity                   as occupied_capacity,
+      s.code_hash                           as lock_code_hash,
+      s.args                                as lock_args,
+      s.hash_type                           as lock_hash_type,
+      '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
+      o.output_index                        as cell_index,
+      CASE
+           WHEN type.id = #{typeScriptId}
+                    and type.hash_type = 1
+                    and o.data = '\x0000000000000000'  THEN 1
+           WHEN type.id = #{typeScriptId}
+                    and type.hash_type = 1
+                    and o.data != '\x0000000000000000'  THEN 2
+           ELSE 0
+      END                                   as cell_type,
+      '0x' || encode(i.since, 'hex')        as since_raw,
+      '0x' || encode(type.args, 'hex')      as args,
+      '0x' || encode(type.code_hash, 'hex') as code_hash,
+      type.hash_type                        as hash_type,
+      i.consumed_tx_id                      as transaction_id,
+      ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn
+      from input i
+      inner join output o on o.id = i.output_id
+      left join script s on o.lock_script_id = s.id
+      left join script type on o.type_script_id = type.id
+      where
+      <if test="null != transactionIds">
+        i.consumed_tx_id in
+        <foreach  item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    ) t
+    WHERE rn &lt;= #{size}
+    ORDER BY transaction_id, cell_index ASC;
+
+  </select>
+
+</mapper>
