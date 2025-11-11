@@ -19,6 +19,9 @@ public interface BlockMapper extends BaseMapper<Block> {
   @Select("SELECT id, miner_script, block_number,timestamp,reward,transactions_count,live_cell_changes FROM block ORDER BY block_number DESC")
   Page<Block> getPageBlocks(Page page);
 
+  @Select("SELECT id, miner_script, block_number,timestamp,reward,transactions_count,live_cell_changes FROM block WHERE id < #{lastId} ORDER BY block_number DESC LIMIT #{pageSize}")
+  List<Block> getLargePageBlocks(@Param("lastId") Long lastId, @Param("pageSize") int pageSize);
+
   @Select({"<script>",
       "SELECT block_number, reward FROM block",
       "<where>",
@@ -39,4 +42,7 @@ public interface BlockMapper extends BaseMapper<Block> {
 
   @Select("select max(block_number) from block")
   Long getMaxBlockNumber();
+
+  @Select("SELECT MAX(id) FROM block")
+  Long getTotalCount();
  }

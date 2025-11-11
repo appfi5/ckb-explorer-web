@@ -80,11 +80,23 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
    */
   public Page<BlockListResponse> getBlocksByPage(int pageNum, int pageSize, String sort) {
     long start = System.currentTimeMillis();
-    // 创建分页对象
     Page<Block> page = new Page<>(pageNum, pageSize);
-    var blocks = baseMapper.getPageBlocks(page);
+    // 创建分页对象
+    if(pageNum <= 1){
+      page = baseMapper.getPageBlocks(page);
+    } else{
+      var total = baseMapper.getTotalCount();
+      page.setTotal(total);
+      var last = total - (pageNum - 1) * pageSize + 1;
+      if(last >= total){
+        return new Page<>(pageNum, pageSize, total);
+      }
+      List< Block> blocks = baseMapper.getLargePageBlocks(total - (pageNum - 1) * pageSize + 1 ,pageSize);
+      page.setRecords(blocks);
+    }
+
     Map<Long, Block> afterBlockMap;
-    List<Block> records = blocks.getRecords();
+    List<Block> records = page.getRecords();
     if (!records.isEmpty()) {
       // 直接生成“原区块号+11”的列表，无需中间变量blockNumbers
       List<Long> afterNumbers = records.stream()
@@ -114,7 +126,7 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
     });
     log.info("查询区块列表耗时：{}ms", System.currentTimeMillis() - start);
     // 执行分页查询
-    return BlockConvert.INSTANCE.toConvertPage(blocks);
+    return BlockConvert.INSTANCE.toConvertPage(page);
   }
 
   @Override
