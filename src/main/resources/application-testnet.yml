@@ -4,12 +4,6 @@ spring:
   threads:
     virtual:
       enabled: true
-#  rabbitmq:
-#    host: 127.0.0.1
-#    port: 5672
-#    username: rivtower
-#    password: rivtower
-#    virtual-host: /
   datasource:
     dynamic:
       primary: postgres  # 默认数据源（PostgreSQL）
