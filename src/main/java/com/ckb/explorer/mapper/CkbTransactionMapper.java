@@ -26,8 +26,11 @@ public interface CkbTransactionMapper extends BaseMapper<CkbTransaction> {
   @Select("SELECT id, '0x' || encode(tx_hash, 'hex') as transaction_hash, block_number,block_timestamp,capacity_involved,output_count - input_count as live_cell_changes FROM ckb_transaction WHERE (tx_index <> 0) ORDER BY id DESC LIMIT #{size}")
   List<TransactionPageResponse> getHomePageTransactions(@Param("size") int size);
 
-  @Select("SELECT id,'0x' || encode(tx_hash, 'hex') as transaction_hash, block_number,block_timestamp,capacity_involved,output_count - input_count as live_cell_changes FROM ckb_transaction WHERE (tx_index <> 0) ORDER BY id DESC")
+  @Select("SELECT id,'0x' || encode(tx_hash, 'hex') as transaction_hash, block_number,block_timestamp,capacity_involved,output_count - input_count as live_cell_changes FROM ckb_transaction ORDER BY id DESC")
   Page<TransactionPageResponse> getPageTransactions(Page page);
+
+  @Select("SELECT id,'0x' || encode(tx_hash, 'hex') as transaction_hash, block_number,block_timestamp,capacity_involved,output_count - input_count as live_cell_changes FROM ckb_transaction WHERE id < #{lastId} ORDER BY id DESC LIMIT #{pageSize}")
+  List<TransactionPageResponse> getLargePageTransactions(@Param("lastId") Long lastId, @Param("pageSize") int pageSize);
 
   @Select("SELECT MAX(id) FROM ckb_transaction")
   Long countTransactions();
