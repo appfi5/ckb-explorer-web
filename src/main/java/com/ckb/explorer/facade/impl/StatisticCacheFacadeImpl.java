@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.nervos.ckb.type.BlockchainInfo;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j
