@@ -2,7 +2,7 @@ spring:
   application:
     name: ckb-explorer-web
   profiles:
-    active: testnet
+    active: localhost
 
 # Server configuration
 server:

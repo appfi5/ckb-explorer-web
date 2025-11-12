@@ -7,7 +7,6 @@ import com.ckb.explorer.util.CacheUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,18 +33,22 @@ public class EpochStatisticsCacheFacadeImpl implements IEpochStatisticsCacheFaca
 
   @Override
   public List<EpochStatisticsResponse> getEpochStatistics(Integer limit, String indicator) {
+    long start = System.currentTimeMillis();
     // 创建缓存键，包含limit和indicator参数
     String cacheKey = String.format("%s%s:limit:%s:indicator:%s",
         CACHE_PREFIX, CACHE_VERSION,
         limit == null ? "all" : limit.toString(),
         indicator);
-
-    return cacheUtils.getCache(
+    // 使用无锁缓存模式提高性能，对于统计数据类型的非热点数据，短暂的缓存穿透影响较小
+    var result = cacheUtils.getCacheWithoutLock(
         cacheKey,                    // 缓存键
         () -> loadFromDatabase(limit, indicator),  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
+    log.info("查询EpochStatistics耗时：{}ms", System.currentTimeMillis() - start);
+
+    return result;
   }
 
   private List<EpochStatisticsResponse> loadFromDatabase(Integer limit, String indicator) {
