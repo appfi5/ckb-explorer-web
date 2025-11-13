@@ -10,6 +10,9 @@ import com.ckb.explorer.util.MonetaryData;
 import jakarta.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +32,7 @@ public class MonetaryDataController {
    * 对应Ruby的show动作：处理指标查询，返回动态序列化结果
    */
   @GetMapping("/{indicator}")
-  public ResponseInfo<MonetaryDataResponse> show(@PathVariable("indicator") String indicator) {
+  public ResponseEntity<ResponseInfo<MonetaryDataResponse>> show(@PathVariable("indicator") String indicator) {
 
     // 验证查询参数
     validateQueryParams(indicator.trim());
@@ -38,7 +41,15 @@ public class MonetaryDataController {
     // 调用缓存门面获取数据
     MonetaryDataResponse data = monetaryDataCacheFacade.getMonetaryData(indicator.trim());
 
-    return ResponseInfo.SUCCESS(data);
+    // 对应ruby expires_in 1.hour, public: true, stale_while_revalidate: 10.minutes, stale_if_error: 1.hour
+    CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+        .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+        .staleWhileRevalidate(10, TimeUnit.MINUTES)
+        .staleIfError(60, TimeUnit.MINUTES);
+
+    return ResponseEntity.ok()
+        .cacheControl(cacheControl)
+        .body(ResponseInfo.SUCCESS(data));
   }
 
   /**

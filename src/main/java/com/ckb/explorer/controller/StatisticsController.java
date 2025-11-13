@@ -11,7 +11,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,8 +32,15 @@ public class StatisticsController {
      */
     @GetMapping
     @Operation(summary = "获取统计信息索引")
-    public ResponseInfo<IndexStatisticResponse> index() {
-        return ResponseInfo.SUCCESS(statisticCacheFacade.getIndexStatistic());
+    public ResponseEntity<ResponseInfo<IndexStatisticResponse>> index() {
+      // 对应ruby expires_in 15.seconds, public: true, must_revalidate: true, stale_while_revalidate: 5.seconds
+      CacheControl cacheControl = CacheControl.maxAge(15, TimeUnit.SECONDS)
+          .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+          .mustRevalidate()
+          .staleWhileRevalidate(5, TimeUnit.SECONDS);
+        return ResponseEntity.ok()
+            .cacheControl(cacheControl)
+            .body(ResponseInfo.SUCCESS(statisticCacheFacade.getIndexStatistic()));
     }
 
     /**
