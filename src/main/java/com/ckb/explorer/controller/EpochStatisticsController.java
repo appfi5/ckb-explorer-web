@@ -8,6 +8,9 @@ import com.ckb.explorer.facade.IEpochStatisticsCacheFacade;
 import com.ckb.explorer.util.I18n;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,7 +52,7 @@ public class EpochStatisticsController {
    * @return 纪元统计数据JSON响应
    */
   @GetMapping("/{indicator}")
-  public ResponseInfo<List<EpochStatisticsResponse>> show(
+  public ResponseEntity<ResponseInfo<List<EpochStatisticsResponse>>> show(
       @PathVariable("indicator") String indicator,
       @RequestParam(value = "limit", required = false) @Positive Integer limit) {
 
@@ -62,7 +65,15 @@ public class EpochStatisticsController {
     // 构建响应
     ResponseInfo response = ResponseInfo.SUCCESS(data);
 
-    return response;
+    // 对应ruby expires_in 30.minutes, public: true, stale_while_revalidate: 10.minutes, stale_if_error: 10.minutes
+    CacheControl cacheControl = CacheControl.maxAge(30, TimeUnit.MINUTES) // 缓存30分钟
+        .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+        .staleWhileRevalidate(10, TimeUnit.MINUTES) //  stale-while-revalidate: 10分钟
+        .staleIfError(10, TimeUnit.MINUTES);   // stale-if-error: 10分钟
+
+    return ResponseEntity.ok()
+        .cacheControl(cacheControl)
+        .body(response);
 
   }
 

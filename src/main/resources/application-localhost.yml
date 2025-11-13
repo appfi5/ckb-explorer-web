@@ -12,44 +12,39 @@ spring:
         # PostgreSQL 数据源配置
         postgres:
           driver-class-name: org.postgresql.Driver
-          url: ${PG_URL}
-          username: ${PG_USERNAME}
-          password: ${PG_PASSWORD}
-          # 连接池配置（HikariCP）
-          hikari:
-            maximum-pool-size: 60  # 最大连接数（略高于20并发，留冗余）
-            minimum-idle: 10       # 最小空闲连接（预热连接，避免冷启动）
-            connection-timeout: 60000  # 连接超时时间（60秒，适配压测排队）
-            idle-timeout: 600000    # 空闲连接超时（10分钟，回收闲置连接）
-            max-lifetime: 1800000   # 连接最大生命周期（30分钟，避免连接老化）
-          # RisingWave 数据源配置（兼容PostgreSQL协议）
+          url: jdbc:postgresql://192.168.120.129:30153/ckb-rich-indexer
+          username: postgres
+          password: 123456
+        # RisingWave 数据源配置（兼容PostgreSQL协议）
         risingwave:
           driver-class-name: org.postgresql.Driver
-          url: ${RISINGWAVE_URL}
-          username: ${RISINGWAVE_USERNAME}
-          password: ${RISINGWAVE_PASSWORD}
-          # 连接池配置（HikariCP）
-          hikari:
-            maximum-pool-size: 30  # 最大连接数（略高于20并发，留冗余）
-            minimum-idle: 5       # 最小空闲连接（预热连接，避免冷启动）
-            connection-timeout: 60000  # 连接超时时间（60秒，适配压测排队）
-            idle-timeout: 600000    # 空闲连接超时（10分钟，回收闲置连接）
-            max-lifetime: 1800000   # 连接最大生命周期（30分钟，避免连接老化）
-      data:
-        redis:
-          host: ${REDIS_HOST}
-          port: ${REDIS_PORT}
-          database: ${REDIS_DB}
+          url: jdbc:postgresql://192.168.120.129:30456/dev  # RisingWave默认端口4566，数据库名dev
+          username: root  # RisingWave默认用户名
+          password: ""    # RisingWave默认无密码
+  data:
+    redis:
+      #host: localhost
+      host: 192.168.10.143
+      #port: 6379
+      port: 6350
+      database: 4
+        # lettuce:
+        #   pool:
+          # 虚拟线程下建议关闭连接池（每个请求短平快）
+          #     max-active: 200
+      #password: abcdefg
   redis:
     redisson:
       config: |
         singleServerConfig:
-          address: redis://${REDIS_HOST}:${REDIS_PORT}   
-          database: ${REDIS_DB}
+          #address: redis://localhost:6379
+          #password: abcdefg
+          address: redis://192.168.10.143:6350
+          database: 4
           idleConnectionTimeout: 30000
           connectTimeout: 30000
           timeout: 10000
-          # 增强重试机制
+          # 重试机制
           retryAttempts: 5
           retryInterval: 2000
           subscriptionsPerConnection: 5
@@ -64,14 +59,13 @@ spring:
           dnsMonitoringInterval: 5000
         codec: !<org.redisson.codec.JsonJacksonCodec> {}
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:liquibase/changelog.yml
     database-change-log-lock-table: liquibase-lock
     database-change-log-table: liquibase-changelog
 logging:
   level:
-    com.ckb.explorer.mapper: ERROR
-    com.baomidou: ERROR
+    com.ckb.explorer.facade.impl: DEBUG
 ckb:
   nodeUrl: https://testnet.ckb.dev
   netWork: 2 # 1:mainnet 2:testnet
@@ -81,10 +75,12 @@ ckb:
   daoCodeHash: "0x516be0333273bbe12a723f3be583c524f0b6089326f89c49fc61e24d1f56be21,0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"
 mybatis-plus:
   configuration:
-  # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 如需在开发环境查看SQL，可启用以下配置并设置logging.level相应包为DEBUG
+    # 生产环境建议移除或保持默认
 remote:
   worker:
-    url: http://ckb-explorer-worker:8080
+    url: http://localhost:8080
 script:
   lockScripts:
     - name: "SECP256K1/blake160"
@@ -120,7 +116,7 @@ script:
     - name: "iCKB Logic"
       codeHash: "0x2a8100ab5990fa055ab1b50891702e1e895c7bd1df6322cd725c1a6115873bd3"
       hashType: "data1"
-    - name: "Anyone-Can-Pay Lock"
+    - name: "AnyoneCanPay"
       codeHash: "0x3419a1c09eb2567f6552ee7a8ecffd64155cffe0f1796e6e61ec088d740c1356"
       hashType: "type"
       cellDeps: [
@@ -370,7 +366,6 @@ script:
       symbol: "USDI"
       decimal: 6
       scriptHash: "0x07ac97b5ff3df4b49f59a59f4d80d33d22c1263a57467c512c93b9c29b7a0de3"
-      args: "0x71fd1985b2971a9903e4d8ed0d59e6710166985217ca0681437883837b86162f"
       cellType: 15
       typeScriptId:
     - name: "RUSD"
@@ -379,7 +374,6 @@ script:
       symbol: "RUSD"
       decimal: 8
       scriptHash: "0x45b32a2bc4285d0a09678eb11960ddc8707bc2779887a09d482e9bfe9a2cdf52"
-      args: "0x878fcc6f1f08d48e87bb1c3b3d5083f23f8a39c5d5c764f253b55b998526439b"
       cellType: 15
       typeScriptId:
     - name: "tBtc"
@@ -440,8 +434,35 @@ script:
           depType: "code"
         }
       ]
-springdoc:
-  api-docs:
-    enabled: false  # 禁用API文档数据端点（/v3/api-docs）
-  swagger-ui:
-    enabled: false  # 禁用Swagger UI界面（/api/swagger-ui.html）
+    - name: ""
+      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
+      hashType: "type"
+      args: "0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902"
+      scriptHash: "0x788c79191970e313693351531930b46a708b1ca58f6d414ddc8a8827afb554ff"
+      cellType: 3
+      typeScriptId: 5530
+    - name: ""
+      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
+      hashType: "type"
+      args: "0x17d4dd69794ba8074ab69718ab569a98ad89ab806f4b2ad95ef760595235ade6"
+      scriptHash: "0xc6c3add6d90a3d1eab9ec478bfa0647012989fb7ccf4a01b9dc0ed0910585a2b"
+      cellType: 3
+      typeScriptId: 8881
+    - name: ""
+      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
+      hashType: "type"
+      args: "0x8462b20277bcbaa30d821790b852fb322d55c2b12e750ea91ad7059bc98dda4b"
+      scriptHash: "0x5e4229de7f1a6304099385638e4ef3e85ab7a02b0ed4d4a95783ebd982edb691"
+      cellType: 3
+      typeScriptId: 8543
+    - name: ""
+      codeHash: "0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4"
+      hashType: "type"
+      args: "0x9c3da505eac9e15cb7986c064728a130e75ab746416be0debf593e9e54f19464"
+      scriptHash: "0xdbfd8e50c62549e24ced774e012b1ea34559ee5e1676fddc63ebd7e3618b3e2c"
+      cellType: 3
+      typeScriptId: 8590
+# Controller configuration
+reset:
+  statistics:
+    password: "123456"  # 生产环境请修改为安全的密码

@@ -2,13 +2,21 @@ spring:
   application:
     name: ckb-explorer-web
   profiles:
-    active: testnet
+    active: localhost
 
 # Server configuration
 server:
   port: 8081
   servlet:
     context-path:
+  compression:
+    enabled: true # 开启GZIP压缩
+    mime-types: application/json,application/xml,text/html,text/plain # 压缩的 MIME 类型
+    min-response-size: 1024 # 最小响应大小（超过 1KB 才压缩）
+    compression-level: 8
+  undertow:
+    buffer-size: 32768  # 32KB 缓冲区（默认 1KB，提升大文件传输速度）
+    direct-buffers: true  # 使用直接内存，减少拷贝
 
 
 # Swagger/OpenAPI configuration

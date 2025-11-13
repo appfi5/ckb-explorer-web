@@ -7,7 +7,6 @@ import com.ckb.explorer.util.CacheUtils;
 import jakarta.annotation.Resource;
 import java.util.List;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +34,7 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
     String cacheKey = String.format("%s%s:indicator:%s", DAILY_STATISTICS_CACHE_PREFIX,
         CACHE_VERSION, indicator);
 
-    return cacheUtils.getCache(
+    return cacheUtils.getCacheWithoutLock(
         cacheKey,                    // 缓存键
         () -> loadFromDatabase(indicator),  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
