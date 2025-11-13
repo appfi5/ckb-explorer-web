@@ -46,16 +46,21 @@ spring:
         singleServerConfig:
           address: redis://${REDIS_HOST}:${REDIS_PORT}   
           database: ${REDIS_DB}
-          idleConnectionTimeout: 10000
-          connectTimeout: 10000
-          timeout: 3000
-          retryAttempts: 3
-          retryInterval: 1500
+          idleConnectionTimeout: 30000
+          connectTimeout: 30000
+          timeout: 10000
+          # 增强重试机制
+          retryAttempts: 5
+          retryInterval: 2000
           subscriptionsPerConnection: 5
-          clientName: ckb-explorer-worker
-          # 降低连接池
-          connectionMinimumIdleSize: 4
-          connectionPoolSize: 16
+          clientName: ckb-explorer-web
+          # 优化连接池配置以处理大数据量和高并发
+          connectionMinimumIdleSize: 32
+          connectionPoolSize: 128
+          # 启用TCP保持活跃以避免连接断开
+          keepAlive: true
+          # 优化大对象处理
+          tcpNoDelay: true
           dnsMonitoringInterval: 5000
         codec: !<org.redisson.codec.JsonJacksonCodec> {}
   liquibase:
@@ -76,7 +81,7 @@ ckb:
   daoCodeHash: "0x516be0333273bbe12a723f3be583c524f0b6089326f89c49fc61e24d1f56be21,0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"
 mybatis-plus:
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 remote:
   worker:
     url: http://ckb-explorer-worker:8080
