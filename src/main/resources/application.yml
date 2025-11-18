@@ -39,3 +39,26 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
 
+# Actuator configuration
+management:
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /api/v1/actuator
+  health:
+    db:
+      enabled: false
+    refresh:
+      enabled: false
+feign:
+  client:
+    config:
+      default:  # 全局配置（也可指定 worker-service 单独配置）
+        connect-timeout: 3000  # 连接超时 3 秒
+        read-timeout: 3000     # 读取超时 3 秒
