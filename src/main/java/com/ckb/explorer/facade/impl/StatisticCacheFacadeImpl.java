@@ -79,9 +79,12 @@ public class StatisticCacheFacadeImpl implements IStatisticCacheFacade {
     response.setAverageBlockTime(statisticInfo.getAverageBlockTime()); // 保留两位小数
     var hashRate = statisticInfo.getHashRate();
     response.setHashRate(hashRate);
-    BigDecimal estimatedEpochTime = new BigDecimal(currentEpochDifficulty)
-            .multiply(new BigDecimal(tipBlock.getEpochLength()))
-        .divide(hashRate,6, RoundingMode.HALF_UP);
+    BigDecimal estimatedEpochTime =BigDecimal.ZERO;
+    if(currentEpochDifficulty!= null && hashRate != null && BigDecimal.ZERO.compareTo(hashRate) == -1){
+      estimatedEpochTime = new BigDecimal(currentEpochDifficulty)
+          .multiply(new BigDecimal(tipBlock.getEpochLength()))
+          .divide(hashRate,6, RoundingMode.HALF_UP);
+    }
     response.setEstimatedEpochTime(estimatedEpochTime);
     response.setTransactionsLast24hrs(statisticInfo.getTransactionsLast24hrs());
     response.setTransactionsCountPerMinute(statisticInfo.getTransactionsCountPerMinute());

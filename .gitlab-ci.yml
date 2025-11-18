@@ -27,7 +27,7 @@ build-mvn-package:
     - "mvn clean package -DskipTests -Dmaven.repo.local=.m2/repository"
     - echo "=============== 验证JAR文件生成 ==============="
     # 复制JAR文件到根目录，确保在image-build阶段能够可靠获取
-    - "cp -f target/ckb-explorer-web.jar . || echo \"无法复制JAR文件到根目录\""
+    - "cp -f target/ckb-explorer-web.jar . && cp -f target/newrelic/newrelic.jar . && cp -f newrelic/newrelic.yml . || echo \"无法复制JAR文件到根目录\""
   cache:
     key: $CI_PROJECT_NAME-maven
     paths:
@@ -38,6 +38,8 @@ build-mvn-package:
     expire_in: 30 mins
     paths:
       - target/ckb-explorer-web.jar
+      - target/newrelic/newrelic.jar
+      - newrelic/newrelic.yml
       - ckb-explorer-web.jar
   tags:
     - docker_maven-3.6.2_k8s01
