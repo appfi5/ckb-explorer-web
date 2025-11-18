@@ -5,6 +5,7 @@ import com.ckb.explorer.config.FeignLogConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import java.time.LocalDate;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -23,4 +24,8 @@ public interface WorkerService {
   @Operation(summary = "手动触发每日统计任务")
   @PostMapping(value ="/internal/udt_daily_statistics/manual_trigger", produces = "application/json; charset=UTF-8")
   Boolean manualTriggerUdtDailyStatistics(@RequestParam(required = false) LocalDate startDate);
+
+  @Operation(summary = "服务健康检查")
+  @GetMapping(value ="/api/v1/health_check")
+  Boolean healthCheck();
 }
