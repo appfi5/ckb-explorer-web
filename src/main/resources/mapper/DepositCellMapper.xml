@@ -9,7 +9,8 @@
     <result column="tx_hash" javaType="byte[]" />
   </resultMap>
   <select id="getTxHashPage" resultMap="TxHashResultMap">
-    SELECT DISTINCT ON (tx_hash) tx_hash  -- 仅对tx_hash去重
+    WITH distinct_tx_hash AS (
+    SELECT DISTINCT ON (tx_hash) tx_hash,block_timestamp  -- 仅对tx_hash去重
     FROM (
            SELECT tx_hash, block_timestamp
            FROM deposit_cell
@@ -42,7 +43,8 @@
           </where>
          ) AS combined_data
 
-    ORDER BY tx_hash, block_timestamp DESC
+    ORDER BY tx_hash, block_timestamp DESC)
+    SELECT tx_hash from   distinct_tx_hash   ORDER BY  block_timestamp DESC
   </select>
 
   <select id="getTopDaoDepositors" resultType="com.ckb.explorer.domain.dto.DaoDepositorDto">
