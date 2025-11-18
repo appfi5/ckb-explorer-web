@@ -26,6 +26,6 @@ public interface WorkerService {
   Boolean manualTriggerUdtDailyStatistics(@RequestParam(required = false) LocalDate startDate);
 
   @Operation(summary = "服务健康检查")
-  @GetMapping(value ="/api/v1/health_check")
+  @GetMapping(value ="/internal/health_check")
   Boolean healthCheck();
 }
