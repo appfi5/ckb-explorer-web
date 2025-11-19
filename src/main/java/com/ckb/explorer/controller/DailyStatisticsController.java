@@ -9,6 +9,9 @@ import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,7 +66,7 @@ public class DailyStatisticsController {
    * @return 包含统计数据的响应
    */
   @GetMapping("/{indicator}")
-  public ResponseInfo<List<DailyStatisticResponse>> show(
+  public ResponseEntity<ResponseInfo<List<DailyStatisticResponse>>> show(
       @PathVariable("indicator") String indicator) {
     // 验证查询参数
     validateQueryParams(indicator.trim());
@@ -72,8 +75,15 @@ public class DailyStatisticsController {
     List<DailyStatisticResponse> dailyStatistics = dailyStatisticsCacheFacade.getDailyStatisticsByIndicator(
         indicator.trim());
 
+    CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+        .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+        .staleWhileRevalidate(10, TimeUnit.MINUTES)
+        .staleIfError(60, TimeUnit.MINUTES);
+
     // 返回成功响应
-    return ResponseInfo.SUCCESS(dailyStatistics);
+    return ResponseEntity.ok()
+        .cacheControl(cacheControl)
+        .body(ResponseInfo.SUCCESS(dailyStatistics));
   }
 
   /**
