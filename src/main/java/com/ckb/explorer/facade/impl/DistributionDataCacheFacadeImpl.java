@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +42,7 @@ public class DistributionDataCacheFacadeImpl implements IDistributionDataCacheFa
   public DistributionDataResponse getDistributionDataByIndicator(String indicator) {
     // 创建缓存键
     String cacheKey = String.format("%s%s:%s", CACHE_PREFIX, CACHE_VERSION, indicator);
-    return cacheUtils.getCache(
+    return cacheUtils.getCacheWithoutLock(
         cacheKey,                    // 缓存键
         () -> loadFromDatabase(indicator),  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
