@@ -2,6 +2,7 @@ package com.ckb.explorer.util;
 
 import jakarta.annotation.Resource;
 import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -67,22 +68,44 @@ public class CacheUtils {
     );
   }
 
+  // 本地锁缓存，用于在缓存未命中时减少数据库压力
+  private final ConcurrentHashMap<String, Object> localLocks = new ConcurrentHashMap<>();
+
   /**
-   * 新增：支持“无锁模式”（针对非热点数据，避免锁开销） （业务可根据数据热度选择是否加锁）
+   * 新增：支持"无锁模式"（针对非热点数据，避免锁开销） （业务可根据数据热度选择是否加锁）
+   * 优化：添加本地锁来减少缓存穿透时的数据库压力，但不会导致分布式环境下的性能问题
    */
-  public <T> T getCacheWithoutLock(String cacheKey, Class<T> valueType, Supplier<T> supplier,
+  public <T> T getCacheWithoutLock(String cacheKey, Supplier<T> supplier,
       long ttl, TimeUnit timeUnit) {
     RBucket<T> bucket = redissonClient.getBucket(cacheKey);
     T cachedValue = bucket.get();
     if (cachedValue != null) {
+      log.debug("Cache hit (without lock), key: {}", cacheKey);
       return cachedValue;
     }
-    // 直接查库写缓存，不加锁
-    cachedValue = supplier.get();
-    if (cachedValue != null) {
-      bucket.set(cachedValue, Duration.ofMillis(timeUnit.toMillis(ttl)));
+    
+    // 使用本地锁减少数据库压力，但不使用分布式锁
+    Object lock = localLocks.computeIfAbsent(cacheKey, k -> new Object());
+    try {
+      synchronized (lock) {
+        // 双重检查：防止在获取锁的过程中其他线程已经加载了数据
+        cachedValue = bucket.get();
+        if (cachedValue != null) {
+          log.debug("Cache hit (double check), key: {}", cacheKey);
+          return cachedValue;
+        }
+        
+        // 查库写缓存
+        cachedValue = supplier.get();
+        if (cachedValue != null) {
+          bucket.set(cachedValue, Duration.ofMillis(timeUnit.toMillis(ttl)));
+        }
+        return cachedValue;
+      }
+    } finally {
+      // 移除本地锁，避免内存泄漏
+      localLocks.remove(cacheKey);
     }
-    return cachedValue;
   }
 
   /**
@@ -93,7 +116,7 @@ public class CacheUtils {
   public void evictCache(String cacheKey) {
     RBucket<?> bucket = redissonClient.getBucket(cacheKey);
     bucket.delete();
-    log.debug("Cache evicted for key: {}", cacheKey);
+    // 移除缓存清理日志以进一步提高性能
   }
 
   /**
@@ -130,7 +153,7 @@ public class CacheUtils {
 
     // 2. 首次 缓存命中：直接返回
     if (cachedValue != null) {
-      log.info("Cache hit (with lock), key: {}", cacheKey);
+      log.debug("Cache hit (with lock), key: {}", cacheKey);
       return cachedValue;
     }
 
@@ -143,42 +166,42 @@ public class CacheUtils {
       // 3.1 双重检查：防止其他线程已加载数据
       cachedValue = bucket.get();
       if (cachedValue != null) {
-        log.info("Cache hit (double check), key: {}", cacheKey);
+        log.debug("Cache hit (double check), key: {}", cacheKey);
         return cachedValue;
       }
 
       // 3.2 尝试获取锁
       if (lock.tryLock(lockWaitTime, lockLeaseTime, TimeUnit.SECONDS)) {
-        lockAcquired.set(true);
-        log.info("Acquired lock for cache key: {}", cacheKey);
+          lockAcquired.set(true);
+          log.debug("Acquired lock for cache key: {}", cacheKey);
 
         // 3.3 锁内再次检查：避免锁等待期间 数据已被加载
         cachedValue = bucket.get();
         if (cachedValue != null) {
-          log.info("Cache hit (in lock), key: {}", cacheKey);
+          log.debug("Cache hit (in lock), key: {}", cacheKey);
           return cachedValue;
         }
 
         // 3.4 查库加载数据
-        log.info("Loading data from supplier for cache key: {}", cacheKey);
+        log.debug("Loading data from supplier for cache key: {}", cacheKey);
         cachedValue = dataSupplier.get();
 
         // 3.5 写缓存（仅非 null 值，避免缓存穿透）
         if (cachedValue != null) {
           long ttlMillis = timeUnit.toMillis(ttl);
           bucket.set(cachedValue, Duration.ofMillis(ttlMillis));
-          log.info("Cache loaded and saved, key: {}, ttl: {} ms", cacheKey, ttlMillis);
+          log.debug("Cache loaded and saved, key: {}, ttl: {} ms", cacheKey, ttlMillis);
         } else {
-          log.info("Loaded null value from supplier, skip caching, key: {}", cacheKey);
+          log.debug("Loaded null value from supplier, skip caching, key: {}", cacheKey);
         }
       } else {
 
         // 3.6 锁获取失败：降级查库（避免返回 null）
-        log.warn("Failed to acquire lock for cache key: {}", cacheKey);
+        log.debug("Failed to acquire lock for cache key: {}", cacheKey);
         cachedValue = dataSupplier.get();
         if (cachedValue != null) {
           bucket.set(cachedValue, Duration.ofMillis(timeUnit.toMillis(ttl)));
-          log.info("Degraded load and saved cache, key: {}", cacheKey);
+          log.debug("Degraded load and saved cache, key: {}", cacheKey);
         }
       }
       return cachedValue;
@@ -199,7 +222,7 @@ public class CacheUtils {
       // 3.8 释放锁（仅当前线程持有锁时）
       if (lockAcquired.get() && lock.isHeldByCurrentThread()) {
         lock.unlock();
-        log.info("Released lock for cache key: {}", cacheKey);
+        log.debug("Released lock for cache key: {}", cacheKey);
       }
     }
   }

@@ -9,8 +9,10 @@ import com.ckb.explorer.util.I18n;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.redisson.api.RedissonClient;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,7 +50,7 @@ public class DistributionDataController {
    */
   @GetMapping("/{indicator}")
   @Operation(summary = "获取分布数据")
-  public ResponseInfo<DistributionDataResponse> show(@PathVariable("indicator") String indicator) {
+  public ResponseEntity<ResponseInfo<DistributionDataResponse>> show(@PathVariable("indicator") String indicator) {
     // 验证查询参数
     validateQueryParams(indicator.trim());
     DistributionDataResponse data;
@@ -62,7 +64,15 @@ public class DistributionDataController {
     // 构建响应
     ResponseInfo response = ResponseInfo.SUCCESS(data);
 
-    return response;
+    // 对应ruby expires_in 1.hour, public: true, stale_while_revalidate: 10.minutes, stale_if_error: 1.hour
+    CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+        .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+        .staleWhileRevalidate(10, TimeUnit.MINUTES)
+        .staleIfError(60, TimeUnit.MINUTES);
+
+    return ResponseEntity.ok()
+        .cacheControl(cacheControl)
+        .body(response);
   }
 
   private static final Pattern MINER_ADDRESS_PATTERN = Pattern.compile(

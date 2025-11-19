@@ -32,7 +32,7 @@ public class MonetaryDataCacheFacadeImpl implements IMonetaryDataCacheFacade {
         CACHE_PREFIX, CACHE_VERSION,
         indicator);
 
-    return cacheUtils.getCache(
+    return cacheUtils.getCacheWithoutLock(
         cacheKey,                    // 缓存键
         () -> loadData(indicator),  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间

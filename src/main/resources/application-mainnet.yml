@@ -46,16 +46,21 @@ spring:
         singleServerConfig:
           address: redis://${REDIS_HOST}:${REDIS_PORT}   
           database: ${REDIS_DB}
-          idleConnectionTimeout: 10000
-          connectTimeout: 10000
-          timeout: 3000
-          retryAttempts: 3
-          retryInterval: 1500
+          idleConnectionTimeout: 30000
+          connectTimeout: 30000
+          timeout: 10000
+          # 增强重试机制
+          retryAttempts: 5
+          retryInterval: 2000
           subscriptionsPerConnection: 5
-          clientName: ckb-explorer-worker
-          # 降低连接池
-          connectionMinimumIdleSize: 4
-          connectionPoolSize: 16
+          clientName: ckb-explorer-web
+          # 优化连接池配置以处理大数据量和高并发
+          connectionMinimumIdleSize: 32
+          connectionPoolSize: 128
+          # 启用TCP保持活跃以避免连接断开
+          keepAlive: true
+          # 优化大对象处理
+          tcpNoDelay: true
           dnsMonitoringInterval: 5000
         codec: !<org.redisson.codec.JsonJacksonCodec> {}
   liquibase:
@@ -76,7 +81,7 @@ ckb:
   daoCodeHash: "0x516be0333273bbe12a723f3be583c524f0b6089326f89c49fc61e24d1f56be21,0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"
 mybatis-plus:
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 remote:
   worker:
     url: http://ckb-explorer-worker:8080
@@ -296,7 +301,6 @@ script:
     - name: "xUDT"
       codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
       hashType: "data1"
-      cellType: 15
       cellDeps: [
         {
           txHash: "0xc07844ce21b38e4b071dd0e1ee3b0e27afd8d7532491327f39b786343f558ab7",
@@ -304,6 +308,14 @@ script:
           depType: "code"
         }
       ]
+    - name: "BANK"
+      codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
+      hashType: "data1"
+      args: "0x3046219b8dd69e0513691568ea438ac6a2a356c0f2695f98a8aed3cc03a1061a"
+      symbol: "BANK"
+      decimal: 8
+      cellType: 15
+      scriptHash: "0x73b7266e3500db7c5def31d1d8a112e86fa5c59d83f222486913836704cee3f4"
     - name: "USDI"
       codeHash: "0xbfa35a9c38a676682b65ade8f02be164d48632281477e36f8dc2f41f79e56bfc"
       hashType: "type"
@@ -316,15 +328,25 @@ script:
       ]
       symbol: "USDI"
       decimal: 6
+      args: "0xd591ebdc69626647e056e13345fd830c8b876bb06aa07ba610479eb77153ea9f"
       scriptHash: "0x7f3fba3fb8d6e000176f7e1ae22e8cd02841dec6a8341dc69aeef46387a20664"
       cellType: 15
-    - name: "RUSD"
-      codeHash: "0x26a33e0815888a4a0614a0b7d09fa951e0993ff21e55905510104a0b1312032b"
-      hashType: "type"
-      symbol: "RUSD"
-      decimal: 8
-      scriptHash: "0x71ff665b40ba044b1981ea9a8965189559c8e01e8cdfa34a3cc565e1f870a95c"
+    - name: "Seal"
+      codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
+      hashType: "data1"
+      args: "0x2ae639d6233f9b15545573b8e78f38ff7aa6c7bf8ef6460bf1f12d0a76c09c4e"
       cellType: 15
+      symbol: "Seal"
+      decimal: 8
+      scriptHash: "0x178fb47b597a56d48b549226aff59f750b4784250c7f40f781b64ef090a8a0a7"
+    - name: "BEAF"
+      codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
+      hashType: "data1"
+      args: "0xc639759e988445217e4c08b2e7b416082d9de0cb061194e2f7f35a89bb6fbf4f"
+      cellType: 15
+      symbol: "BEAF"
+      decimal: 0
+      scriptHash: "0xfbd235ba8e5b1f8f7df6bd51e8756d52c05ef358d30e7bcfee8a73b6a9c185c9"
     - name: "BTC"
       codeHash: "0x092c2c4a26ea475a8e860c29cf00502103add677705e2ccd8d6fe5af3caa5ae3"
       hashType: "type"
@@ -333,6 +355,30 @@ script:
       symbol: "BTC"
       decimal: 8
       scriptHash: "0x3cd44aecea36e0a27e671f1fc79e65add7bf2f0e8b368389dc810ec81c63fa57"
+    - name: "JOKER"
+      codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
+      hashType: "data1"
+      cellType: 15
+      args: "0xcb74eaded089bf39c2165149cad3d526b4321e9a6119c7ae9cf996be3acfeb18"
+      symbol: "JOKER"
+      decimal: 8
+      scriptHash: "0xa9ae2d1a2459f2ad0a590358a117aaa37b44cb58307c658ff2a72654c466e148"
+    - name: "RGB++"
+      codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
+      hashType: "data1"
+      args: "0x08875c56644d39dd9629d291357d3026debc5d22fa88d924d60ce8f16dd50e70"
+      symbol: "RGB++"
+      decimal: 8
+      cellType: 15
+      scriptHash: "0xb5fdb4e8ad52f5e3ed4a294c01ca99f7811b06baef2e7fce5b7d4ebbf006717d"
+    - name: "RUSD"
+      codeHash: "0x26a33e0815888a4a0614a0b7d09fa951e0993ff21e55905510104a0b1312032b"
+      args: "0x360c9d87b2824c357958c23e8878f686001e88e9527a08ea229e7d9ba7fe39a7"
+      hashType: "type"
+      symbol: "RUSD"
+      decimal: 8
+      scriptHash: "0x71ff665b40ba044b1981ea9a8965189559c8e01e8cdfa34a3cc565e1f870a95c"
+      cellType: 15
     - name: "COTA"
       codeHash: "0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"
       hashType: "type"
