@@ -95,5 +95,22 @@ public class ResetDailyStatisticsController {
     return ResponseInfo.SUCCESS(result);
   }
 
+  /**
+   * 手动触发矿工每日统计任务
+   * @param startDate 开始日期
+   * @param token 访问令牌（从请求头获取）
+   * @return 操作结果
+   */
+  @PostMapping("miner_daily_statistics")
+  public ResponseInfo<Boolean> manualTriggerMinerDailyStatistics(@RequestParam(required = false) LocalDate startDate, @RequestHeader("X-Auth-Token") String token) {
+    // 验证令牌
+    if (!validateToken(token)) {
+      return ResponseInfo.FAILURE("Invalid token");
+    }
 
+    var result = workerService.manualTriggerMinerDailyStatistics(startDate);
+
+    // 返回成功响应
+    return ResponseInfo.SUCCESS(result);
+  }
 }
