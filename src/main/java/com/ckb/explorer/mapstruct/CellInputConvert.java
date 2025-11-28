@@ -20,6 +20,7 @@ public interface CellInputConvert {
   @Mapping(target = "addressHash", ignore = true)
   @Mapping(expression = "java(new com.ckb.explorer.domain.resp.SinceResponse(cellInput.getSinceRaw(),null))", target = "since")
   @Mapping(target = "typeScript", ignore = true)
+  @Mapping(target = "data",expression = "java(cellInput.getData() != null? org.nervos.ckb.utils.Numeric.toHexString(cellInput.getData()): null)")
   CellInputResponse toConvert(CellInputDto cellInput);
 
   List<CellInputResponse> toConvertList(List<CellInputDto> list);
