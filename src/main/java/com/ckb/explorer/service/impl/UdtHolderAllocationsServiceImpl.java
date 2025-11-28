@@ -89,11 +89,11 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
             orderBy = "typeScriptId";
         }
         String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
-        Page<UdtAddressCountDto> page = new Page<>();
+        Page<UdtAddressCountDto> page = new Page<>(req.getPage(), req.getPageSize());
 
         Page<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum(page,orderBy,ascOrDesc);
         if(CollectionUtils.isEmpty(addressesCounts.getRecords())){
-            return new Page<>();
+            return new Page<>(req.getPage(), req.getPageSize());
         }
 
         List<Long> typeScriptIds = addressesCounts.getRecords().stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
