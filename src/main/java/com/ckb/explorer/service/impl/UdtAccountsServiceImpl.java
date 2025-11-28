@@ -73,6 +73,7 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
     result.forEach(item -> {
       var scriptData = typeScriptMap.get(item.getTypeScriptId());
       if(scriptData != null){
+        item.setTypeScriptHash(Numeric.toHexString(scriptData.getScriptHash()));
         var typeScript = scriptConfig.getTypeScriptByCodeHash(Numeric.toHexString(scriptData.getCodeHash()), Numeric.toHexString(scriptData.getArgs()));
         if(typeScript != null){
           item.setFullName(typeScript.getName());
@@ -80,7 +81,6 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
           item.setDecimal(typeScript.getDecimal());
           //item.setUdtIconFile(typeScript.getUdtIconFile());
           item.setUdtType(typeScript.getCellType()); //cellType 同udtType
-          item.setTypeScriptHash(typeScript.getScriptHash());
         }
       }
     });
