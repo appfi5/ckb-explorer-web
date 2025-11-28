@@ -89,4 +89,12 @@ public class NftController {
         return true;
     }
 
+    @GetMapping("/storeCell/{tokenId}")
+    @Operation(summary = "获取store cell")
+    public ResponseInfo<Long> getStoreCellIdByTokenId(@PathVariable String tokenId ){
+          return ResponseInfo.SUCCESS(iNftCacheFacade.getStoreCellId(tokenId));
+    }
+
+
+
 }

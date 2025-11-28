@@ -2,6 +2,7 @@ package com.ckb.explorer.facade.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.CollectionsDto;
@@ -15,17 +16,17 @@ import com.ckb.explorer.domain.req.NftTransfersPageReq;
 import com.ckb.explorer.domain.req.base.BasePageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.DobCode;
+import com.ckb.explorer.entity.Output;
 import com.ckb.explorer.entity.OutputData;
 import com.ckb.explorer.entity.Script;
+import com.ckb.explorer.enums.LockType;
 import com.ckb.explorer.enums.NftAction;
 import com.ckb.explorer.facade.INftCacheFacade;
-import com.ckb.explorer.mapper.DobCodeMapper;
-import com.ckb.explorer.mapper.DobExtendMapper;
-import com.ckb.explorer.mapper.OutputDataMapper;
-import com.ckb.explorer.mapper.ScriptMapper;
+import com.ckb.explorer.mapper.*;
 import com.ckb.explorer.mapstruct.NftConvert;
 import com.ckb.explorer.util.*;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
@@ -38,6 +39,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class NftCacheFacadeImpl implements INftCacheFacade {
 
 
@@ -52,7 +54,13 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
     private static final String ITEMS_CACHE_PREFIX = "nft:items:";
 
+    private static final String ITEM_INFO_CACHE_PREFIX = "nft:itemInfo:";
+
+
     private static final String ACCOUNT_PREFIX = "nft:accounts:";
+
+    private static final String STORE_CELL_PREFIX = "nft:storeCell:";
+
 
     private static final String CACHE_VERSION = "v1";
 
@@ -72,6 +80,12 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
     @Resource
     OutputDataMapper outputDataMapper;
+
+    @Resource
+    ScriptConfig scriptConfig;
+
+    @Resource
+    OutputMapper outputMapper;
 
     @Override
     public Page<CollectionsResp> collectionsPage(CollectionsPageReq req) {
@@ -280,6 +294,17 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
     @Override
     public NftItemDetailResponse itemInfo(String typeScriptHash, String tokenId) {
+        String cacheKey = String.format("%s%s:typeScriptHash:%s:tokenId:%s", ITEM_INFO_CACHE_PREFIX, CACHE_VERSION, typeScriptHash,tokenId);
+
+        return cacheUtils.getCache(
+                cacheKey,                    // 缓存键
+                () -> loadNftItemInfo(typeScriptHash,tokenId),  // 数据加载函数
+                TTL_SECONDS,                 // 缓存过期时间
+                TimeUnit.SECONDS             // 时间单位
+        );
+    }
+
+    private NftItemDetailResponse loadNftItemInfo(String typeScriptHash, String tokenId){
         NftItemDto nftItemDto = dobExtendMapper.itemInfo(Numeric.hexStringToByteArray(typeScriptHash), Numeric.hexStringToByteArray(tokenId));
         if (nftItemDto == null) {
             throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
@@ -406,6 +431,40 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
                 }
             });
         }
+    }
+
+
+    @Override
+    public Long getStoreCellId(String tokenId){
+        String cacheKey = String.format("%s%s:%s",
+                STORE_CELL_PREFIX, CACHE_VERSION, tokenId);
+        return cacheUtils.getCache(
+                cacheKey,                    // 缓存键
+                () -> getStoreCellIdByTokenId(tokenId),  // 数据加载函数
+                TTL_SECONDS,                 // 缓存过期时间
+                TimeUnit.SECONDS             // 时间单位
+        );
+    }
+
+    private Long getStoreCellIdByTokenId(String tokenId){
+         DobCode dobCode = dobCodeMapper.findByDobCodeScriptArgs(Numeric.hexStringToByteArray(tokenId));
+         if(dobCode==null){
+             throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
+         }
+        ScriptConfig.LockScript typeBurnLock = scriptConfig.getLockScripts().stream().filter(lockScript -> Objects.equals(lockScript.getName(), LockType.TypeBurnLock.getValue())).findFirst().orElse(null);
+         if(typeBurnLock==null){
+             log.error("config not found typeBurnLock");
+             throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+         }
+         Script typeBurnLockScript = scriptMapper.findTypeBurnLock(Numeric.hexStringToByteArray(typeBurnLock.getCodeHash()),dobCode.getDobCodeScriptId());
+         if(typeBurnLockScript==null){
+             throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
+         }
+         Output output = outputMapper.findByLockScriptIdOutput(typeBurnLockScript.getId());
+        if(output==null){
+            throw new ServerException(I18nKey.CELL_OUTPUT_NOT_FOUND_CODE, i18n.getMessage(I18nKey.CELL_OUTPUT_NOT_FOUND_MESSAGE));
+        }
+         return output.getId();
     }
 
 

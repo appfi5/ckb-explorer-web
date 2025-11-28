@@ -28,4 +28,6 @@ public interface INftCacheFacade {
     NftItemDetailResponse itemInfo(String typeScriptHash, String tokenId);
 
     List<AccountNftResponse> accountNftResponses(String address);
+
+    Long getStoreCellId(String tokenId);
 }

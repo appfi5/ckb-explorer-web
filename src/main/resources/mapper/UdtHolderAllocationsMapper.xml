@@ -28,6 +28,7 @@
         from udt_holder_allocations group by type_script_id ) as uh
         left join (select type_script_id, count(distinct  ckb_transaction_id) as h24CkbTransactionsCount
         from address_24h_transaction group by type_script_id ) as at on at.type_script_id = uh.type_script_id
+        order by ${orderByStr} ${ascOrDesc}
     </select>
 
 </mapper>
