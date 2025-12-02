@@ -13,11 +13,16 @@ import org.nervos.ckb.type.Script.HashType;
 import org.nervos.ckb.type.concrete.Byte32Vec;
 import org.nervos.ckb.type.concrete.BytesVec;
 import org.nervos.ckb.type.concrete.Uint256;
+import org.nervos.ckb.type.concrete.Uint64;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+
+import static com.ckb.explorer.constants.CommonConstantsKey.DEFAULT_SINCE;
+import static com.ckb.explorer.constants.CommonConstantsKey.FULL_ZERO_HEX;
+import static com.ckb.explorer.constants.CommonConstantsKey.UINT64_BYTE_LENGTH;
 import static com.ckb.explorer.constants.TokenType.TOKEN_TYPE_SUDT;
 import static com.ckb.explorer.constants.TokenType.TOKEN_TYPE_XUDT;
 
@@ -198,5 +203,29 @@ public class TypeConversionUtil {
   @Named("nftAction(Value)")
   public static String nftAction(Integer action){
     return NftAction.getValueByCode(action);
+  }
+
+  /**
+   * 处理since的大小端转换
+   * @param since
+   * @return
+   */
+  public static String convertSince(byte[] since){
+    if(since==null){
+      return DEFAULT_SINCE;
+    }
+
+    if (since.length != UINT64_BYTE_LENGTH) {
+      throw new IllegalArgumentException(
+          String.format("Since 字节数组长度必须为 %d（当前长度：%d），符合 Uint64 格式要求",
+              UINT64_BYTE_LENGTH, since.length)
+      );
+    }
+
+    var uint64Since = Uint64.builder(since).build();
+    BigInteger uint64Value = new BigInteger(uint64Since.getItems());
+
+    String result = Numeric.littleEndian(uint64Value.longValue());
+    return FULL_ZERO_HEX.equals(result)?DEFAULT_SINCE:result;
   }
 }
