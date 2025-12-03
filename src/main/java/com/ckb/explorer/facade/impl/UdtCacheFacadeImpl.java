@@ -50,7 +50,7 @@ public class UdtCacheFacadeImpl implements IUdtCacheFacade {
 
     @Override
     public Page<UdtsListResponse> udtListStatistic(UdtPageReq req) {
-        String cacheKey = String.format("%s%s:sort:%s", UDT_LIST_CACHE_PREFIX, CACHE_VERSION,req.getSort());
+        String cacheKey = String.format("%s%s:sort:%s:page:%d:size:%d", UDT_LIST_CACHE_PREFIX, CACHE_VERSION,req.getSort(), req.getPage(), req.getPageSize());
         return cacheUtils.getCache(cacheKey,                    // 缓存键
                 () -> loadFromDatabase(req),  // 数据加载函数
                 TTL_SECONDS,                 // 缓存过期时间
