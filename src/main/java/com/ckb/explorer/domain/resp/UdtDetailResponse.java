@@ -27,5 +27,7 @@ public class UdtDetailResponse {
 
   private Long holdersCount;
 
+  private  TypeScriptResponse typeScriptResponse;
+
 
 }

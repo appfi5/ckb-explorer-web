@@ -18,6 +18,7 @@ import com.ckb.explorer.enums.CellType;
 import com.ckb.explorer.enums.LockType;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.UdtAccountsMapper;
+import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.mapstruct.UdtHolderAllocationsConvert;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.UdtHolderAllocationsService;
@@ -120,6 +121,8 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         BigInteger totalAmount = udtAccountsMapper.getTotalAmountByTypeScriptId(script.getId());
         totalAmount = totalAmount == null ? BigInteger.ZERO : totalAmount;
         udtDetailResponse.setTotalAmount(totalAmount);
+        var typeScriptResponse = TypeScriptConvert.INSTANCE.toConvert(script);
+        udtDetailResponse.setTypeScriptResponse(typeScriptResponse);
         return udtDetailResponse;
     }
 }
