@@ -15,11 +15,15 @@ import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1/nft")
@@ -49,9 +53,15 @@ public class NftController {
 
     @GetMapping("/collections/{typeScriptHash}/transfers")
     @Operation(summary = "获取transfers列表")
-    public  ResponseInfo<Page<NftTransfersResp>> transfers(@PathVariable String typeScriptHash,NftTransfersPageReq req){
+    public  ResponseEntity<ResponseInfo<Page<NftTransfersResp>>> transfers(@PathVariable String typeScriptHash,NftTransfersPageReq req){
         validAddress(req.getAddressHash());
-        return ResponseInfo.SUCCESS(iNftCacheFacade.nftTransfersPage(typeScriptHash,req));
+        CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+                .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+                .staleWhileRevalidate(10, TimeUnit.MINUTES)
+                .staleIfError(60, TimeUnit.MINUTES);
+        return ResponseEntity.ok()
+                .cacheControl(cacheControl)
+                .body(ResponseInfo.SUCCESS(iNftCacheFacade.nftTransfersPage(typeScriptHash,req)));
     }
 
 
@@ -64,16 +74,27 @@ public class NftController {
 
     @GetMapping("/collections/{typeScriptHash}/items")
     @Operation(summary = "获取items列表")
-    public  ResponseInfo<Page<NftItemDetailResponse>> items(@PathVariable String typeScriptHash, BasePageReq req){
-        return ResponseInfo.SUCCESS(iNftCacheFacade.nftItems(typeScriptHash,req));
+    public  ResponseEntity<ResponseInfo<Page<NftItemDetailResponse>>> items(@PathVariable String typeScriptHash, BasePageReq req){
+        CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+                .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+                .staleWhileRevalidate(10, TimeUnit.MINUTES)
+                .staleIfError(60, TimeUnit.MINUTES);
+        return ResponseEntity.ok()
+                .cacheControl(cacheControl)
+                .body(ResponseInfo.SUCCESS(iNftCacheFacade.nftItems(typeScriptHash,req)));
     }
 
 
     @GetMapping("/collections/{typeScriptHash}/items/{tokenId}")
     @Operation(summary = "获取items详情")
-    public  ResponseInfo<NftItemResponse> items(@PathVariable String typeScriptHash, @PathVariable String tokenId ){
-
-        return ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(typeScriptHash,tokenId));
+    public  ResponseEntity<ResponseInfo<NftItemResponse>> items(@PathVariable String typeScriptHash, @PathVariable String tokenId ){
+        CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+                .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+                .staleWhileRevalidate(10, TimeUnit.MINUTES)
+                .staleIfError(60, TimeUnit.MINUTES);
+        return ResponseEntity.ok()
+                .cacheControl(cacheControl)
+                .body(ResponseInfo.SUCCESS(iNftCacheFacade.itemInfo(typeScriptHash,tokenId)));
     }
 
     // 地址校验
