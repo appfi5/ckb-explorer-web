@@ -19,6 +19,7 @@ import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
@@ -73,14 +74,11 @@ public class UdtAccountsServiceImpl extends ServiceImpl<UdtAccountsMapper, UdtAc
     result.forEach(item -> {
       var scriptData = typeScriptMap.get(item.getTypeScriptId());
       if(scriptData != null){
-        var typeScript = scriptConfig.getTypeScriptByCodeHash(Numeric.toHexString(scriptData.getCodeHash()), Numeric.toHexString(scriptData.getArgs()));
-        if(typeScript != null){
-          item.setFullName(typeScript.getName());
-          item.setSymbol(typeScript.getSymbol());
-          item.setDecimal(typeScript.getDecimal());
-          //item.setUdtIconFile(typeScript.getUdtIconFile());
-          item.setUdtType(typeScript.getCellType()); //cellType 同udtType
-          item.setTypeScriptHash(typeScript.getScriptHash());
+        var codeHash = Numeric.toHexString(scriptData.getCodeHash());
+        item.setTypeScriptHash(Numeric.toHexString(scriptData.getScriptHash()));
+        var typeScriptCellType = scriptConfig.getTypeScripts().stream().filter(typeScript -> Objects.equals(typeScript.getCodeHash(), codeHash)).findFirst().orElse(null);
+        if(typeScriptCellType!=null){
+          item.setUdtType(typeScriptCellType.getCellType()); //cellType 同udtType
         }
       }
     });

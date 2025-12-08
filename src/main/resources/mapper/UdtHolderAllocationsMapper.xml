@@ -18,13 +18,17 @@
     <resultMap id="addressCount" type="com.ckb.explorer.domain.dto.UdtAddressCountDto">
         <result property="typeScriptId" column="typeScriptId" />
         <result property="addressesCount" column="addressesCount" />
+        <result property="h24CkbTransactionsCount" column="h24CkbTransactionsCount" />
     </resultMap>
 
     <select id="getAddressNum" resultMap="addressCount">
-        select  uh.type_script_id as typeScriptId,
-        sum(uh.holder_count) as addressesCount,count(distinct  at.ckb_transaction_id) as h24CkbTransactionsCount
-        from udt_holder_allocations uh left join address_24h_transaction at on at.type_script_id = uh.type_script_id
-        group by uh.type_script_id
+        select uh.type_script_id as typeScriptId ,uh.addressesCount,COALESCE(at.h24CkbTransactionsCount,0) as h24CkbTransactionsCount from
+        (select  type_script_id ,
+        sum(holder_count) as addressesCount
+        from udt_holder_allocations group by type_script_id ) as uh
+        left join (select type_script_id, count(distinct  ckb_transaction_id) as h24CkbTransactionsCount
+        from address_24h_transaction group by type_script_id ) as at on at.type_script_id = uh.type_script_id
+        order by ${orderByStr} ${ascOrDesc}
     </select>
 
 </mapper>

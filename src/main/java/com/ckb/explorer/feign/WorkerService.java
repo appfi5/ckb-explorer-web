@@ -21,11 +21,16 @@ public interface WorkerService {
   @PostMapping(value ="/internal/daily_statistics/manual_trigger", produces = "application/json; charset=UTF-8")
   Boolean manualTriggerDailyStatistics(@RequestParam(required = false) LocalDate startDate);
 
-  @Operation(summary = "手动触发每日统计任务")
+  @Operation(summary = "手动触发Udt每日统计任务")
   @PostMapping(value ="/internal/udt_daily_statistics/manual_trigger", produces = "application/json; charset=UTF-8")
   Boolean manualTriggerUdtDailyStatistics(@RequestParam(required = false) LocalDate startDate);
 
   @Operation(summary = "服务健康检查")
   @GetMapping(value ="/internal/health_check")
   Boolean healthCheck();
+
+  @Operation(summary = "手动触发矿工每日统计任务")
+  @PostMapping(value ="/internal/miner_daily_statistics/manual_trigger", produces = "application/json; charset=UTF-8")
+  Boolean manualTriggerMinerDailyStatistics(@RequestParam(required = false) LocalDate startDate);
+
 }

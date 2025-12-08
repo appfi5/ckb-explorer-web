@@ -7,6 +7,7 @@ import com.ckb.explorer.entity.Output;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface OutputMapper extends BaseMapper<Output> {
@@ -26,4 +27,7 @@ public interface OutputMapper extends BaseMapper<Output> {
   Long countAddressTransactions(@Param("lockScriptId") Long lockScriptId);
 
   List<CellOutputDto> getDaoDisplayOutputsByTransactionIds(@Param("transactionIds") List<Long> transactionIds, @Param("size")int size, @Param("typeScriptId") Long typeScriptId);
+
+  @Select("select * from output where lock_script_id = #{lockScriptId} limit 1")
+  Output findByLockScriptIdOutput(@Param("lockScriptId") Long lockScriptId);
 }
