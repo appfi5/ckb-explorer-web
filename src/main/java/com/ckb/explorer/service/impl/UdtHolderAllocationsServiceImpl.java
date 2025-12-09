@@ -87,7 +87,7 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         String[] sortParts = req.getSort().split("\\.", 2);
         String orderBy = sortParts[0];
         if (!Pattern.compile("^(typeScriptId|addressesCount|h24CkbTransactionsCount)$").matcher(orderBy).matches()) {
-            orderBy = "typeScriptId";
+            orderBy = "h24CkbTransactionsCount";
         }
         String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
         Page<UdtAddressCountDto> page = new Page<>(req.getPage(), req.getPageSize());
