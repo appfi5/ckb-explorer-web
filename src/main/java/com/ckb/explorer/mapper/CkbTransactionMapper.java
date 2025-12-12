@@ -17,7 +17,9 @@ public interface CkbTransactionMapper extends BaseMapper<CkbTransaction> {
 
   TransactionDto selectTransactionWithCellDeps(@Param("txHash") byte[] txHash);
 
-  Page<AddressTransactionPageResponse> selectPageByAddressScriptId(Page page, @Param("orderByStr") String orderBy, @Param("ascOrDesc") String ascOrDesc, @Param("addressScriptId") Long addressScriptId);
+  Long selectTotalByAddressScriptId(@Param("addressScriptId") Long addressScriptId, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+
+  Page<AddressTransactionPageResponse> selectPageByAddressScriptId(Page page, @Param("orderByStr") String orderBy, @Param("ascOrDesc") String ascOrDesc, @Param("addressScriptId") Long addressScriptId, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
   Page<CkbTransaction> selectPageByBlockHash(Page page, @Param("blockHash") byte[] blockHash, @Param("txHash") byte[] txHash, @Param("lockScriptId") Long lockScriptId);
 

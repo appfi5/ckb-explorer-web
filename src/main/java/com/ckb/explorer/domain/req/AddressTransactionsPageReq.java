@@ -2,6 +2,8 @@ package com.ckb.explorer.domain.req;
 
 import com.ckb.explorer.domain.req.base.BasePageReq;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,4 +18,10 @@ public class AddressTransactionsPageReq extends BasePageReq {
     
     @Schema(description = "排序方式，默认为time.desc", example = "time.desc")
     private String sort = "time.desc";
+
+    @Schema( description = "开始时间")
+    private LocalDate startTime;
+
+    @Schema( description = "结束时间")
+    private LocalDate endTime;
 }
