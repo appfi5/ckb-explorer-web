@@ -83,6 +83,25 @@
     order by dep_id
   </select>
 
+  <sql id="txHashByAddressScriptId" >
+    SELECT o1.tx_hash
+    FROM output o1
+    WHERE o1.tx_hash IS NOT NULL
+      AND o1.lock_script_id = 10
+      AND o1.block_timestamp BETWEEN #{startTime} AND #{endTime}
+    UNION ALL
+    SELECT o2.consumed_tx_hash AS tx_hash
+    FROM output o2
+    WHERE o2.consumed_tx_hash IS NOT NULL
+      AND o2.lock_script_id = #{addressScriptId}
+      AND o2.consumed_timestamp BETWEEN #{startTime} AND #{endTime}
+  </sql>
+  <select id="selectTotalByAddressScriptId" resultType="Long">
+    SELECT COUNT(DISTINCT tx_hash) AS total_unique_tx
+    FROM (
+        <include refid="txHashByAddressScriptId"></include>
+         ) AS target_tx
+  </select>
   <select id="selectPageByAddressScriptId"
     resultType="com.ckb.explorer.domain.resp.AddressTransactionPageResponse">
     SELECT ct.id,
@@ -93,22 +112,14 @@
            ct.input_count                    as display_inputs_count,
            ct.output_count                   as display_outputs_count
     FROM ckb_transaction ct
-    WHERE EXISTS(
-      -- lock_script_id 创建 cell的交易
-      SELECT 1
-      FROM output o1
-      WHERE o1.tx_hash = ct.tx_hash
-        AND o1.lock_script_id = #{addressScriptId}
-    )
-       OR EXISTS(
-      -- lock_script_id 消费了 cell的交易
-      SELECT 1
-      FROM output o2
-      WHERE o2.consumed_tx_hash = ct.tx_hash
-        AND o2.lock_script_id = #{addressScriptId}
-    )
+        JOIN (
+      SELECT DISTINCT tx_hash
+      FROM (
+        <include refid="txHashByAddressScriptId"></include>
+      ) t
+    )tt ON ct.tx_hash = tt.tx_hash
+    WHERE ct.block_timestamp BETWEEN #{startTime} AND #{endTime}
     order by ${orderByStr} ${ascOrDesc}, tx_index desc
-
   </select>
   <select id="selectPageByBlockHash"
     resultType="com.ckb.explorer.entity.CkbTransaction">
