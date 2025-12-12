@@ -20,6 +20,7 @@ public interface CellOutputConvert {
 
   @Mapping(target = "addressHash", ignore = true)
   @Mapping(target = "typeScript", ignore = true)
+  @Mapping(target = "data",expression = "java(cellOutput.getData() != null? org.nervos.ckb.utils.Numeric.toHexString(cellOutput.getData()): null)")
   CellOutputResponse toConvert(CellOutputDto cellOutput);
 
   List<CellOutputResponse> toConvertList(List<CellOutputDto> list);

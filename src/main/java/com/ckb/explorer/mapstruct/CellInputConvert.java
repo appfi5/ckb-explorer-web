@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.resp.CellInputResponse;
 import com.ckb.explorer.domain.resp.ScriptResponse;
+import com.ckb.explorer.domain.resp.SinceResponse;
 import com.ckb.explorer.enums.HashType;
 import com.ckb.explorer.util.TypeConversionUtil;
 import java.util.List;
@@ -18,8 +19,9 @@ public interface CellInputConvert {
   CellInputConvert INSTANCE = Mappers.getMapper(CellInputConvert.class);
 
   @Mapping(target = "addressHash", ignore = true)
-  @Mapping(expression = "java(new com.ckb.explorer.domain.resp.SinceResponse(cellInput.getSinceRaw(),null))", target = "since")
+  @Mapping(target = "since", ignore = true)
   @Mapping(target = "typeScript", ignore = true)
+  @Mapping(target = "data",expression = "java(cellInput.getData() != null? org.nervos.ckb.utils.Numeric.toHexString(cellInput.getData()): null)")
   CellInputResponse toConvert(CellInputDto cellInput);
 
   List<CellInputResponse> toConvertList(List<CellInputDto> list);
@@ -38,5 +40,6 @@ public interface CellInputConvert {
     if(cellInput.getArgs() != null && cellInput.getCodeHash()!=null && cellInput.getHashType()!=null){
       response.setTypeScript(new ScriptResponse(cellInput.getArgs(),cellInput.getCodeHash(), HashType.getValueByCode(cellInput.getHashType())));
     }
+    response.setSince(new SinceResponse(TypeConversionUtil.convertSince(cellInput.getSinceRaw()),null));
   }
 }

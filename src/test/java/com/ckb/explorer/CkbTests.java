@@ -16,6 +16,8 @@ import org.nervos.ckb.type.Script.HashType;
 import org.nervos.ckb.type.concrete.Byte32Vec;
 import org.nervos.ckb.type.concrete.BytesVec;
 import org.nervos.ckb.type.concrete.Uint256;
+import org.nervos.ckb.type.concrete.Uint64;
+import org.nervos.ckb.utils.MoleculeConverter;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 
@@ -30,7 +32,8 @@ public class CkbTests {
     //System.out.println(ConvertToUInt256(Numeric.hexStringToByteArray("0x00000000000000000000000000000000000000000000000000000000029BFB50")));
     //getTransaction();
     // daoCompensationCalculator();
-    occupiedCapacity();
+    //occupiedCapacity();
+    testSince();
   }
   private static void testWitness(){
     var witnesses = "4d000000080000004100000055f49d7979ba246aa2f05a6e9afd25a23dc39ed9085a0b1e33b6b3bb80d34dbd4031a04ea389d6d8ff5604828889aa06a827e930a7e89411b80f6c3e1404951f00";
@@ -115,5 +118,21 @@ public class CkbTests {
     System.out.println("ar_i:" +parsedDao.getArI());
     System.out.println("c_i:" +parsedDao.getCI());
     System.out.println("u_i:" +parsedDao.getUI());
+  }
+
+  public static void testSince() throws IOException {
+    var since = "0x290000d200f00020";
+    var byteSince =Numeric.hexStringToByteArray(since);
+    var uint64Since = Uint64.builder(byteSince).build();
+    //BigInteger sinceLongValue = Numeric.littleEndianBytesToBigInteger(Numeric.hexStringToByteArray(since));
+    //System.out.println("BigInteger "+ sinceLongValue);
+    //Uint64 uint64SinceNew = MoleculeConverter.packUint64(sinceLongValue.longValue());
+    BigInteger uint64Value = new BigInteger(uint64Since.getItems());
+    var littleEndian = MoleculeConverter.toByteArrayLittleEndianUnsigned(uint64Value, byteSince.length);
+    System.out.println(Numeric.toHexString(uint64Since.getItems()));
+    //System.out.println(Numeric.littleEndian(sinceLongValue.longValue()));
+    System.out.println(Numeric.toHexString(littleEndian));
+    //System.out.println(Numeric.toHexString(MoleculeConverter.toByteArrayLittleEndianUnsigned(sinceLongValue, 8)));
+    System.out.println(Numeric.littleEndian(uint64Value.longValue()));
   }
 }

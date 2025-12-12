@@ -1,6 +1,7 @@
 package com.ckb.explorer.mapper;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.UdtAddressCountDto;
 import com.ckb.explorer.entity.UdtHolderAllocations;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -22,7 +23,8 @@ public interface UdtHolderAllocationsMapper extends BaseMapper<UdtHolderAllocati
     @Select("select sum(holder_count) from udt_holder_allocations where type_script_id = #{typeScriptId} ")
     Long selectHolderCountByTypeScriptId(@Param("typeScriptId") Long typeScriptId);
 
-    List<UdtAddressCountDto> getAddressNum();
+    Page<UdtAddressCountDto> getAddressNum(Page page, @Param("orderByStr") String orderByStr,
+                                           @Param("ascOrDesc") String ascOrDesc);
 
 
 
