@@ -31,7 +31,9 @@ import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -370,38 +372,55 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     Page transactionPage = new Page<>(page, pageSize);
     Long total = 0L;
     List<AddressTransactionPageResponse> transactions = new ArrayList<>();
-    // 如果没有指定开始结束时间，则获取最近24小时表里的交易
+    Long startTimeLong = 0L;
+    Long endTimeLong = 0L;
+    // 如果没有指定开始结束时间，则获取最近一个月的交易
     if(startTime == null && endTime == null){
-      // 从24小时表里获取翻页的交易id
-      Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
-          transactionPage, script.getId(), orderBy, ascOrDesc);
+//      // 从24小时表里获取翻页的交易id
+//      Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
+//          transactionPage, script.getId(), orderBy, ascOrDesc);
+//
+//      List<Long> transactionIds = transactionIdPage.getRecords();
+//      if (transactionIds.isEmpty()){
+//        return Page.of(page, pageSize, 0);
+//      }
+//      // 根据交易id查询交易详情
+//      transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
+//      total = transactionIdPage.getTotal();
+      ZonedDateTime currentUtc = ZonedDateTime.now(ZoneOffset.UTC);
+      LocalDate firstDayOfMonthUtc = currentUtc.toLocalDate()
+          .with(TemporalAdjusters.firstDayOfMonth()); // 当月第一天
+      ZonedDateTime firstDayStartUtc = firstDayOfMonthUtc
+          .atStartOfDay(ZoneOffset.UTC); // 00:00:00 UTC
 
-      List<Long> transactionIds = transactionIdPage.getRecords();
-      if (transactionIds.isEmpty()){
-        return Page.of(page, pageSize, 0);
-      }
-      // 根据交易id查询交易详情
-      transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
-      total = transactionIdPage.getTotal();
+      startTimeLong = firstDayStartUtc.toInstant().toEpochMilli();
+
+      LocalDate lastDayOfMonthUtc = currentUtc.toLocalDate()
+          .with(TemporalAdjusters.lastDayOfMonth()); // 当月最后一天
+      ZonedDateTime lastDayEndUtc = lastDayOfMonthUtc
+          .atTime(23, 59, 59) // 23:59:59
+          .with(ChronoField.MILLI_OF_SECOND, 999)
+          .atZone(ZoneOffset.UTC); // 绑定UTC时区
+      endTimeLong = lastDayEndUtc.toInstant().toEpochMilli();
       // 如果指定了开始结束时间，则获取指定时间段的交易
     } else if(startTime != null && endTime != null){
-      // 禁用查询总数
-      transactionPage.setSearchCount(false);
 
       // 转换成UTC时间毫秒
-      Long startTimeLong = startTime.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
-      Long endTimeLong = endTime.atTime(23, 59, 59).with(ChronoField.MILLI_OF_SECOND, 999).toInstant(ZoneOffset.UTC).toEpochMilli();
-      total = baseMapper.selectTotalByAddressScriptId(script.getId(), startTimeLong, endTimeLong);
-      if (total == 0){
-        return Page.of(page, pageSize, 0);
-      }
+      startTimeLong = startTime.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+      endTimeLong = endTime.atTime(23, 59, 59).with(ChronoField.MILLI_OF_SECOND, 999).toInstant(ZoneOffset.UTC).toEpochMilli();
+    }
+    // 禁用查询总数
+    transactionPage.setSearchCount(false);
+    total = baseMapper.selectTotalByAddressScriptId(script.getId(), startTimeLong, endTimeLong);
+    if (total == 0){
+      return Page.of(page, pageSize, 0);
+    }
 
-      Page<AddressTransactionPageResponse> transactionsPage = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId(), startTimeLong, endTimeLong);
-      transactions = transactionsPage.getRecords();
+    Page<AddressTransactionPageResponse> transactionsPage = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId(), startTimeLong, endTimeLong);
+    transactions = transactionsPage.getRecords();
 
-      if (transactions.isEmpty()){
-        return transactionsPage;
-      }
+    if (transactions.isEmpty()){
+      return transactionsPage;
     }
 
     // 分开处理cellbase和普通交易

@@ -84,17 +84,18 @@
   </select>
 
   <sql id="txHashByAddressScriptId" >
-    SELECT DISTINCT o1.tx_hash
-    FROM output o1
-    WHERE o1.tx_hash IS NOT NULL
-      AND o1.lock_script_id = #{addressScriptId}
-      AND o1.block_timestamp BETWEEN #{startTime} AND #{endTime}
-    UNION
-    SELECT DISTINCT o2.consumed_tx_hash AS tx_hash
-    FROM output o2
-    WHERE o2.consumed_tx_hash IS NOT NULL
-      AND o2.lock_script_id = #{addressScriptId}
-      AND o2.consumed_timestamp BETWEEN #{startTime} AND #{endTime}
+    SELECT tx_hash FROM (
+        SELECT o1.tx_hash
+        FROM output o1
+        WHERE o1.block_timestamp BETWEEN #{startTime} AND #{endTime}
+          AND o1.lock_script_id = #{addressScriptId}
+        UNION ALL
+        SELECT o2.consumed_tx_hash AS tx_hash
+        FROM output o2
+        WHERE o2.consumed_timestamp BETWEEN #{startTime} AND #{endTime}
+          AND o2.lock_script_id = #{addressScriptId}
+          AND o2.consumed_tx_hash IS NOT NULL
+        ) t GROUP BY tx_hash
   </sql>
   <select id="selectTotalByAddressScriptId" resultType="Long">
     SELECT COUNT(tx_hash) AS total_unique_tx
