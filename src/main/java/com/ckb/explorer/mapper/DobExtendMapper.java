@@ -110,7 +110,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
     @Select("select dlc.id,dlc.data,dlc.type_script_id,dlc.lock_script_id from dob_live_cells  dlc\n" +
             "where exists (\n" +
             "select * from dob_code dc left join dob_extend dobe on dc.dob_extend_id = dobe.id where \n" +
-            "dc.dob_code_script_id=dlc.type_script_id and dobe.dob_script_hash=#{dobScriptHash})")
+            "dc.dob_code_script_id=dlc.type_script_id and dobe.dob_script_hash=#{dobScriptHash}) order by dlc.id desc")
     Page<NftItemDto> itemsPage(Page page ,@Param("dobScriptHash") byte[] dobScriptHash);
 
     @Select("select dobo.id,dobo.data,dobo.type_script_id,LAST_VALUE(dobo.lock_script_id) over w as lock_script_id \n" +

@@ -1,5 +1,8 @@
 package com.ckb.explorer.facade.impl;
 
+import static com.ckb.explorer.constants.CommonConstantsKey.CACHE_VERSION;
+import static com.ckb.explorer.constants.CommonConstantsKey.ONE_HOUR_TTL_SECONDS;
+
 import com.ckb.explorer.domain.resp.DailyStatisticResponse;
 import com.ckb.explorer.facade.DailyStatisticsCacheFacade;
 import com.ckb.explorer.service.DailyStatisticsService;
@@ -23,10 +26,7 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
   private DailyStatisticsService dailyStatisticsService;
 
   private static final String DAILY_STATISTICS_CACHE_PREFIX = "daily:statistics:";
-  private static final String CACHE_VERSION = "v1";
 
-  // 缓存 TTL
-  private static final long TTL_SECONDS = 60 * 60;
 
   @Override
   public List<DailyStatisticResponse> getDailyStatisticsByIndicator(String indicator) {
@@ -37,7 +37,7 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
     return cacheUtils.getCacheWithoutLock(
         cacheKey,                    // 缓存键
         () -> loadFromDatabase(indicator),  // 数据加载函数
-        TTL_SECONDS,                 // 缓存过期时间
+        ONE_HOUR_TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
   }

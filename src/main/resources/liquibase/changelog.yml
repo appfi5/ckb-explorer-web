@@ -6,4 +6,11 @@ databaseChangeLog:
         - sqlFile:
             path: sql-scripts/20250902001-create-statistic-address-table.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 20251125001
+      author: liangyaqian
+      changes:
+        - sqlFile:
+            path: sql-scripts/20251125001-create-miner-daily-statistics-table.sql
+            relativeToChangelogFile: true
 

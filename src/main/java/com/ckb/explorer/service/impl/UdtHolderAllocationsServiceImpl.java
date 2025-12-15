@@ -1,12 +1,14 @@
 package com.ckb.explorer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.repository.AbstractRepository;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ScriptConfig;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.UdtAddressCountDto;
+import com.ckb.explorer.domain.req.UdtPageReq;
 import com.ckb.explorer.domain.resp.UdtDetailResponse;
 import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
 import com.ckb.explorer.domain.resp.UdtsListResponse;
@@ -16,6 +18,7 @@ import com.ckb.explorer.enums.CellType;
 import com.ckb.explorer.enums.LockType;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.UdtAccountsMapper;
+import com.ckb.explorer.mapstruct.TypeScriptConvert;
 import com.ckb.explorer.mapstruct.UdtHolderAllocationsConvert;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.service.UdtHolderAllocationsService;
@@ -23,13 +26,16 @@ import com.ckb.explorer.mapper.UdtHolderAllocationsMapper;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.nervos.ckb.utils.Numeric;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -75,46 +81,31 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
 
 
     @Override
-    public List<UdtsListResponse> udtListStatistic() {
+    public Page<UdtsListResponse> udtListStatistic(UdtPageReq req) {
 
-        long start = System.currentTimeMillis();
-        List<ScriptConfig.TypeScript> typeScripts = lockScriptConfig.getTypeScripts().stream()
-                .filter(typeScript -> typeScript.getCellType() != null && CellType.valueOf(typeScript.getCellType()).isUdtType()).toList();
+        req.setSort(StringUtils.defaultIfBlank(req.getSort(), "typeScriptId.desc"));
+        String[] sortParts = req.getSort().split("\\.", 2);
+        String orderBy = sortParts[0];
+        if (!Pattern.compile("^(typeScriptId|addressesCount|h24CkbTransactionsCount)$").matcher(orderBy).matches()) {
+            orderBy = "h24CkbTransactionsCount";
+        }
+        String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+        Page<UdtAddressCountDto> page = new Page<>(req.getPage(), req.getPageSize());
 
-        List<UdtsListResponse> udtsListResponses = new ArrayList<>(typeScripts.size());
-
-        List<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum();
-        long addressEnd = System.currentTimeMillis();
-        log.info("getAddressNum spent : {}" ,addressEnd - start );
-        if(addressesCounts==null|| addressesCounts.isEmpty()){
-            return new ArrayList<>();
+        Page<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum(page,orderBy,ascOrDesc);
+        if(CollectionUtils.isEmpty(addressesCounts.getRecords())){
+            return new Page<>(req.getPage(), req.getPageSize());
         }
 
-        List<Long> typeScriptIds = addressesCounts.stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
-
-
+        List<Long> typeScriptIds = addressesCounts.getRecords().stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
         List<Script> scripts = scriptService.listByIds(typeScriptIds);
 
-        typeScripts.stream().forEach(typeScript -> {
-            Long typeScriptId;
-            Script scriptData = scripts.stream().filter(script -> Objects.equals(typeScript.getScriptHash(), Numeric.toHexString(script.getScriptHash())))
-                    .findFirst().orElse(null);
-            if (scriptData != null) {
-                typeScriptId = scriptData.getId();
-            } else {
-                typeScriptId = null;
-            }
-
-            UdtsListResponse udtsListResponse = new UdtsListResponse();
-            udtsListResponse.setTypeScriptHash(typeScript.getScriptHash());
-            UdtAddressCountDto udtAddressCountDto = addressesCounts.stream().filter(addressesCount -> Objects.equals(addressesCount.getTypeScriptId(), typeScriptId)).findFirst().orElse(null);
-            Long addressCount = udtAddressCountDto == null ? 0L : udtAddressCountDto.getAddressesCount();
-            Long h24CkbTransactionsCount = udtAddressCountDto == null ? 0L : udtAddressCountDto.getH24CkbTransactionsCount();
-            udtsListResponse.setAddressesCount(addressCount);
-            udtsListResponse.setH24CkbTransactionsCount(h24CkbTransactionsCount);
-            udtsListResponses.add(udtsListResponse);
+        addressesCounts.getRecords().stream().forEach(udtAddressCountDto -> {
+            Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(),udtAddressCountDto.getTypeScriptId())).findFirst().orElse(null);
+            udtAddressCountDto.setTypeScriptHash(Numeric.toHexString(typeScript.getScriptHash()));
         });
-        return udtsListResponses;
+        Page<UdtsListResponse> udtListPage = UdtHolderAllocationsConvert.INSTANCE.toUdtPage(addressesCounts);
+        return udtListPage;
     }
 
     @Override
@@ -130,6 +121,8 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
         BigInteger totalAmount = udtAccountsMapper.getTotalAmountByTypeScriptId(script.getId());
         totalAmount = totalAmount == null ? BigInteger.ZERO : totalAmount;
         udtDetailResponse.setTotalAmount(totalAmount);
+        var typeScriptResponse = TypeScriptConvert.INSTANCE.toConvert(script);
+        udtDetailResponse.setTypeScriptResponse(typeScriptResponse);
         return udtDetailResponse;
     }
 }

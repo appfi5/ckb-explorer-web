@@ -10,4 +10,6 @@ public class UdtAddressCountDto {
     private Long addressesCount;
 
     private Long h24CkbTransactionsCount;
+
+    private String typeScriptHash;
 }

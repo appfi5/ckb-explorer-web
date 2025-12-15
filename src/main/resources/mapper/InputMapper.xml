@@ -15,7 +15,7 @@
            s.hash_type                           as lock_hash_type,
            '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
            o.output_index                        as cell_index,
-           '0x' || encode(i.since, 'hex')        as since_raw,
+           i.since                               as since_raw,
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
            type.hash_type                        as hash_type,
@@ -54,7 +54,7 @@
            s.hash_type                           as lock_hash_type,
            '0x' || encode(o.tx_hash, 'hex')      as generated_tx_hash,
            o.output_index                        as cell_index,
-           '0x' || encode(i.since, 'hex')        as since_raw,
+           i.since                               as since_raw,
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
            type.hash_type                        as hash_type,
@@ -113,7 +113,7 @@
                     and o.data != '\x0000000000000000'  THEN 2
            ELSE 0
       END                                   as cell_type,
-      '0x' || encode(i.since, 'hex')        as since_raw,
+      i.since                               as since_raw,
       '0x' || encode(type.args, 'hex')      as args,
       '0x' || encode(type.code_hash, 'hex') as code_hash,
       type.hash_type                        as hash_type,

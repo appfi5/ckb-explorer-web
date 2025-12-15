@@ -1,6 +1,8 @@
 package com.ckb.explorer.facade.impl;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.req.UdtPageReq;
 import com.ckb.explorer.domain.resp.UdtDetailResponse;
 import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
 import com.ckb.explorer.domain.resp.UdtsListResponse;
@@ -47,10 +49,10 @@ public class UdtCacheFacadeImpl implements IUdtCacheFacade {
     }
 
     @Override
-    public List<UdtsListResponse> udtListStatistic() {
-        String cacheKey = String.format("%s%s", UDT_LIST_CACHE_PREFIX, CACHE_VERSION);
+    public Page<UdtsListResponse> udtListStatistic(UdtPageReq req) {
+        String cacheKey = String.format("%s%s:sort:%s:page:%d:size:%d", UDT_LIST_CACHE_PREFIX, CACHE_VERSION,req.getSort(), req.getPage(), req.getPageSize());
         return cacheUtils.getCache(cacheKey,                    // 缓存键
-                () -> loadFromDatabase(),  // 数据加载函数
+                () -> loadFromDatabase(req),  // 数据加载函数
                 TTL_SECONDS,                 // 缓存过期时间
                 TimeUnit.SECONDS             // 时间单位
         );
@@ -66,8 +68,8 @@ public class UdtCacheFacadeImpl implements IUdtCacheFacade {
         );
     }
 
-    private List<UdtsListResponse> loadFromDatabase() {
-        return udtHolderAllocationsService.udtListStatistic();
+    private Page<UdtsListResponse> loadFromDatabase(UdtPageReq req) {
+        return udtHolderAllocationsService.udtListStatistic(req);
     }
 
     private List<UdtHolderAllocationsResponse> loadHolderAllocationsResponseFromDataBase(String typeScriptHash) {
