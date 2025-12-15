@@ -42,7 +42,7 @@ public class CellInputDto {
   /**
    * since信息
    */
-  private String sinceRaw;
+  private byte[] sinceRaw;
 
   /**
    * 标签列表

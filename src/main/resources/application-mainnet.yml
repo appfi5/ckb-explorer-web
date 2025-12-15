@@ -330,7 +330,7 @@ script:
       decimal: 6
       args: "0xd591ebdc69626647e056e13345fd830c8b876bb06aa07ba610479eb77153ea9f"
       scriptHash: "0x7f3fba3fb8d6e000176f7e1ae22e8cd02841dec6a8341dc69aeef46387a20664"
-      cellType: 15
+      cellType: 17
     - name: "Seal"
       codeHash: "0x50bd8d6680b8b9cf98b73f3c08faf8b2a21914311954118ad6609be6e78a1b95"
       hashType: "data1"
@@ -350,7 +350,7 @@ script:
     - name: "BTC"
       codeHash: "0x092c2c4a26ea475a8e860c29cf00502103add677705e2ccd8d6fe5af3caa5ae3"
       hashType: "type"
-      cellType: 15
+      cellType: 17
       args: "0x68e64ba4b0daeeec45c1f983d6d574fca370442cafb805bc4265ef74870a4ac8"
       symbol: "BTC"
       decimal: 8
@@ -378,7 +378,7 @@ script:
       symbol: "RUSD"
       decimal: 8
       scriptHash: "0x71ff665b40ba044b1981ea9a8965189559c8e01e8cdfa34a3cc565e1f870a95c"
-      cellType: 15
+      cellType: 17
     - name: "COTA"
       codeHash: "0x1122a4fb54697cf2e6e3a96c9d80fd398a936559b90954c6e88eb7ba0cf652df"
       hashType: "type"
@@ -404,6 +404,18 @@ script:
       hashType: "data1"
       cellType: 12
       version: 1
+    - name: "Stable++ Asset"
+      codeHash: "0x26a33e0815888a4a0614a0b7d09fa951e0993ff21e55905510104a0b1312032b"
+      hashType: "type"
+      cellType: 17
+    - name: "wCKB"
+      codeHash: "0x42a0b2aacc836c0fc2bbd421a9020de42b8411584190f30be547fdf54214acc3"
+      hashType: "type"
+      cellType: 17
+    - name: "sudt"
+      codeHash: "0x5e7a36a77e68eecc013dfa2fe6a23f3b6c344b04005808694ae6dd45eea4cfd5"
+      hashType: "type"
+      cellType: 3
 springdoc:
   api-docs:
     enabled: false  # 禁用API文档数据端点（/v3/api-docs）

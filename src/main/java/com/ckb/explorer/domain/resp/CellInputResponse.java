@@ -69,4 +69,6 @@ public class CellInputResponse extends BaseResponse<Long> {
    * 类型脚本
    */
   private ScriptResponse typeScript;
+
+  private String data;
 }

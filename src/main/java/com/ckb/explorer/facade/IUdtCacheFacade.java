@@ -1,6 +1,7 @@
 package com.ckb.explorer.facade;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.req.UdtPageReq;
 import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.UdtDetailResponse;
 import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
@@ -18,7 +19,7 @@ public interface IUdtCacheFacade {
     List<UdtHolderAllocationsResponse> findByTypeScriptHash(String typeScriptHash);
 
 
-    List<UdtsListResponse> udtListStatistic();
+    Page<UdtsListResponse> udtListStatistic(UdtPageReq req);
 
     UdtDetailResponse findDetailByTypeHash(String typeHash);
 

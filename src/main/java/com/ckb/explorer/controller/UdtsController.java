@@ -1,8 +1,10 @@
 package com.ckb.explorer.controller;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.common.dto.ResponseInfo;
 
+import com.ckb.explorer.domain.req.UdtPageReq;
 import com.ckb.explorer.domain.resp.UdtDetailResponse;
 import com.ckb.explorer.domain.resp.UdtHolderAllocationsResponse;
 import com.ckb.explorer.domain.resp.UdtsListResponse;
@@ -27,8 +29,8 @@ public class UdtsController {
 
     @GetMapping
     @Operation(summary = "UDT列表")
-    public ResponseInfo<List<UdtsListResponse>> index() {
-        return ResponseInfo.SUCCESS(iUdtCacheFacade.udtListStatistic());
+    public ResponseInfo<Page<UdtsListResponse>> index(UdtPageReq req) {
+        return ResponseInfo.SUCCESS(iUdtCacheFacade.udtListStatistic(req));
     }
 
 
