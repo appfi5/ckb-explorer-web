@@ -369,9 +369,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE,
           i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
-    Page transactionPage = new Page<>(page, pageSize);
-    Long total = 0L;
-    List<AddressTransactionPageResponse> transactions = new ArrayList<>();
+
+
     Long startTimeLong = 0L;
     Long endTimeLong = 0L;
     // 如果没有指定开始结束时间，则获取最近一个月的交易
@@ -409,19 +408,18 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       startTimeLong = startTime.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
       endTimeLong = endTime.atTime(23, 59, 59).with(ChronoField.MILLI_OF_SECOND, 999).toInstant(ZoneOffset.UTC).toEpochMilli();
     }
-    // 禁用查询总数
-    transactionPage.setSearchCount(false);
-    total = baseMapper.selectTotalByAddressScriptId(script.getId(), startTimeLong, endTimeLong);
+
+    Long total = baseMapper.selectTotalByAddressScriptId(script.getId(), startTimeLong, endTimeLong);
     if (total == 0){
       return Page.of(page, pageSize, 0);
     }
 
-    Page<AddressTransactionPageResponse> transactionsPage = baseMapper.selectPageByAddressScriptId(transactionPage, orderBy, ascOrDesc, script.getId(), startTimeLong, endTimeLong);
-    transactions = transactionsPage.getRecords();
+    Page transactionPage = new Page<>(page, pageSize);
+    transactionPage.setSearchCount(false);
+    Page<String> transactionHashPage = baseMapper.selectHashPageByAddressScriptId(transactionPage, orderBy, ascOrDesc,script.getId(), startTimeLong, endTimeLong);
 
-    if (transactions.isEmpty()){
-      return transactionsPage;
-    }
+    List<byte[]> txHashes = transactionHashPage.getRecords().stream().map(txHash -> Numeric.hexStringToByteArray(txHash)).toList();
+    List<AddressTransactionPageResponse> transactions = baseMapper.selectByTxHashes(orderBy, ascOrDesc, txHashes, startTimeLong, endTimeLong);
 
     // 分开处理cellbase和普通交易
     var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
