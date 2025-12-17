@@ -94,7 +94,7 @@
         FROM output o2
         WHERE o2.lock_script_id = #{addressScriptId}
           AND o2.consumed_timestamp BETWEEN #{startTime} AND #{endTime}
-          AND o2.consumed_tx_hash IS NOT NULL
+          AND o2.consumed_tx_hash != ''
         ) t GROUP BY tx_hash
   </sql>
   <select id="selectTotalByAddressScriptId" resultType="Long">
