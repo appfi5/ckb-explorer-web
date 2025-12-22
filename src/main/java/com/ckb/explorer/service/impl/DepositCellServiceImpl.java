@@ -57,7 +57,7 @@ public class DepositCellServiceImpl extends ServiceImpl<DepositCellMapper, Depos
         response.setAddressHash(address);
         response.setDaoDeposit(depositor.getDaoDeposit());
         return response;
-      }).toList();
+      }).collect(Collectors.toList());
   }
 
   @Override
