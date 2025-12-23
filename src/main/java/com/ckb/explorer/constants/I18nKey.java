@@ -192,4 +192,6 @@ public final class I18nKey {
   public static final int UDTS_NOT_FOUND_CODE = 2016;
   public static final String UDTS_NOT_FOUND_MESSAGE = "no_udts_found_by_given_type_script_hash";
 
+  public static final int TIME_RANGE_INVALID_CODE = 2017;
+  public static final String TIME_RANGE_INVALID_MESSAGE = "time_range_is_invalid";
 }

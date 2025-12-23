@@ -29,6 +29,11 @@ import com.ckb.explorer.service.CkbTransactionService;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -344,7 +349,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Override
   public Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort,
-      int page, int pageSize) {
+      int page, int pageSize, LocalDate startTime, LocalDate endTime) {
 
     String[] sortParts = sort.split("\\.", 2);
     String orderBy = sortParts[0];
@@ -365,18 +370,56 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
           i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
 
-    // 从24小时表里获取翻页的交易id
-    Page<Long> transactionIdsPage = new Page<>(page, pageSize);
-    Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
-        transactionIdsPage, script.getId(), orderBy, ascOrDesc);
 
-    List<Long> transactionIds = transactionIdPage.getRecords();
-    if (transactionIds.isEmpty()){
+    Long startTimeLong = 0L;
+    Long endTimeLong = 0L;
+    // 如果没有指定开始结束时间，则获取最近一个月的交易
+    if(startTime == null && endTime == null){
+//      // 从24小时表里获取翻页的交易id
+//      Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
+//          transactionPage, script.getId(), orderBy, ascOrDesc);
+//
+//      List<Long> transactionIds = transactionIdPage.getRecords();
+//      if (transactionIds.isEmpty()){
+//        return Page.of(page, pageSize, 0);
+//      }
+//      // 根据交易id查询交易详情
+//      transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
+//      total = transactionIdPage.getTotal();
+      ZonedDateTime currentUtc = ZonedDateTime.now(ZoneOffset.UTC);
+      LocalDate firstDayOfMonthUtc = currentUtc.toLocalDate()
+          .with(TemporalAdjusters.firstDayOfMonth()); // 当月第一天
+      ZonedDateTime firstDayStartUtc = firstDayOfMonthUtc
+          .atStartOfDay(ZoneOffset.UTC); // 00:00:00 UTC
+
+      startTimeLong = firstDayStartUtc.toInstant().toEpochMilli();
+
+      LocalDate lastDayOfMonthUtc = currentUtc.toLocalDate()
+          .with(TemporalAdjusters.lastDayOfMonth()); // 当月最后一天
+      ZonedDateTime lastDayEndUtc = lastDayOfMonthUtc
+          .atTime(23, 59, 59) // 23:59:59
+          .with(ChronoField.MILLI_OF_SECOND, 999)
+          .atZone(ZoneOffset.UTC); // 绑定UTC时区
+      endTimeLong = lastDayEndUtc.toInstant().toEpochMilli();
+      // 如果指定了开始结束时间，则获取指定时间段的交易
+    } else if(startTime != null && endTime != null){
+
+      // 转换成UTC时间毫秒
+      startTimeLong = startTime.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+      endTimeLong = endTime.atTime(23, 59, 59).with(ChronoField.MILLI_OF_SECOND, 999).toInstant(ZoneOffset.UTC).toEpochMilli();
+    }
+
+    Long total = baseMapper.selectTotalByAddressScriptId(script.getId(), startTimeLong, endTimeLong);
+    if (total == 0){
       return Page.of(page, pageSize, 0);
     }
 
-    // 根据交易id查询交易详情
-    List<AddressTransactionPageResponse> transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
+    Page transactionPage = new Page<>(page, pageSize);
+    transactionPage.setSearchCount(false);
+    Page<String> transactionHashPage = baseMapper.selectHashPageByAddressScriptId(transactionPage, orderBy, ascOrDesc,script.getId(), startTimeLong, endTimeLong);
+
+    List<byte[]> txHashes = transactionHashPage.getRecords().stream().map(txHash -> Numeric.hexStringToByteArray(txHash)).toList();
+    List<AddressTransactionPageResponse> transactions = baseMapper.selectByTxHashes(orderBy, ascOrDesc, txHashes, startTimeLong, endTimeLong);
 
     // 分开处理cellbase和普通交易
     var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(AddressTransactionPageResponse::getId).collect(Collectors.toList());
@@ -450,7 +493,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       }
     });
 
-    var result = new Page<AddressTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), transactionIdPage.getTotal());
+    var result = new Page<AddressTransactionPageResponse>(page, pageSize, total);
     result.setRecords(transactions);
     return result;
   }
