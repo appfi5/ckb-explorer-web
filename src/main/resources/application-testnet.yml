@@ -35,6 +35,18 @@ spring:
             connection-timeout: 60000  # 连接超时时间（60秒，适配压测排队）
             idle-timeout: 600000    # 空闲连接超时（10分钟，回收闲置连接）
             max-lifetime: 1800000   # 连接最大生命周期（30分钟，避免连接老化）
+        pending:
+          driver-class-name: org.postgresql.Driver
+          url: ${RISINGWAVE_PENDING_URL}
+          username: ${RISINGWAVE_PENDING_USERNAME}
+          password: ${RISINGWAVE_PENDING_PASSWORD}
+          # 连接池配置（HikariCP）
+          hikari:
+            maximum-pool-size: 30  # 最大连接数（略高于20并发，留冗余）
+            minimum-idle: 5       # 最小空闲连接（预热连接，避免冷启动）
+            connection-timeout: 60000  # 连接超时时间（60秒，适配压测排队）
+            idle-timeout: 600000    # 空闲连接超时（10分钟，回收闲置连接）
+            max-lifetime: 1800000   # 连接最大生命周期（30分钟，避免连接老化）
       data:
         redis:
           host: ${REDIS_HOST}

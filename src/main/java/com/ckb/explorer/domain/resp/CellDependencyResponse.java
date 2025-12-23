@@ -15,6 +15,12 @@ public class CellDependencyResponse {
   @JsonIgnore
   private Long id;
 
+  @JsonIgnore
+  private byte[] txHash;
+
+  @JsonIgnore
+  private Integer index;
+
   private OutPoint outPoint;
 
   private String depType;
