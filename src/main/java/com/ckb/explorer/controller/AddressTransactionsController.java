@@ -56,9 +56,23 @@ public class AddressTransactionsController {
           i18n.getMessage(I18nKey.ADDRESS_HASH_INVALID_MESSAGE));
     }
 
+    // 时间范围校验
+    if(req.getStartTime() != null && req.getEndTime() != null){
+      if(req.getStartTime().isAfter(req.getEndTime())){
+        throw new ServerException(I18nKey.TIME_RANGE_INVALID_CODE,
+            i18n.getMessage(I18nKey.TIME_RANGE_INVALID_MESSAGE));
+      }
+    }
+
+    if(req.getStartTime() != null && req.getEndTime() == null || req.getStartTime() == null && req.getEndTime() != null){
+      throw new ServerException(I18nKey.TIME_RANGE_INVALID_CODE,
+          i18n.getMessage(I18nKey.TIME_RANGE_INVALID_MESSAGE));
+    }
+
+
     // 查询地址的交易列表（通过缓存门面）
     Page<AddressTransactionPageResponse> transactions = addressTransactionCacheFacade.getAddressTransactions(
-        address, req.getSort(), req.getPage(), req.getPageSize());
+        address, req);
 
     // 构建响应
     ResponseInfo<Page<AddressTransactionPageResponse>> response = ResponseInfo.SUCCESS(

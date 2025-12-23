@@ -7,6 +7,7 @@ import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CkbTransactionService extends IService<CkbTransaction> {
@@ -74,7 +75,7 @@ public interface CkbTransactionService extends IService<CkbTransaction> {
    * @param pageSize
    * @return
    */
-  Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort, int page, int pageSize);
+  Page<AddressTransactionPageResponse> getAddressTransactions(String address, String sort, int page, int pageSize, LocalDate startTime, LocalDate endTime);
 
   /**
    * UDT相关交易
