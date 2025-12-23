@@ -7,6 +7,7 @@ import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.req.BlockPageReq;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
+import com.ckb.explorer.domain.resp.Last7DaysCkbNodeVersionResponse;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
@@ -82,5 +83,11 @@ public class BlocksController {
     // 查询带缓存
     return ResponseInfo.SUCCESS(blockCacheFacade.findBlock(id));
 
+  }
+
+  @GetMapping("/ckb_node_versions")
+  @Operation(summary = "获取CKB矿工的节点版本")
+  public ResponseInfo<List<Last7DaysCkbNodeVersionResponse>> ckbNodeVersions() {
+    return ResponseInfo.SUCCESS(blockCacheFacade.getCkbNodeVersions());
   }
 }

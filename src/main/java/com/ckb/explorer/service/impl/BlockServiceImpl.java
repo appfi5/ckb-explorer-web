@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.BlockDaoDto;
+import com.ckb.explorer.domain.dto.Last7DaysCkbNodeVersionDto;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
+import com.ckb.explorer.domain.resp.Last7DaysCkbNodeVersionResponse;
 import com.ckb.explorer.entity.Block;
 import com.ckb.explorer.mapper.BlockMapper;
 import com.ckb.explorer.mapstruct.BlockConvert;
@@ -15,7 +17,11 @@ import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.util.CollectionUtils;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
+import com.ckb.explorer.util.TypeConversionUtil;
 import jakarta.annotation.Resource;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,6 +192,32 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
   @Override
   public Long getMaxBlockNumber() {
     return baseMapper.getMaxBlockNumber();
+  }
+
+  @Override
+  public List<Last7DaysCkbNodeVersionResponse> getCkbNodeVersions() {
+    Long from = Instant.now().minus(7, ChronoUnit.DAYS).toEpochMilli();
+    List<Last7DaysCkbNodeVersionDto> list = baseMapper.getLast7DaysCkbNodeVersion(from);
+
+    Map<String, Last7DaysCkbNodeVersionResponse> versionCountMap = new HashMap<>();
+
+    for(Last7DaysCkbNodeVersionDto item : list){
+      String version = TypeConversionUtil.minerMessageToVersion(item.getVersion());
+      // 跳过空版本号
+      if (version == null) {
+        continue;
+      }
+      Last7DaysCkbNodeVersionResponse existingResponse = versionCountMap.get(version);
+      if (existingResponse != null) {
+        // 若已存在：累加计数（核心需求）
+        existingResponse.setCount(existingResponse.getCount() + item.getCount());
+      } else {
+        // 若不存在：新建响应对象并放入Map
+        Last7DaysCkbNodeVersionResponse newResponse = new Last7DaysCkbNodeVersionResponse(version, item.getCount());
+        versionCountMap.put(version, newResponse);
+      }
+    }
+    return new ArrayList<>(versionCountMap.values());
   }
 
 }

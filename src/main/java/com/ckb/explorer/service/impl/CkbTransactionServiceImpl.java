@@ -398,17 +398,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     Long endTimeLong = 0L;
     // 如果没有指定开始结束时间，则获取最近一个月的交易
     if(startTime == null && endTime == null){
-//      // 从24小时表里获取翻页的交易id
-//      Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
-//          transactionPage, script.getId(), orderBy, ascOrDesc);
-//
-//      List<Long> transactionIds = transactionIdPage.getRecords();
-//      if (transactionIds.isEmpty()){
-//        return Page.of(page, pageSize, 0);
-//      }
-//      // 根据交易id查询交易详情
-//      transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
-//      total = transactionIdPage.getTotal();
+
       ZonedDateTime currentUtc = ZonedDateTime.now(ZoneOffset.UTC);
       LocalDate firstDayOfMonthUtc = currentUtc.toLocalDate()
           .with(TemporalAdjusters.firstDayOfMonth()); // 当月第一天
