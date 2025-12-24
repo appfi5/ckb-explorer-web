@@ -23,6 +23,7 @@ public interface NftConvert {
     @Mapping(source = "action", target = "action", qualifiedByName = "nftAction(Value)")
     @Mapping(source = "txHash", target = "txHash", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     NftTransfersResp toNftTransfersResp(NftTransfersDto nftTransfersDto);
 
     Page<NftTransfersResp> toNftTransfersRespPage(Page<NftTransfersDto> page);
@@ -30,6 +31,7 @@ public interface NftConvert {
     Page<NftHolderResp> toNftHoldersRespPage(Page<NftHolderDto> page);
 
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     NftItemResponse toNftItemResp(NftItemDto nftItemDto);
 
     Page<NftItemResponse> toNftItemsRespPage(Page<NftItemDto> page);
@@ -40,6 +42,7 @@ public interface NftConvert {
     CollectionsResp toCollectionsResp(CollectionsDto collectionsDto);
 
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     NftItemDetailResponse toNftItemDetailResp(NftItemDto nftItemDto);
 
 

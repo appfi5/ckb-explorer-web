@@ -214,6 +214,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
             }
             nftTransfersDto.setFrom(from);
             nftTransfersDto.setTo(to);
+            nftTransfersDto.setStandard(collectionsDto.getStandard());
             Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftTransfersDto.getTypeScriptId())).findFirst().orElse(null);
             if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())){
                 nftTransfersDto.setTokenId(Numeric.toBigInt(Arrays.copyOfRange(typeScript.getArgs(),24,typeScript.getArgs().length))+"");
@@ -307,6 +308,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
             Script lockScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftItemDto.getLockScriptId())).findFirst().orElse(null);
             nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(), lockScript.getArgs(), lockScript.getHashType()));
             Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftItemDto.getTypeScriptId())).findFirst().orElse(null);
+            nftItemDto.setStandard(collectionsDto.getStandard());
             if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())){
                 nftItemDto.setTokenId(Numeric.toBigInt(Arrays.copyOfRange(typeScript.getArgs(),24,typeScript.getArgs().length))+"");
                 nftItemDto.setIconUrl(collectionsDto.getIconUrl());
@@ -358,6 +360,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(), lockScript.getArgs(), lockScript.getHashType()));
         nftItemDto.setCreator(TypeConversionUtil.scriptToAddress(createlockScript.getCodeHash(), createlockScript.getArgs(), createlockScript.getHashType()));
         nftItemDto.setTokenId(tokenId);
+        nftItemDto.setStandard(collectionsDto.getStandard());
         if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())) {
             nftItemDto.setIconUrl(collectionsDto.getIconUrl());
         }

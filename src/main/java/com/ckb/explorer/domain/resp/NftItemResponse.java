@@ -27,6 +27,8 @@ public class NftItemResponse {
 
     private String creator;
 
+    private String standard;
+
     private String iconUrl;
 
 }

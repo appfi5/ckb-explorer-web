@@ -35,7 +35,7 @@ public class NftTransfersDto {
 
     private byte[] data;
 
-    private String standard;
+    private Integer standard;
 
     private String iconUrl;
 
