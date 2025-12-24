@@ -29,6 +29,7 @@ public interface CkbTransactionConvert {
   @Mapping(source = "witnesses", target = "witnesses", qualifiedByName = "byteToWitnesses(Value)")
   @Mapping(source = "headerDeps", target = "headerDeps", qualifiedByName = "byteToHashList(Value)")
   @Mapping(source = "txHash", target = "transactionHash")
+  @Mapping(target = "txStatus",expression = "java(com.ckb.explorer.enums.TxStatus.getStatusByCode(ckbTransaction.getStatus()))")
   TransactionResponse toConvertTransactionResponse(TransactionDto ckbTransaction);
 
 
