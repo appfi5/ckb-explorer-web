@@ -32,4 +32,7 @@ public class NftItemDetailResponse {
     private Long collectionId;
 
     private String creator;
+
+    private String iconUrl;
+
 }

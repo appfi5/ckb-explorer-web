@@ -36,6 +36,7 @@ public interface NftConvert {
 
     @Mapping(source = "args", target = "clusterId", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "dobScriptHash", target = "typeScriptHash", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     CollectionsResp toCollectionsResp(CollectionsDto collectionsDto);
 
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
