@@ -21,6 +21,7 @@ import com.ckb.explorer.entity.OutputData;
 import com.ckb.explorer.entity.Script;
 import com.ckb.explorer.enums.LockType;
 import com.ckb.explorer.enums.NftAction;
+import com.ckb.explorer.enums.NftType;
 import com.ckb.explorer.facade.INftCacheFacade;
 import com.ckb.explorer.mapper.*;
 import com.ckb.explorer.mapstruct.NftConvert;
@@ -33,6 +34,7 @@ import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -90,8 +92,8 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
     @Override
     public Page<CollectionsResp> collectionsPage(CollectionsPageReq req) {
         req.setSort(StringUtils.defaultIfBlank(req.getSort(), "block_timestamp.desc"));
-        String cacheKey = String.format("%s%s:sort:%s:page:%d:size:%d:tags:%s",
-                COLLECTION_CACHE_PREFIX, CACHE_VERSION, req.getSort(), req.getPage(), req.getPageSize(), req.getTags());
+        String cacheKey = String.format("%s%s:sort:%s:page:%d:size:%d:tags:%s:standard:%s",
+                COLLECTION_CACHE_PREFIX, CACHE_VERSION, req.getSort(), req.getPage(), req.getPageSize(), req.getTags(),req.getStandard());
 
         return cacheUtils.getCache(
                 cacheKey,                    // 缓存键
@@ -111,7 +113,7 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
         Long oneDayAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(24);
         List<String> tags = null;
-        collectionsPage = dobExtendMapper.dobPage(collectionsPage, oneDayAgo, orderBy, ascOrDesc, req.getTags());
+        collectionsPage = dobExtendMapper.dobPage(collectionsPage, oneDayAgo, orderBy, ascOrDesc, req.getTags(),NftType.getCodeByValueAllowNull(req.getStandard()));
         return NftConvert.INSTANCE.toNftCollectionsRespPage(collectionsPage);
     }
 
@@ -141,6 +143,10 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
 
     private Page<NftTransfersResp> loadTransfersFromDatabase(String typeScriptHash, NftTransfersPageReq req) {
+        CollectionsDto collectionsDto = dobExtendMapper.findDetailByScriptHash(Numeric.hexStringToByteArray(typeScriptHash));
+        if (collectionsDto == null) {
+            throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
+        }
         Page<NftTransfersDto> nftTransfersDtoPage = new Page<>(req.getPage(), req.getPageSize());
 
         byte[] txHash = null;
@@ -158,7 +164,14 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
 
         Long typeScriptId = null;
         if (org.springframework.util.StringUtils.hasLength(req.getTokenId())) {
-            DobCode dobCode = dobCodeMapper.findByDobCodeScriptArgs(Numeric.hexStringToByteArray(req.getTokenId()));
+            byte[] dobCodeArgs;
+            if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())){
+                byte[] tokenByte = Numeric.toBytesPadded(new BigInteger(req.getTokenId()),4);
+                dobCodeArgs = CkbUtil.concatWithByteBuffer(collectionsDto.getArgs(),tokenByte);
+            }else {
+                dobCodeArgs = Numeric.hexStringToByteArray(req.getTokenId());
+            }
+            DobCode dobCode = dobCodeMapper.findByDobCodeScriptArgs(dobCodeArgs);
             if (dobCode == null) {
                 throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
             }
@@ -202,7 +215,13 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
             nftTransfersDto.setFrom(from);
             nftTransfersDto.setTo(to);
             Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftTransfersDto.getTypeScriptId())).findFirst().orElse(null);
-            nftTransfersDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
+            if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())){
+                nftTransfersDto.setTokenId(Numeric.toBigInt(Arrays.copyOfRange(typeScript.getArgs(),24,typeScript.getArgs().length))+"");
+                nftTransfersDto.setIconUrl(collectionsDto.getIconUrl());
+            }else {
+                nftTransfersDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
+            }
+
         });
         setBigDataForNftTransfer(page.getRecords());
         Page<NftTransfersResp> transfersRespPage = NftConvert.INSTANCE.toNftTransfersRespPage(page);
@@ -269,6 +288,10 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
     }
 
     private Page<NftItemResponse> loadNftItemsFromDatabase(String typeScriptHash, BasePageReq req) {
+        CollectionsDto collectionsDto = dobExtendMapper.findDetailByScriptHash(Numeric.hexStringToByteArray(typeScriptHash));
+        if (collectionsDto == null) {
+            throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
+        }
         Page<NftItemDto> nftItemDtoPage = new Page<>(req.getPage(), req.getPageSize());
         nftItemDtoPage = dobExtendMapper.itemsPage(nftItemDtoPage, Numeric.hexStringToByteArray(typeScriptHash));
         Set<Long> scriptIds = new HashSet<>();
@@ -284,7 +307,12 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
             Script lockScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftItemDto.getLockScriptId())).findFirst().orElse(null);
             nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(), lockScript.getArgs(), lockScript.getHashType()));
             Script typeScript = scripts.stream().filter(script -> Objects.equals(script.getId(), nftItemDto.getTypeScriptId())).findFirst().orElse(null);
-            nftItemDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
+            if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())){
+                nftItemDto.setTokenId(Numeric.toBigInt(Arrays.copyOfRange(typeScript.getArgs(),24,typeScript.getArgs().length))+"");
+                nftItemDto.setIconUrl(collectionsDto.getIconUrl());
+            }else {
+                nftItemDto.setTokenId(Numeric.toHexString(typeScript.getArgs()));
+            }
         });
         setBigDataForNftItemDto(nftItemDtoPage.getRecords());
         Page<NftItemResponse> nftItemResponsePage = NftConvert.INSTANCE.toNftItemsRespPage(nftItemDtoPage);
@@ -305,7 +333,18 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
     }
 
     private NftItemDetailResponse loadNftItemInfo(String typeScriptHash, String tokenId){
-        NftItemDto nftItemDto = dobExtendMapper.itemInfo(Numeric.hexStringToByteArray(typeScriptHash), Numeric.hexStringToByteArray(tokenId));
+        CollectionsDto collectionsDto = dobExtendMapper.findDetailByScriptHash(Numeric.hexStringToByteArray(typeScriptHash));
+        if (collectionsDto == null) {
+            throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
+        }
+        byte[] dobCodeArgs;
+        if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())){
+            byte[] tokenByte = Numeric.toBytesPadded(new BigInteger(tokenId),4);
+            dobCodeArgs = CkbUtil.concatWithByteBuffer(collectionsDto.getArgs(),tokenByte);
+        }else {
+            dobCodeArgs = Numeric.hexStringToByteArray(tokenId);
+        }
+        NftItemDto nftItemDto = dobExtendMapper.itemInfo(Numeric.hexStringToByteArray(typeScriptHash), dobCodeArgs);
         if (nftItemDto == null) {
             throw new ServerException(I18nKey.TOKEN_COLLECTION_NOT_FOUND_CODE, i18n.getMessage(I18nKey.TOKEN_COLLECTION_NOT_FOUND_MESSAGE));
         }
@@ -319,7 +358,10 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         nftItemDto.setOwner(TypeConversionUtil.scriptToAddress(lockScript.getCodeHash(), lockScript.getArgs(), lockScript.getHashType()));
         nftItemDto.setCreator(TypeConversionUtil.scriptToAddress(createlockScript.getCodeHash(), createlockScript.getArgs(), createlockScript.getHashType()));
         nftItemDto.setTokenId(tokenId);
-        if (!ByteUtils.hasLength(nftItemDto.getData())) {
+        if(Objects.equals(NftType.M_NFT.getCode(),collectionsDto.getStandard())) {
+            nftItemDto.setIconUrl(collectionsDto.getIconUrl());
+        }
+            if (!ByteUtils.hasLength(nftItemDto.getData())) {
             List<Long> outputIds = Arrays.asList(nftItemDto.getId());
             List<OutputData> outputDataList = outputDataMapper.selectByOutputIds(outputIds);
             if (!CollectionUtils.isEmpty(outputDataList)) {

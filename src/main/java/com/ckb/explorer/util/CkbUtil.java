@@ -410,4 +410,15 @@ public class CkbUtil {
 
     return bigIntValue;
   }
+
+    public static byte[] concatWithByteBuffer(byte[] arr1, byte[] arr2) {
+        byte[] a = arr1 == null ? new byte[0] : arr1;
+        byte[] b = arr2 == null ? new byte[0] : arr2;
+
+        ByteBuffer buffer = ByteBuffer.allocate(a.length + b.length);
+        buffer.put(a); // JDK21 支持批量 put 优化
+        buffer.put(b);
+
+        return buffer.array();
+    }
 }

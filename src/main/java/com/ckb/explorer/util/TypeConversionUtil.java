@@ -2,6 +2,7 @@ package com.ckb.explorer.util;
 
 import com.ckb.explorer.enums.NetWorkEnums;
 import com.ckb.explorer.enums.NftAction;
+import com.ckb.explorer.enums.NftType;
 import com.ckb.explorer.enums.UdtType;
 import jakarta.annotation.PostConstruct;
 import java.math.BigInteger;
@@ -227,5 +228,10 @@ public class TypeConversionUtil {
 
     String result = Numeric.littleEndian(uint64Value.longValue());
     return FULL_ZERO_HEX.equals(result)?DEFAULT_SINCE:result;
+  }
+
+  @Named("nftType(Value)")
+  public static String nftType(Integer nftType){
+    return NftType.getValueByCode(nftType);
   }
 }
