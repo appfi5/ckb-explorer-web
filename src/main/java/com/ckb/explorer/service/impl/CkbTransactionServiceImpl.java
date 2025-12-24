@@ -26,6 +26,7 @@ import com.ckb.explorer.mapstruct.CellInputConvert;
 import com.ckb.explorer.mapstruct.CellOutputConvert;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
 import com.ckb.explorer.service.CkbTransactionService;
+import com.ckb.explorer.service.CkbPendingTransactionService;
 import com.ckb.explorer.service.ScriptService;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
@@ -81,6 +82,9 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Resource
   private ScriptConfig scriptConfig;
 
+  @Resource
+  private CkbPendingTransactionService ckbPendingTransactionService;
+
   @Value("${ckb.daoCodeHash}")
   private String daoCodeHashList;
 
@@ -118,6 +122,12 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Override
   public TransactionResponse getTransactionByHash(String txHash) {
 
+    // 先查pending
+    var pending = ckbPendingTransactionService.getPendingTransactionByHash(txHash);
+    if(pending != null){
+      return pending;
+    }
+
     // 查询第一个匹配的交易
     TransactionDto transaction = baseMapper.selectTransactionWithCellDeps(Numeric.hexStringToByteArray(txHash));
     
@@ -133,6 +143,12 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Override
   public Page<CellInputResponse> getDisplayInputs(String txHash, int pageNum, int pageSize) {
+    // 先查pending
+    var pending = ckbPendingTransactionService.getDisplayInputs(txHash, pageNum, pageSize);
+    if(pending != null){
+      return pending;
+    }
+
     CkbTransaction ckbTransaction = getCkbTransaction(txHash);
     // cellbase交易
     if(ckbTransaction.getTxIndex() == 0){
@@ -188,6 +204,13 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Override
   public Page<CellOutputResponse> getDisplayOutputs(String txHash, int pageNum, int pageSize) {
+
+    // 先查pending
+    var pending = ckbPendingTransactionService.getDisplayOutputs(txHash, pageNum, pageSize);
+    if(pending != null){
+      return pending;
+    }
+
     CkbTransaction ckbTransaction = getCkbTransaction(txHash);
     Page<CellOutputDto> pageResult = new Page<>(pageNum, pageSize);
     // cellbase交易
@@ -375,17 +398,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     Long endTimeLong = 0L;
     // 如果没有指定开始结束时间，则获取最近一个月的交易
     if(startTime == null && endTime == null){
-//      // 从24小时表里获取翻页的交易id
-//      Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
-//          transactionPage, script.getId(), orderBy, ascOrDesc);
-//
-//      List<Long> transactionIds = transactionIdPage.getRecords();
-//      if (transactionIds.isEmpty()){
-//        return Page.of(page, pageSize, 0);
-//      }
-//      // 根据交易id查询交易详情
-//      transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
-//      total = transactionIdPage.getTotal();
+
       ZonedDateTime currentUtc = ZonedDateTime.now(ZoneOffset.UTC);
       LocalDate firstDayOfMonthUtc = currentUtc.toLocalDate()
           .with(TemporalAdjusters.firstDayOfMonth()); // 当月第一天

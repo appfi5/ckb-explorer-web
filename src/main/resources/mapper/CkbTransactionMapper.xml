@@ -69,7 +69,7 @@
            COALESCE(NULLIF(ltrim(encode(ct.version, 'hex'), '0'), ''), '0') AS version,
            ct.block_timestamp,
            ct.cycles,
-           ct.bytes,
+           ct.bytes + 4 as bytes,
            acd.id as dep_id,
            '0x' || encode(acd.outpoint_tx_hash, 'hex') as outpoint_tx_hash,
            acd.outpoint_index,

@@ -21,6 +21,11 @@ spring:
           url: jdbc:postgresql://192.168.120.129:30456/dev  # RisingWave默认端口4566，数据库名dev
           username: root  # RisingWave默认用户名
           password: ""    # RisingWave默认无密码
+        pending:
+          driver-class-name: org.postgresql.Driver
+          url: jdbc:postgresql://192.168.120.129:30456/ckb_pending_tx  # RisingWave默认端口4566，数据库名dev
+          username: root  # RisingWave默认用户名
+          password: ""    # RisingWave默认无密码
   data:
     redis:
       #host: localhost
@@ -77,6 +82,7 @@ mybatis-plus:
   configuration:
     # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 如需在开发环境查看SQL，可启用以下配置并设置logging.level相应包为DEBUG
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 生产环境建议移除或保持默认
 remote:
   worker:
