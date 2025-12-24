@@ -1,7 +1,5 @@
 package com.ckb.explorer.controller;
 
-import static com.baomidou.mybatisplus.extension.ddl.DdlScriptErrorHandler.PrintlnLogErrorHandler.log;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.common.dto.ResponseInfo;
 import com.ckb.explorer.config.ServerException;
