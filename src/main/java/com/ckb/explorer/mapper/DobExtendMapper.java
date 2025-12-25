@@ -161,7 +161,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "where dob_script_hash = #{clusterTypeHash} limit 1")
   NftCollectionResponse getNftCollectionsByClusterTypeHash(@Param("clusterTypeHash") byte[] clusterTypeHash);
 
-    @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id \n" +
+    @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id,de.standard,de.icon_url \n" +
             "from  dob_live_cells dlc left join dob_code dc  \n " +
             "on dlc.type_script_id = dc.dob_code_script_id \n" +
             "left join  dob_extend de on de.id= dc.dob_extend_id \n" +

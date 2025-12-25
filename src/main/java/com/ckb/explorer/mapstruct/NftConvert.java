@@ -52,6 +52,7 @@ public interface NftConvert {
     @Mapping(source = "dobScriptHash", target = "collectionTypeHash", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "dobCodeScriptArgs", target = "tokenId", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "data", target = "nftIconFile", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     AccountNftResponse toAccountNftResponse(AccountNftDto dto);
 
     List<AccountNftResponse> toAccountNftResponseList(List<AccountNftDto> dtos);

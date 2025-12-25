@@ -392,7 +392,16 @@ public class NftCacheFacadeImpl implements INftCacheFacade {
         var lockScript = getAddressScript(address);
         List<AccountNftDto> accountNftDtos = dobExtendMapper.accountNftInfo(lockScript.getId());
         setBigData(accountNftDtos);
-        return NftConvert.INSTANCE.toAccountNftResponseList(accountNftDtos);
+        List<AccountNftResponse> accountNftResponses =  NftConvert.INSTANCE.toAccountNftResponseList(accountNftDtos);
+        accountNftResponses.forEach(accountNftResponse -> {
+            if(Objects.equals(accountNftResponse.getStandard(),NftType.M_NFT.getValue())){
+                accountNftResponse.setNftIconFile(accountNftResponse.getIconUrl());
+                String tokenId =accountNftResponse.getTokenId();
+                accountNftResponse.setTokenId(Numeric.toBigInt(tokenId.substring(tokenId.length()-8,tokenId.length()))+"");
+            }
+        });
+
+        return accountNftResponses;
     }
 
 
