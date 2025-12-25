@@ -27,7 +27,7 @@ public class PendingCellInputDto {
   /**
    * 生成的交易哈希
    */
-  private byte[] generatedTxHash;
+  private String generatedTxHash;
 
   /**
    * 单元格索引

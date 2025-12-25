@@ -240,23 +240,25 @@
   <select id="getOutputByTxHashAndIndex"
     resultType="com.ckb.explorer.domain.dto.PendingCellInputDto">
     select
-      o.id                as id,
-      o.capacity          as capacity,
-      o.occupied_capacity as occupied_capacity,
-      lock.code_hash      as lock_code_hash,
-      lock.hash_type      as lock_hash_type,
-      lock.args           as lock_args,
-      lock.script_hash    as lock_script_hash,
-      type.code_hash      as type_code_hash,
-      type.hash_type      as type_hash_type,
-      type.args           as type_args,
-      type.script_hash    as type_script_hash,
-      o.data              as data
+      o.id                              as id,
+      o.capacity                        as capacity,
+      o.occupied_capacity               as occupied_capacity,
+      lock.code_hash                    as lock_code_hash,
+      lock.hash_type                    as lock_hash_type,
+      lock.args                         as lock_args,
+      lock.script_hash                  as lock_script_hash,
+      '0x' || encode(o.tx_hash, 'hex')  as generated_tx_hash,
+      o.output_index                    as cell_index,
+      type.code_hash                    as type_code_hash,
+      type.hash_type                    as type_hash_type,
+      type.args                         as type_args,
+      type.script_hash                  as type_script_hash,
+      o.data                            as data
     from output o
       left join script lock on lock.id = o.lock_script_id
       left join script type on type.id = o.type_script_id
     where o.tx_hash = #{txHash}
-  AND o.output_index = #{index}
+    AND o.output_index = #{index}
   </select>
 
 </mapper>
