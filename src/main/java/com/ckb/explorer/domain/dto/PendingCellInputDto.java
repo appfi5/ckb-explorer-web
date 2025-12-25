@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class PendingCellInputDto {
+  private Long id;
 
   /**
    * 单元格容量
