@@ -15,7 +15,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -87,7 +90,13 @@ public class BlocksController {
 
   @GetMapping("/ckb_node_versions")
   @Operation(summary = "获取CKB矿工的节点版本")
-  public ResponseInfo<List<Last7DaysCkbNodeVersionResponse>> ckbNodeVersions() {
-    return ResponseInfo.SUCCESS(blockCacheFacade.getCkbNodeVersions());
+  public ResponseEntity<ResponseInfo<List<Last7DaysCkbNodeVersionResponse>>> ckbNodeVersions() {
+    CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
+        .cachePublic() // 允许公共缓存（CDN、代理服务器等）
+        .staleWhileRevalidate(10, TimeUnit.MINUTES)
+        .staleIfError(60, TimeUnit.MINUTES);
+    return ResponseEntity.ok()
+        .cacheControl(cacheControl)
+        .body(ResponseInfo.SUCCESS(blockCacheFacade.getCkbNodeVersions()));
   }
 }
