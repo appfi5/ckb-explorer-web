@@ -89,6 +89,7 @@ public class CkbPendingTransactionServiceImpl extends
         PendingCellInputDto pendingCellInputDto = pendingCellInputDtos.stream().filter(cellInputDto -> cellInputDto.getGeneratedTxHash().equals(txHashAndIndex.getGeneratedTxHash()) && cellInputDto.getCellIndex().equals(txHashAndIndex.getCellIndex())).findFirst().orElse(null);
         if(pendingCellInputDto != null){
           PendingCellInputDto output = outputMapper.getOutputByTxHashAndIndex(txHashAndIndex.getGeneratedTxHash(),txHashAndIndex.getCellIndex());
+          pendingCellInputDto.setId(output.getId());
           pendingCellInputDto.setCapacity(output.getCapacity());
           pendingCellInputDto.setOccupiedCapacity(output.getOccupiedCapacity());
           pendingCellInputDto.setLockCodeHash(output.getTypeCodeHash());
