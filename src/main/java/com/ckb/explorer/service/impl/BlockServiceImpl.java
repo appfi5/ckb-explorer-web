@@ -22,6 +22,7 @@ import jakarta.annotation.Resource;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -217,7 +218,52 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
         versionCountMap.put(version, newResponse);
       }
     }
-    return new ArrayList<>(versionCountMap.values());
+    List<Last7DaysCkbNodeVersionResponse> resultList = new ArrayList<>(versionCountMap.values());
+    resultList.sort(Comparator.comparing(
+        Last7DaysCkbNodeVersionResponse::getVersion,
+        (v1, v2) -> compareVersionStrings(v1, v2)
+    ));
+    return resultList;
   }
 
+
+  /**
+   * 辅助方法：比较两个语义化版本字符串（x.y.z格式），实现自然排序
+   * @param version1 第一个版本号
+   * @param version2 第二个版本号
+   * @return 负数：v1 < v2；0：v1 = v2；正数：v1 > v2
+   */
+  private int compareVersionStrings(String version1, String version2) {
+    // 分割版本号为数字数组（按"."分割）
+    String[] v1Segments = version1.split("\\.");
+    String[] v2Segments = version2.split("\\.");
+    // 取两个版本号的最大长度，避免遗漏分段（兼容x.y.z.w格式）
+    int maxLength = Math.max(v1Segments.length, v2Segments.length);
+
+    for (int i = 0; i < maxLength; i++) {
+      // 若某个版本号分段不足，补0（如 0.200.0 和 0.200 视为相等）
+      int v1Num = i < v1Segments.length ? safeParseInt(v1Segments[i]) : 0;
+      int v2Num = i < v2Segments.length ? safeParseInt(v2Segments[i]) : 0;
+      // 比较当前分段的数字大小
+      if (v1Num != v2Num) {
+        return Integer.compare(v1Num, v2Num);
+      }
+    }
+    // 所有分段相等，版本号相同
+    return 0;
+  }
+
+  /**
+   * 安全转换字符串为整数，避免非数字版本号分段导致异常
+   * @param str 版本号分段字符串
+   * @return 转换后的整数，转换失败返回0
+   */
+  private int safeParseInt(String str) {
+    try {
+      return Integer.parseInt(str.trim());
+    } catch (NumberFormatException e) {
+      // 若分段不是数字（如 0.200.0-beta），按0处理
+      return 0;
+    }
+  }
 }
