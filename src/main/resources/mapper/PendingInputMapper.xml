@@ -7,21 +7,21 @@
 
   <select id="getDisplayInputs" resultType="com.ckb.explorer.domain.dto.PendingCellInputDto">
     select
-      o.capacity                            as capacity,
-      o.occupied_capacity                   as occupied_capacity,
-      o.lock_code_hash                      as lock_code_hash,
-      o.lock_hash_type                      as lock_hash_type,
-      o.lock_args                           as lock_args,
-      o.lock_script_hash                    as lock_script_hash,
-      i.pre_outpoint_tx_hash                as generated_tx_hash,
-      i.pre_outpoint_index                  as cell_index,
-      i.input_index                         as input_index,
-      i.since                               as since_raw,
-      o.type_code_hash                      as type_code_hash,
-      o.type_hash_type                      as type_hash_type,
-      o.type_args                           as type_args,
-      o.type_script_hash                    as type_script_hash,
-      o.data                                as data
+      o.capacity                                    as capacity,
+      o.occupied_capacity                           as occupied_capacity,
+      o.lock_code_hash                              as lock_code_hash,
+      o.lock_hash_type                              as lock_hash_type,
+      o.lock_args                                   as lock_args,
+      o.lock_script_hash                            as lock_script_hash,
+      '0x' || encode(i.pre_outpoint_tx_hash, 'hex') as generated_tx_hash,
+      i.pre_outpoint_index                          as cell_index,
+      i.input_index                                 as input_index,
+      i.since                                       as since_raw,
+      o.type_code_hash                              as type_code_hash,
+      o.type_hash_type                              as type_hash_type,
+      o.type_args                                   as type_args,
+      o.type_script_hash                            as type_script_hash,
+      o.data                                        as data
     from input i
            left join output o on o.tx_hash = i.pre_outpoint_tx_hash
       AND o.output_index = i.pre_outpoint_index
