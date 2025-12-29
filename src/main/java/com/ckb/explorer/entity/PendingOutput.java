@@ -1,6 +1,7 @@
 package com.ckb.explorer.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.math.BigInteger;
 import lombok.Data;
 
 @Data
@@ -11,7 +12,7 @@ public class PendingOutput {
 
   private Integer outputIndex;
 
-  private Long capacity;
+  private BigInteger capacity;
 
   private byte[] lockCodeHash;
 
@@ -35,5 +36,5 @@ public class PendingOutput {
 
   private byte[] dataHash;
 
-  private Long occupiedCapacity;
+  private BigInteger occupiedCapacity;
 }

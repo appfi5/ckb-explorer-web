@@ -4,6 +4,7 @@ package com.ckb.explorer.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.math.BigInteger;
 import lombok.Data;
 
 @Data
@@ -19,7 +20,7 @@ public class Output {
 
   private Integer outputIndex;
 
-  private Long capacity;
+  private BigInteger capacity;
 
   private Long lockScriptId;
 
@@ -37,7 +38,7 @@ public class Output {
 
   private Integer inputIndex;
 
-  private Long occupiedCapacity;
+  private BigInteger occupiedCapacity;
 
   private Long blockNumber;
 
