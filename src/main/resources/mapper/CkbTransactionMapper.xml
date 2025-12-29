@@ -214,7 +214,7 @@
         SELECT tx_hash
         FROM output
         WHERE lock_script_id = #{lockScriptId}
-        type_script_id = #{typeScriptId}
+        AND type_script_id = #{typeScriptId}
         UNION ALL
         SELECT consumed_tx_hash AS tx_hash
         FROM output
