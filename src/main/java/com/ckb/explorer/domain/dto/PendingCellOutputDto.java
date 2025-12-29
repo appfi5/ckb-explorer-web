@@ -1,5 +1,6 @@
 package com.ckb.explorer.domain.dto;
 
+import java.math.BigInteger;
 import lombok.Data;
 
 @Data
@@ -7,12 +8,12 @@ public class PendingCellOutputDto {
   /**
    * 单元格容量
    */
-  private Long capacity;
+  private BigInteger capacity;
 
   /**
    * 占用的容量
    */
-  private Long occupiedCapacity;
+  private BigInteger occupiedCapacity;
 
   private byte[] lockCodeHash;
 
