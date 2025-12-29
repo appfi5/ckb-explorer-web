@@ -94,7 +94,9 @@
     args,
     code_hash,
     hash_type,
-    transaction_id
+    transaction_id,
+    data,
+    block_number
     FROM (select o.id,
       false                                 as from_cellbase,
       o.capacity                            as capacity,
@@ -118,7 +120,9 @@
       '0x' || encode(type.code_hash, 'hex') as code_hash,
       type.hash_type                        as hash_type,
       i.consumed_tx_id                      as transaction_id,
-      ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn
+      ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
+      o.data                                as data,
+      o.block_number                        as block_number
       from input i
       inner join output o on o.id = i.output_id
       left join script s on o.lock_script_id = s.id

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.BlockDaoDto;
+import com.ckb.explorer.domain.dto.DaoBlockDto;
 import com.ckb.explorer.domain.dto.Last7DaysCkbNodeVersionDto;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
@@ -224,6 +225,11 @@ public class BlockServiceImpl extends ServiceImpl<BlockMapper, Block> implements
         (v1, v2) -> compareVersionStrings(v1, v2)
     ));
     return resultList;
+  }
+
+  @Override
+  public DaoBlockDto getDaoBlockByBlockNumber(Long blockNumber) {
+    return baseMapper.getDaoBlockByBlockNumber(blockNumber);
   }
 
 

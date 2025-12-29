@@ -2,6 +2,7 @@ package com.ckb.explorer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ckb.explorer.domain.dto.DaoBlockDto;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
 import com.ckb.explorer.domain.resp.Last7DaysCkbNodeVersionResponse;
@@ -34,4 +35,6 @@ public interface BlockService extends IService<Block> {
   Long getMaxBlockNumber();
 
   List<Last7DaysCkbNodeVersionResponse> getCkbNodeVersions();
+
+  DaoBlockDto getDaoBlockByBlockNumber(Long blockNumber);
 }
