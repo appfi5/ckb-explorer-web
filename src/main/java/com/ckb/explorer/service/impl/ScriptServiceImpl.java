@@ -20,6 +20,7 @@ import com.ckb.explorer.service.WithdrawCellService;
 import com.ckb.explorer.util.I18n;
 import com.ckb.explorer.util.QueryKeyUtils;
 import jakarta.annotation.Resource;
+import java.util.List;
 import org.nervos.ckb.utils.Numeric;
 import org.nervos.ckb.utils.address.Address;
 import org.springframework.stereotype.Service;
@@ -159,5 +160,24 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     queryWrapper.eq(Script::getScriptHash, Numeric.hexStringToByteArray(scriptHash));
     Script script = baseMapper.selectOne(queryWrapper);
     return script;
+  }
+
+  @Override
+  public Script getAddress(String addressHash) {
+    // 计算地址的哈希
+    var addressScriptHash = Address.decode(addressHash).getScript().computeHash();
+    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+    queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+    return baseMapper.selectOne(queryScriptWrapper);
+  }
+
+  @Override
+  public Script getDaoTypeScript(List<byte[]> codeHash){
+    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
+    queryScriptWrapper.in(Script::getCodeHash, codeHash);
+    queryScriptWrapper.eq(Script::getIsTypescript, 1);
+    queryScriptWrapper.eq(Script::getHashType, 1);
+    queryScriptWrapper.last("limit 1");
+    return baseMapper.selectOne(queryScriptWrapper);
   }
 }

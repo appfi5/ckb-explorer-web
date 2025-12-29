@@ -5,6 +5,7 @@ import com.ckb.explorer.domain.resp.AddressResponse;
 import com.ckb.explorer.domain.resp.LockScriptResponse;
 import com.ckb.explorer.domain.resp.TypeScriptResponse;
 import com.ckb.explorer.entity.Script;
+import java.util.List;
 
 public interface ScriptService extends IService<Script> {
   /**
@@ -36,5 +37,9 @@ public interface ScriptService extends IService<Script> {
    */
   LockScriptResponse findLockScriptByCodeHash(String codeHash);
 
-    Script findByScriptHash(String scriptHash);
+  Script findByScriptHash(String scriptHash);
+
+  Script getAddress(String addressHash);
+
+  Script getDaoTypeScript(List<byte[]> codeHash);
 }
