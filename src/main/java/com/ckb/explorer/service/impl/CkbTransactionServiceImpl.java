@@ -159,7 +159,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       return getCellbaseDisplayInputs(txHash, ckbTransaction.getBlockNumber());
       // 普通交易
     } else{
-      return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize);
+      return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize, ckbTransaction.getBlockNumber(), ckbTransaction.getBlockTimestamp());
     }
   }
 
@@ -194,14 +194,28 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
    * @param pageSize
    * @return
    */
-  private Page<CellInputResponse> getNormalTxDisplayInputs(Long transactionId, int page, int pageSize) {
+  private Page<CellInputResponse> getNormalTxDisplayInputs(Long transactionId, int page, int pageSize, Long blockNumber, Long blockTimestamp) {
     Page<CellInputDto> pageResult = new Page<>(page, pageSize);
     Page<CellInputDto> resultPage = inputMapper.getDisplayInputs(pageResult, transactionId);
+    // 可能会去掉
     resultPage.getRecords().forEach(cellInputDto -> {
       ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellInputDto.getCodeHash(),cellInputDto.getArgs());
       Integer cellType = scriptConfig.cellType(typeScript,Numeric.toHexString(cellInputDto.getData()));
       cellInputDto.setCellType(cellType);
     });
+
+    List<CellInputDto> inputDtos = resultPage.getRecords();
+    var codeHashs = Arrays.stream(daoCodeHashList.split( ",")).toList();
+    for(CellInputDto input: inputDtos){
+      // 如果是Dao phase1交易的input
+      if(input.getCodeHash()!=null && codeHashs.contains(input.getCodeHash()) && input.getHashType()==1 && "0x0000000000000000".equals(Numeric.toHexString(input.getData()))){
+        input.setNervosDaoInfo(attributesForDaoInput(input,false, blockNumber, blockTimestamp));
+      }
+      // 如果是Dao phase2交易的input5
+      if(input.getCodeHash()!=null && codeHashs.contains(input.getCodeHash()) && input.getHashType()==1 && !"0x0000000000000000".equals(Numeric.toHexString(input.getData()))){
+        input.setNervosDaoInfo(attributesForDaoInput(input,true, blockNumber, blockTimestamp));
+      }
+    }
     return CellInputConvert.INSTANCE.toConvertPage(resultPage);
   }
 
