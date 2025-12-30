@@ -197,7 +197,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   private Page<CellInputResponse> getNormalTxDisplayInputs(Long transactionId, int page, int pageSize, Long blockNumber, Long blockTimestamp) {
     Page<CellInputDto> pageResult = new Page<>(page, pageSize);
     Page<CellInputDto> resultPage = inputMapper.getDisplayInputs(pageResult, transactionId);
-    // 可能会去掉
     resultPage.getRecords().forEach(cellInputDto -> {
       ScriptConfig.TypeScript typeScript = scriptConfig.getTypeScriptByCodeHash(cellInputDto.getCodeHash(),cellInputDto.getArgs());
       Integer cellType = scriptConfig.cellType(typeScript,Numeric.toHexString(cellInputDto.getData()));
@@ -729,17 +728,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     transactions.stream().forEach(transaction -> {
 
-      List<CellInputDto> inputDtos = normalInputsWithTrans.get(transaction.getId());
-      for(CellInputDto input: inputDtos){
-        if(input.getCellType() == CellType.NERVOS_DAO_DEPOSIT.getValue()){
-          input.setNervosDaoInfo(attributesForDaoInput(input,false, transaction.getBlockNumber(), transaction.getBlockTimestamp()));
-        }
-        if(input.getCellType() == CellType.NERVOS_DAO_WITHDRAWING.getValue()){
-          input.setNervosDaoInfo(attributesForDaoInput(input,true, transaction.getBlockNumber(), transaction.getBlockTimestamp()));
-        }
-      }
       // 组装交易
-      List<CellInputResponse> inputs = CellInputConvert.INSTANCE.toConvertList(inputDtos);
+      List<CellInputResponse> inputs = CellInputConvert.INSTANCE.toConvertList(normalInputsWithTrans.get(transaction.getId()));
       transaction.setDisplayInputs(inputs);
       transaction.setDisplayInputsCount(inputs != null ? inputs.size() : 0);
 
