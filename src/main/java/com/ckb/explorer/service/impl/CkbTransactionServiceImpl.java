@@ -204,14 +204,13 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     });
 
     List<CellInputDto> inputDtos = resultPage.getRecords();
-    var codeHashs = Arrays.stream(daoCodeHashList.split( ",")).toList();
     for(CellInputDto input: inputDtos){
       // 如果是Dao phase1交易的input
-      if(input.getCodeHash()!=null && codeHashs.contains(input.getCodeHash()) && input.getHashType()==1 && "0x0000000000000000".equals(Numeric.toHexString(input.getData()))){
+      if(input.getCellType() != null && input.getCellType() == CellType.NERVOS_DAO_DEPOSIT.getValue()){
         input.setNervosDaoInfo(attributesForDaoInput(input,false, blockNumber, blockTimestamp));
       }
       // 如果是Dao phase2交易的input5
-      if(input.getCodeHash()!=null && codeHashs.contains(input.getCodeHash()) && input.getHashType()==1 && !"0x0000000000000000".equals(Numeric.toHexString(input.getData()))){
+      if(input.getCellType() != null && input.getCellType() == CellType.NERVOS_DAO_WITHDRAWING.getValue()){
         input.setNervosDaoInfo(attributesForDaoInput(input,true, blockNumber, blockTimestamp));
       }
     }
