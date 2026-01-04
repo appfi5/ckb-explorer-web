@@ -3,6 +3,7 @@ package com.ckb.explorer.facade.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.resp.BlockListResponse;
 import com.ckb.explorer.domain.resp.BlockResponse;
+import com.ckb.explorer.domain.resp.Last7DaysCkbNodeVersionResponse;
 import com.ckb.explorer.facade.IBlockCacheFacade;
 import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.util.CacheUtils;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class BlockCacheFacadeImpl implements IBlockCacheFacade {
@@ -26,6 +26,7 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
   private static final long TTL_SECONDS = 10;
 
   private static final long DETAIL_TTL_SECONDS = 5 * 60;
+  private static final long NODE_TTL_SECONDS = 4 * 60 * 60;
 
   private static final String CACHE_PREFIX = "ckb:blocks:";
   private static final String CACHE_VERSION = "v1";
@@ -69,6 +70,17 @@ public class BlockCacheFacadeImpl implements IBlockCacheFacade {
         cacheKey,                    // 缓存键
         () -> loadBlockFromDatabase(id),  // 数据加载函数
         DETAIL_TTL_SECONDS,               // 缓存过期时间
+        TimeUnit.SECONDS             // 时间单位
+    );
+  }
+
+  @Override
+  public List<Last7DaysCkbNodeVersionResponse> getCkbNodeVersions() {
+    String cacheKey = String.format("%s%s:ckb_node_versions", CACHE_PREFIX, CACHE_VERSION);
+    return cacheUtils.getCache(
+        cacheKey,                    // 缓存键
+        () -> blockService.getCkbNodeVersions(),  // 数据加载函数
+        NODE_TTL_SECONDS,               // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
   }

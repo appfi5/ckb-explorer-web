@@ -15,4 +15,8 @@ public class AccountNftDto {
 
     private Long cellId;
 
+    private Integer standard;
+
+    private String iconUrl;
+
 }
