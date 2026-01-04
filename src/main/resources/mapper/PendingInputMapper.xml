@@ -26,7 +26,7 @@
            left join output o on o.tx_hash = i.pre_outpoint_tx_hash
       AND o.output_index = i.pre_outpoint_index
     where i.tx_hash = #{txHash}
-    order by i.input_index
+    order by i.input_index asc
   </select>
 
 </mapper>
