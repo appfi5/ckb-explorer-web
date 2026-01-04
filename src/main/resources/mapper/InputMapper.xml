@@ -26,7 +26,7 @@
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
     where consumed_tx_id = #{transactionId}
-    order by o.id asc
+    order by i.id asc
   </select>
 
   <select id="getNormalDisplayInputsByTransactionIds" resultType="com.ckb.explorer.domain.dto.CellInputDto">
@@ -61,7 +61,8 @@
            type.hash_type                        as hash_type,
            i.consumed_tx_id                      as transaction_id,
            ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
-           o.data                                as data
+           o.data                                as data,
+           i.id                                  as input_id
     from input i
            inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
@@ -75,7 +76,7 @@
     </if>
     ) t
     WHERE rn &lt;= #{size}
-    ORDER BY transaction_id, cell_index ASC;
+    ORDER BY transaction_id, input_id ASC;
 
   </select>
 
@@ -123,7 +124,8 @@
       i.consumed_tx_id                      as transaction_id,
       ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
       o.data                                as data,
-      o.block_number                        as block_number
+      o.block_number                        as block_number,
+      i.id                                  as input_id
       from input i
       inner join output o on o.id = i.output_id
       left join script s on o.lock_script_id = s.id
@@ -137,7 +139,7 @@
       </if>
     ) t
     WHERE rn &lt;= #{size}
-    ORDER BY transaction_id, cell_index ASC;
+    ORDER BY transaction_id, input_id ASC;
 
   </select>
 
