@@ -16,4 +16,8 @@ public class CollectionsPageReq extends BasePageReq {
     private String sort="block_timestamp.desc";
 
 
+    @Schema(description = "类型",example = "spore,m_nft")
+    private String standard;
+
+
 }

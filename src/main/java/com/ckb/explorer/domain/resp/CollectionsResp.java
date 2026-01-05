@@ -49,6 +49,12 @@ public class CollectionsResp {
     @Schema(description = "cell id")
     private Long cellId;
 
+    @Schema(description = "icon_url")
+    private String iconUrl;
+
+    @Schema(description = "standard")
+    private String standard;
+
 
 
 

@@ -2,11 +2,15 @@ package com.ckb.explorer.util;
 
 import com.ckb.explorer.enums.NetWorkEnums;
 import com.ckb.explorer.enums.NftAction;
+import com.ckb.explorer.enums.NftType;
 import com.ckb.explorer.enums.UdtType;
 import jakarta.annotation.PostConstruct;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.mapstruct.Named;
 import org.nervos.ckb.type.Script;
 import org.nervos.ckb.type.Script.HashType;
@@ -227,5 +231,20 @@ public class TypeConversionUtil {
 
     String result = Numeric.littleEndian(uint64Value.longValue());
     return FULL_ZERO_HEX.equals(result)?DEFAULT_SINCE:result;
+  }
+
+  @Named("nftType(Value)")
+  public static String nftType(Integer nftType){
+    return NftType.getValueByCode(nftType);
+  }
+
+  public static String minerMessageToVersion(byte[] bytes){
+    String binaryStr = new String(bytes, StandardCharsets.UTF_8);
+    var match = Pattern.compile("\\d\\.\\d+\\.\\d");
+    Matcher matcher = match.matcher(binaryStr);
+    if (matcher.find()) {
+      return matcher.group(0);
+    }
+    return null;
   }
 }

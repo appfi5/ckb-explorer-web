@@ -23,6 +23,7 @@ public interface NftConvert {
     @Mapping(source = "action", target = "action", qualifiedByName = "nftAction(Value)")
     @Mapping(source = "txHash", target = "txHash", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     NftTransfersResp toNftTransfersResp(NftTransfersDto nftTransfersDto);
 
     Page<NftTransfersResp> toNftTransfersRespPage(Page<NftTransfersDto> page);
@@ -30,15 +31,18 @@ public interface NftConvert {
     Page<NftHolderResp> toNftHoldersRespPage(Page<NftHolderDto> page);
 
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     NftItemResponse toNftItemResp(NftItemDto nftItemDto);
 
     Page<NftItemResponse> toNftItemsRespPage(Page<NftItemDto> page);
 
     @Mapping(source = "args", target = "clusterId", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "dobScriptHash", target = "typeScriptHash", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     CollectionsResp toCollectionsResp(CollectionsDto collectionsDto);
 
     @Mapping(source = "data", target = "data", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     NftItemDetailResponse toNftItemDetailResp(NftItemDto nftItemDto);
 
 
@@ -48,6 +52,7 @@ public interface NftConvert {
     @Mapping(source = "dobScriptHash", target = "collectionTypeHash", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "dobCodeScriptArgs", target = "tokenId", qualifiedByName = "byteToStringHash(Value)")
     @Mapping(source = "data", target = "nftIconFile", qualifiedByName = "byteToStringHash(Value)")
+    @Mapping(source = "standard", target = "standard", qualifiedByName = "nftType(Value)")
     AccountNftResponse toAccountNftResponse(AccountNftDto dto);
 
     List<AccountNftResponse> toAccountNftResponseList(List<AccountNftDto> dtos);

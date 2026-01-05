@@ -33,7 +33,9 @@ public class DobExtend {
 
     private String creator;
 
+    private Integer standard;
 
+    private String iconUrl;
 
 
 

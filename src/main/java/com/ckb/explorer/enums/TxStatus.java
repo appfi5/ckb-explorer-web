@@ -7,11 +7,10 @@ import org.nervos.ckb.Network;
 @Getter
 @AllArgsConstructor
 public enum TxStatus {
-  // pending: 0, proposed: 1, committed: 2, rejected: 3
+  // pending: 0, committed: 1, rejected: 2 (新的实现没有 proposed)
   pending(0, "pending"),
-  proposed(1, "proposed"),
-  committed(2, "committed"),
-  rejected(3, "rejected");
+  committed(1, "committed"),
+  rejected(2, "rejected");
 
 
   private final Integer code;
