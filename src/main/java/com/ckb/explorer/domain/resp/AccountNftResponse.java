@@ -32,4 +32,9 @@ public class AccountNftResponse {
     @Schema(description = "cell id")
     private Long cellId;
 
- }
+    private String standard;
+
+    private String iconUrl;
+
+
+}

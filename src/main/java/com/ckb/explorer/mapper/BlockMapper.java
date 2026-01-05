@@ -3,7 +3,9 @@ package com.ckb.explorer.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.BlockDaoDto;
+import com.ckb.explorer.domain.dto.DaoBlockDto;
 import com.ckb.explorer.domain.dto.EpochDto;
+import com.ckb.explorer.domain.dto.Last7DaysCkbNodeVersionDto;
 import com.ckb.explorer.entity.Block;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
@@ -45,4 +47,10 @@ public interface BlockMapper extends BaseMapper<Block> {
 
   @Select("SELECT MAX(id) FROM block")
   Long getTotalCount();
+
+  @Select("select miner_message as version, count(*) from block where timestamp >= #{from} group by miner_message order by 1 asc")
+  List<Last7DaysCkbNodeVersionDto> getLast7DaysCkbNodeVersion(@Param("from") Long  from);
+
+  @Select("select block_number, timestamp, dao from block where block_number = #{blockNumber}")
+  DaoBlockDto getDaoBlockByBlockNumber(@Param("blockNumber") Long blockNumber);
  }

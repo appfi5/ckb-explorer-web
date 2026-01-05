@@ -3,6 +3,7 @@ package com.ckb.explorer.domain.resp;
 import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import java.math.BigInteger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,13 +19,13 @@ public class CellInfoResponse extends BaseResponse<Long> {
    * 容量
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long capacity;
+  private BigInteger capacity;
 
   /**
    * 占用的容量
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long occupiedCapacity;
+  private BigInteger occupiedCapacity;
 
   /**
    * 状态 0-live;1-dead

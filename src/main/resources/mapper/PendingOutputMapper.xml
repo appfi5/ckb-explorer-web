@@ -1,0 +1,26 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ckb.explorer.mapper.PendingOutputMapper">
+
+  <select id="getDisplayOutputs" resultType="com.ckb.explorer.domain.dto.PendingCellOutputDto">
+    SELECT o.capacity          as capacity,
+           o.occupied_capacity as occupied_capacity,
+           o.lock_code_hash    as lock_code_hash,
+           o.lock_hash_type    as lock_hash_type,
+           o.lock_args         as lock_args,
+           o.lock_script_hash  as lock_script_hash,
+           o.tx_hash           as generated_tx_hash,
+           o.output_index      as cell_index,
+           o.type_code_hash    as type_code_hash,
+           o.type_hash_type    as type_hash_type,
+           o.type_args         as type_args,
+           o.type_script_hash  as type_script_hash,
+           o.data              as data
+    FROM output o
+    WHERE o.tx_hash = #{txHash}
+    ORDER BY o.output_index ASC
+  </select>
+
+</mapper>
