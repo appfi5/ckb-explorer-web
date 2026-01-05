@@ -28,4 +28,9 @@ public class NftItemDto {
     private String creator;
 
     private Long createLockScriptId;
+
+    private Integer standard;
+
+    private String iconUrl;
+
 }

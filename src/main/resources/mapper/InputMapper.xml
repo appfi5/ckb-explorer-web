@@ -19,13 +19,14 @@
            '0x' || encode(type.args, 'hex')      as args,
            '0x' || encode(type.code_hash, 'hex') as code_hash,
            type.hash_type                        as hash_type,
-           o.data                                as data
+           o.data                                as data,
+           o.block_number                        as block_number
     from input i
            inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
            left join script type on o.type_script_id = type.id
     where consumed_tx_id = #{transactionId}
-    order by o.id asc
+    order by i.id asc
   </select>
 
   <select id="getNormalDisplayInputsByTransactionIds" resultType="com.ckb.explorer.domain.dto.CellInputDto">
@@ -60,7 +61,8 @@
            type.hash_type                        as hash_type,
            i.consumed_tx_id                      as transaction_id,
            ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
-           o.data                                as data
+           o.data                                as data,
+           i.id                                  as input_id
     from input i
            inner join output o on o.id = i.output_id
            left join script s on o.lock_script_id = s.id
@@ -74,7 +76,7 @@
     </if>
     ) t
     WHERE rn &lt;= #{size}
-    ORDER BY transaction_id, cell_index ASC;
+    ORDER BY transaction_id, input_id ASC;
 
   </select>
 
@@ -94,7 +96,9 @@
     args,
     code_hash,
     hash_type,
-    transaction_id
+    transaction_id,
+    data,
+    block_number
     FROM (select o.id,
       false                                 as from_cellbase,
       o.capacity                            as capacity,
@@ -118,7 +122,10 @@
       '0x' || encode(type.code_hash, 'hex') as code_hash,
       type.hash_type                        as hash_type,
       i.consumed_tx_id                      as transaction_id,
-      ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn
+      ROW_NUMBER() OVER (PARTITION BY i.consumed_tx_id ORDER BY i.input_index ASC) AS rn,
+      o.data                                as data,
+      o.block_number                        as block_number,
+      i.id                                  as input_id
       from input i
       inner join output o on o.id = i.output_id
       left join script s on o.lock_script_id = s.id
@@ -132,7 +139,7 @@
       </if>
     ) t
     WHERE rn &lt;= #{size}
-    ORDER BY transaction_id, cell_index ASC;
+    ORDER BY transaction_id, input_id ASC;
 
   </select>
 

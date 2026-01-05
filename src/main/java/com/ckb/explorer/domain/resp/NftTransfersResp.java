@@ -35,6 +35,10 @@ public class NftTransfersResp {
     @Schema(description="cell data")
     private String data;
 
+    private String standard;
+
+    private String iconUrl;
+
 
 
 

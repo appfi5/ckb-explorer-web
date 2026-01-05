@@ -34,7 +34,7 @@ public class AccountUdtBalanceResponse {
   private String typeScriptHash;
 
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long totalAmount;
+  private BigInteger totalAmount;
 
   private String expectedSupply; // omiga相关
 

@@ -4,7 +4,7 @@ import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import java.util.List;
+import java.math.BigInteger;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,13 +27,13 @@ public class CellInputResponse extends BaseResponse<Long> {
    * 单元格容量
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long capacity;
+  private BigInteger capacity;
   
   /**
    * 占用的容量
    */
   @JsonSerialize(using = ToStringSerializer.class)
-  private Long occupiedCapacity;
+  private BigInteger occupiedCapacity;
   
   /**
    * 地址哈希
@@ -71,4 +71,6 @@ public class CellInputResponse extends BaseResponse<Long> {
   private ScriptResponse typeScript;
 
   private String data;
+
+  private NervosDaoInfoResponse nervosDaoInfo;
 }

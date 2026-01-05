@@ -1,5 +1,7 @@
 package com.ckb.explorer.domain.dto;
 
+import com.ckb.explorer.domain.resp.NervosDaoInfoResponse;
+import java.math.BigInteger;
 import java.util.List;
 import lombok.Data;
 
@@ -10,12 +12,12 @@ public class CellInputDto {
   /**
    * 单元格容量
    */
-  private Long capacity;
+  private BigInteger capacity;
 
   /**
    * 占用的容量
    */
-  private Long occupiedCapacity;
+  private BigInteger occupiedCapacity;
 
 
   private byte[] lockCodeHash;
@@ -58,4 +60,8 @@ public class CellInputDto {
   private Long transactionId;
 
   private byte[] data;
+
+  private NervosDaoInfoResponse nervosDaoInfo;
+
+  private Long blockNumber;
 }
