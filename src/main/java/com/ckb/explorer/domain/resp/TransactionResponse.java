@@ -22,7 +22,7 @@ public class TransactionResponse extends BaseResponse<Long> {
 
   private Boolean isCellbase;
 
-  private String txStatus = TxStatus.committed.getStatus(); //  第一版没有其他状态的交易
+  private String txStatus;
 
   private List<String> witnesses;
 
