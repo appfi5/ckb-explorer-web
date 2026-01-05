@@ -8,25 +8,30 @@ import com.ckb.explorer.config.ServerException;
 import com.ckb.explorer.constants.I18nKey;
 import com.ckb.explorer.domain.dto.CellInputDto;
 import com.ckb.explorer.domain.dto.CellOutputDto;
+import com.ckb.explorer.domain.dto.DaoCellDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
 import com.ckb.explorer.domain.req.ContractTransactionsPageReq;
 import com.ckb.explorer.domain.req.UdtTransactionsPageReq;
 import com.ckb.explorer.domain.resp.*;
 import com.ckb.explorer.entity.CkbTransaction;
 import com.ckb.explorer.entity.Script;
+import com.ckb.explorer.enums.CellType;
 import com.ckb.explorer.mapper.Address24hTransactionMapper;
 import com.ckb.explorer.mapper.CkbTransactionMapper;
 import com.ckb.explorer.mapper.DaoContractMapper;
 import com.ckb.explorer.mapper.DepositCellMapper;
 import com.ckb.explorer.mapper.InputMapper;
 import com.ckb.explorer.mapper.OutputMapper;
-import com.ckb.explorer.mapper.ScriptMapper;
 import com.ckb.explorer.mapstruct.BlockTransactionConvert;
 import com.ckb.explorer.mapstruct.CellInputConvert;
 import com.ckb.explorer.mapstruct.CellOutputConvert;
 import com.ckb.explorer.mapstruct.CkbTransactionConvert;
+import com.ckb.explorer.service.BlockService;
 import com.ckb.explorer.service.CkbTransactionService;
+import com.ckb.explorer.service.CkbPendingTransactionService;
 import com.ckb.explorer.service.ScriptService;
+import com.ckb.explorer.util.CkbUtil;
+import com.ckb.explorer.util.DaoCompensationCalculator;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
 import java.time.LocalDate;
@@ -43,7 +48,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nervos.ckb.utils.Numeric;
-import org.nervos.ckb.utils.address.Address;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -67,9 +71,6 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   private Address24hTransactionMapper address24hTransactionMapper;
 
   @Resource
-  private ScriptMapper scriptMapper;
-
-  @Resource
   private ScriptService scriptService;
 
   @Resource
@@ -81,8 +82,14 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Resource
   private ScriptConfig scriptConfig;
 
+  @Resource
+  private CkbPendingTransactionService ckbPendingTransactionService;
+
   @Value("${ckb.daoCodeHash}")
   private String daoCodeHashList;
+
+  @Resource
+  private BlockService blockService;
 
   @Override
   public List<TransactionPageResponse> getHomePageTransactions(int size) {
@@ -118,6 +125,12 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
   @Override
   public TransactionResponse getTransactionByHash(String txHash) {
 
+    // 先查pending
+    var pending = ckbPendingTransactionService.getPendingTransactionByHash(txHash);
+    if(pending != null){
+      return pending;
+    }
+
     // 查询第一个匹配的交易
     TransactionDto transaction = baseMapper.selectTransactionWithCellDeps(Numeric.hexStringToByteArray(txHash));
     
@@ -133,6 +146,12 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   @Override
   public Page<CellInputResponse> getDisplayInputs(String txHash, int pageNum, int pageSize) {
+    // 先查pending
+    var pending = ckbPendingTransactionService.getDisplayInputs(txHash, pageNum, pageSize);
+    if(pending != null){
+      return pending;
+    }
+
     CkbTransaction ckbTransaction = getCkbTransaction(txHash);
     // cellbase交易
     if(ckbTransaction.getTxIndex() == 0){
@@ -140,7 +159,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       return getCellbaseDisplayInputs(txHash, ckbTransaction.getBlockNumber());
       // 普通交易
     } else{
-      return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize);
+      return getNormalTxDisplayInputs(ckbTransaction.getId(), pageNum, pageSize, ckbTransaction.getBlockNumber(), ckbTransaction.getBlockTimestamp());
     }
   }
 
@@ -175,7 +194,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
    * @param pageSize
    * @return
    */
-  private Page<CellInputResponse> getNormalTxDisplayInputs(Long transactionId, int page, int pageSize) {
+  private Page<CellInputResponse> getNormalTxDisplayInputs(Long transactionId, int page, int pageSize, Long blockNumber, Long blockTimestamp) {
     Page<CellInputDto> pageResult = new Page<>(page, pageSize);
     Page<CellInputDto> resultPage = inputMapper.getDisplayInputs(pageResult, transactionId);
     resultPage.getRecords().forEach(cellInputDto -> {
@@ -183,11 +202,30 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       Integer cellType = scriptConfig.cellType(typeScript,Numeric.toHexString(cellInputDto.getData()));
       cellInputDto.setCellType(cellType);
     });
+
+    List<CellInputDto> inputDtos = resultPage.getRecords();
+    for(CellInputDto input: inputDtos){
+      // 如果是Dao phase1交易的input
+      if(input.getCellType() != null && input.getCellType() == CellType.NERVOS_DAO_DEPOSIT.getValue()){
+        input.setNervosDaoInfo(attributesForDaoInput(input,false, blockNumber, blockTimestamp));
+      }
+      // 如果是Dao phase2交易的input5
+      if(input.getCellType() != null && input.getCellType() == CellType.NERVOS_DAO_WITHDRAWING.getValue()){
+        input.setNervosDaoInfo(attributesForDaoInput(input,true, blockNumber, blockTimestamp));
+      }
+    }
     return CellInputConvert.INSTANCE.toConvertPage(resultPage);
   }
 
   @Override
   public Page<CellOutputResponse> getDisplayOutputs(String txHash, int pageNum, int pageSize) {
+
+    // 先查pending
+    var pending = ckbPendingTransactionService.getDisplayOutputs(txHash, pageNum, pageSize);
+    if(pending != null){
+      return pending;
+    }
+
     CkbTransaction ckbTransaction = getCkbTransaction(txHash);
     Page<CellOutputDto> pageResult = new Page<>(pageNum, pageSize);
     // cellbase交易
@@ -229,21 +267,13 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
   private Script getAddress(String addressHash) {
     // 计算地址的哈希
-    var addressScriptHash = Address.decode(addressHash).getScript().computeHash();
-    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-    queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
-    return scriptMapper.selectOne(queryScriptWrapper);
+    return scriptService.getAddress(addressHash);
   }
 
   private Script getDaoTypeScript(){
     var codeHashs = Arrays.stream(daoCodeHashList.split( ",")).toList();
     var codeHash = codeHashs.stream().map(Numeric::hexStringToByteArray).collect(Collectors.toList());
-    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-    queryScriptWrapper.in(Script::getCodeHash, codeHash);
-    queryScriptWrapper.eq(Script::getIsTypescript, 1);
-    queryScriptWrapper.eq(Script::getHashType, 1);
-    queryScriptWrapper.last("limit 1");
-    return scriptMapper.selectOne(queryScriptWrapper);
+    return scriptService.getDaoTypeScript(codeHash);
   }
   @Override
   public Page<BlockTransactionPageResponse> getBlockTransactions(String blockHash, String txHash,
@@ -361,10 +391,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     };
 
     // 判断地址是否存在
-    LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
-    var addressScriptHash = Address.decode(address).getScript().computeHash();
-    queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
-    var script = scriptMapper.selectOne(queryScriptWrapper);
+    var script = scriptService.getAddress(address);
     if (script == null) {
       throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE,
           i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
@@ -375,17 +402,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     Long endTimeLong = 0L;
     // 如果没有指定开始结束时间，则获取最近一个月的交易
     if(startTime == null && endTime == null){
-//      // 从24小时表里获取翻页的交易id
-//      Page<Long> transactionIdPage = address24hTransactionMapper.getTransactionsLast24hrsByLockScriptIdWithSort(
-//          transactionPage, script.getId(), orderBy, ascOrDesc);
-//
-//      List<Long> transactionIds = transactionIdPage.getRecords();
-//      if (transactionIds.isEmpty()){
-//        return Page.of(page, pageSize, 0);
-//      }
-//      // 根据交易id查询交易详情
-//      transactions = baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc);
-//      total = transactionIdPage.getTotal();
+
       ZonedDateTime currentUtc = ZonedDateTime.now(ZoneOffset.UTC);
       LocalDate firstDayOfMonthUtc = currentUtc.toLocalDate()
           .with(TemporalAdjusters.firstDayOfMonth()); // 当月第一天
@@ -724,5 +741,53 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     resultPage.setRecords( transactions);
 
     return resultPage;
+  }
+
+  /**
+   * 计算Dao交易的input信息
+   * @param nervosDaoWithdrawingCell
+   * @param isPhase2
+   * @param currentBlockNumber
+   * @param currentBlockTimestamp
+   * @return
+   */
+  private NervosDaoInfoResponse attributesForDaoInput(CellInputDto nervosDaoWithdrawingCell,  boolean isPhase2, Long currentBlockNumber, Long currentBlockTimestamp) {
+    NervosDaoInfoResponse nervosDaoInfo = new NervosDaoInfoResponse();
+
+    var compensationStartedBlockNumber = 0L;
+    var compensationEndedBlockNumber = 0L;
+    // 如果是phase2交易
+    if(isPhase2){
+      // 起始块高为cell的data
+      compensationStartedBlockNumber = CkbUtil.convertToBlockNumber(nervosDaoWithdrawingCell.getData());
+      // 终止块高为cell的块高，即phase1的output的块高
+      compensationEndedBlockNumber = nervosDaoWithdrawingCell.getBlockNumber();
+
+      // 锁定终止块高为当前交易块高
+      nervosDaoInfo.setLockedUntilBlockNumber(currentBlockNumber);
+      nervosDaoInfo.setLockedUntilBlockTimestamp(currentBlockTimestamp);
+
+      // 否则是phase1交易
+    } else{
+      // 起始块高为cell的块高，即deposit的output的块高
+      compensationStartedBlockNumber = nervosDaoWithdrawingCell.getBlockNumber();
+      // 终止块高为当前交易块高
+      compensationEndedBlockNumber = currentBlockNumber;
+    }
+
+    var compensationStartedBlock = blockService.getDaoBlockByBlockNumber(compensationStartedBlockNumber);
+    nervosDaoInfo.setCompensationStartedBlockNumber(compensationStartedBlock.getBlockNumber());
+    nervosDaoInfo.setCompensationStartedTimestamp(compensationStartedBlock.getTimestamp());
+
+    var compensationEndedBlock = blockService.getDaoBlockByBlockNumber(compensationEndedBlockNumber);
+    nervosDaoInfo.setCompensationEndedBlockNumber(compensationEndedBlock.getBlockNumber());
+    nervosDaoInfo.setCompensationEndedTimestamp(compensationEndedBlock.getTimestamp());
+
+    DaoCellDto dapCell = new DaoCellDto();
+    dapCell.setValue(nervosDaoWithdrawingCell.getCapacity());
+    dapCell.setOccupiedCapacity(nervosDaoWithdrawingCell.getOccupiedCapacity());
+    nervosDaoInfo.setInterest(DaoCompensationCalculator.call(dapCell, compensationEndedBlock.getDao(),
+        compensationStartedBlock.getDao()));
+    return nervosDaoInfo;
   }
 }

@@ -1,6 +1,7 @@
 package com.ckb.explorer.mapstruct;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ckb.explorer.domain.dto.PendingTransactionDto;
 import com.ckb.explorer.domain.dto.TransactionDto;
 import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
@@ -28,9 +29,15 @@ public interface CkbTransactionConvert {
   @Mapping(source = "witnesses", target = "witnesses", qualifiedByName = "byteToWitnesses(Value)")
   @Mapping(source = "headerDeps", target = "headerDeps", qualifiedByName = "byteToHashList(Value)")
   @Mapping(source = "txHash", target = "transactionHash")
+  @Mapping(target = "txStatus",expression = "java(com.ckb.explorer.enums.TxStatus.getStatusByCode(ckbTransaction.getStatus()))")
   TransactionResponse toConvertTransactionResponse(TransactionDto ckbTransaction);
 
 
   List<UdtTransactionPageResponse> toConvertUdtTransactionList(List<AddressTransactionPageResponse> page);
 
+  @Mapping(source = "witnesses", target = "witnesses", qualifiedByName = "byteToWitnesses(Value)")
+  @Mapping(source = "headerDeps", target = "headerDeps", qualifiedByName = "byteToHashList(Value)")
+  @Mapping(source = "txHash", target = "transactionHash")
+  @Mapping(target = "txStatus",expression = "java(com.ckb.explorer.enums.TxStatus.getStatusByCode(ckbPendingTransaction.getStatus()))")
+  TransactionResponse toConvertPendingTransactionResponse(PendingTransactionDto ckbPendingTransaction);
 }

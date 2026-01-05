@@ -2,6 +2,7 @@ package com.ckb.explorer.mapstruct;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.CellOutputDto;
+import com.ckb.explorer.domain.dto.PendingCellOutputDto;
 import com.ckb.explorer.domain.resp.CellOutputResponse;
 import com.ckb.explorer.domain.resp.ScriptResponse;
 import com.ckb.explorer.enums.HashType;
@@ -12,6 +13,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
+import org.nervos.ckb.utils.Numeric;
 
 @Mapper(componentModel = "spring", uses = {TypeConversionUtil.class})
 
@@ -40,6 +42,33 @@ public interface CellOutputConvert {
     }
     if(cellOutput.getArgs() != null && cellOutput.getCodeHash()!=null && cellOutput.getHashType()!=null){
       response.setTypeScript(new ScriptResponse(cellOutput.getArgs(),cellOutput.getCodeHash(), HashType.getValueByCode(cellOutput.getHashType())));
+    }
+  }
+
+  Page<CellOutputResponse> toConvertPendingPage(Page<PendingCellOutputDto> page);
+
+  List<CellOutputResponse> toConvertPendingList(List<PendingCellOutputDto> list);
+
+  @Mapping(target = "addressHash", ignore = true)
+  @Mapping(target = "typeScript", ignore = true)
+  @Mapping(target = "data",expression = "java(cellOutput.getData() != null? org.nervos.ckb.utils.Numeric.toHexString(cellOutput.getData()): null)")
+  @Mapping(target = "generatedTxHash",expression = "java(cellOutput.getGeneratedTxHash() != null? org.nervos.ckb.utils.Numeric.toHexString(cellOutput.getGeneratedTxHash()): null)")
+  CellOutputResponse toConvertPending(PendingCellOutputDto cellOutput);
+
+  @AfterMapping
+  default void setAdditionalFields(@MappingTarget CellOutputResponse response, PendingCellOutputDto cellOutput) {
+    if(cellOutput.getLockCodeHash() != null && cellOutput.getLockArgs()!=null && cellOutput.getLockHashType()!=null) {
+      response.setAddressHash(
+          TypeConversionUtil.scriptToAddress(
+              cellOutput.getLockCodeHash(),
+              cellOutput.getLockArgs(),
+              cellOutput.getLockHashType()
+          )
+      );
+    }
+    if(cellOutput.getTypeArgs() != null && cellOutput.getTypeCodeHash()!=null && cellOutput.getTypeHashType()!=null){
+      response.setTypeScript(new ScriptResponse(
+          Numeric.toHexString(cellOutput.getTypeArgs()),Numeric.toHexString(cellOutput.getTypeCodeHash()), HashType.getValueByCode(cellOutput.getTypeHashType())));
     }
   }
 }

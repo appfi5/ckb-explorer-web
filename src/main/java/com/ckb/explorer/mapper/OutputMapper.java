@@ -3,6 +3,7 @@ package com.ckb.explorer.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ckb.explorer.domain.dto.CellOutputDto;
+import com.ckb.explorer.domain.dto.PendingCellInputDto;
 import com.ckb.explorer.entity.Output;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -30,4 +31,6 @@ public interface OutputMapper extends BaseMapper<Output> {
 
   @Select("select * from output where lock_script_id = #{lockScriptId} limit 1")
   Output findByLockScriptIdOutput(@Param("lockScriptId") Long lockScriptId);
+
+  PendingCellInputDto getOutputByTxHashAndIndex(@Param("txHash") byte[] txHash, @Param("index") Integer index);
 }

@@ -36,6 +36,9 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             " <if test=\" null != tags and tags !='' \"> \n" +
             "   and  tags @>  string_to_array(#{tags}, ',')::varchar[] \n"+
             " </if> \n"+
+            " <if test=\" null != standard  \"> \n" +
+            "   and  standard = #{standard} \n"+
+            " </if> \n"+
             " order by ${orderByStr} ${ascOrDesc} \n"+
             "</script>")
     @Results({
@@ -43,7 +46,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             @Result(column = "tags", property = "tags", typeHandler = ArrayTypeHandler.class)
     })
     Page<CollectionsDto> dobPage(Page page, @Param("oneDayAgo") Long oneDayAgo , @Param("orderByStr") String orderByStr,
-                                  @Param("ascOrDesc") String ascOrDesc, @Param("tags") String tags);
+                                  @Param("ascOrDesc") String ascOrDesc, @Param("tags") String tags, @Param("standard") Integer standard);
 
 
     @Select( "select dob.*,\n" +
@@ -114,8 +117,9 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
     Page<NftItemDto> itemsPage(Page page ,@Param("dobScriptHash") byte[] dobScriptHash);
 
     @Select("select dobo.id,dobo.data,dobo.type_script_id,LAST_VALUE(dobo.lock_script_id) over w as lock_script_id \n" +
-            ",de.id as collection_id,de.name as collection_name,FIRST_VALUE(dobo.lock_script_id) over w as create_lock_script_id from \n" +
-            "dob_output  dobo left join  dob_code dc \n" +
+            ",de.id as collection_id,de.name as collection_name,FIRST_VALUE(dobo.lock_script_id) over w as create_lock_script_id  " +
+            ",de.standard, de.icon_url \n" +
+            "from dob_output  dobo left join  dob_code dc \n" +
             "on dc.dob_code_script_id=dobo.type_script_id \n" +
             "left join dob_extend de on de.id= dc.dob_extend_id \n" +
             "where dc.dob_code_script_args=#{args} and de.dob_script_hash=#{dobScriptHash} \n" +
@@ -157,7 +161,7 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "where dob_script_hash = #{clusterTypeHash} limit 1")
   NftCollectionResponse getNftCollectionsByClusterTypeHash(@Param("clusterTypeHash") byte[] clusterTypeHash);
 
-    @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id \n" +
+    @Select("select dc.dob_code_script_args,dlc.data,de.name as collection_name,de.dob_script_hash,dlc.id as cell_id,de.standard,de.icon_url \n" +
             "from  dob_live_cells dlc left join dob_code dc  \n " +
             "on dlc.type_script_id = dc.dob_code_script_id \n" +
             "left join  dob_extend de on de.id= dc.dob_extend_id \n" +

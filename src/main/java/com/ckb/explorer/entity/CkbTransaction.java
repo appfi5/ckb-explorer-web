@@ -34,6 +34,7 @@ public class CkbTransaction {
 
   private byte[] headerDeps;
 
+  // 注意交易的bytes跟旧浏览器差了4字节，展示时需要加回去，如果计算费率的话，需要加8字节
   private Long cycles;
 
   private Long transactionFee;
