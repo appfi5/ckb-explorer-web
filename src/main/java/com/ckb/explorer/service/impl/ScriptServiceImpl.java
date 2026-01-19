@@ -68,7 +68,8 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     else {
       throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
     }
-
+    // 只查Lock
+    queryWrapper.eq(Script::getIsTypescript, 0);
     var script = baseMapper.selectOne(queryWrapper);
     if(script == null){
       throw new ServerException(I18nKey.ADDRESS_NOT_FOUND_CODE, i18n.getMessage(I18nKey.ADDRESS_NOT_FOUND_MESSAGE));
@@ -101,7 +102,8 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     // 查询地址的Dao存款的阶段1未领取的补偿
     addressResponse.setPhase1UnClaimedCompensation(withdrawCellService.phase1DaoInterestsByLockScriptId(script.getId()));
     addressResponse.setDepositUnmadeCompensation(depositCellService.unmadeDaoInterestsByLockScriptId(script.getId()));
-    
+    var claimedCompensation = withdrawCellService.claimedInterestsByLockScriptId(script.getId());
+    addressResponse.setInterest(claimedCompensation);
     return addressResponse;
   }
 
@@ -168,6 +170,7 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     var addressScriptHash = Address.decode(addressHash).getScript().computeHash();
     LambdaQueryWrapper<Script> queryScriptWrapper = new LambdaQueryWrapper<>();
     queryScriptWrapper.eq(Script::getScriptHash, addressScriptHash);
+    queryScriptWrapper.eq(Script::getIsTypescript, 0);
     return baseMapper.selectOne(queryScriptWrapper);
   }
 

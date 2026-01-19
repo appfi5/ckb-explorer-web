@@ -11,4 +11,11 @@ public interface WithdrawCellService {
    */
   BigInteger phase1DaoInterestsByLockScriptId(Long lockScriptId);
 
+  /**
+   * 获取个人DAO存款的阶段2利息，已获取的利息
+   *
+   * @param lockScriptId
+   * @return
+   */
+  BigInteger claimedInterestsByLockScriptId(Long lockScriptId);
 }

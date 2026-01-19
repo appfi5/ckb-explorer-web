@@ -2,6 +2,7 @@ package com.ckb.explorer.facade.impl;
 
 import com.ckb.explorer.domain.resp.DistributionDataResponse;
 import com.ckb.explorer.facade.IDistributionDataCacheFacade;
+import com.ckb.explorer.service.AverageBlockTimeService;
 import com.ckb.explorer.service.DistributionDataService;
 import com.ckb.explorer.util.CacheUtils;
 import com.ckb.explorer.util.JsonUtil;
@@ -32,6 +33,9 @@ public class DistributionDataCacheFacadeImpl implements IDistributionDataCacheFa
   @Resource
   private DistributionDataService distributionDataService;
 
+  @Resource
+  private AverageBlockTimeService averageBlockTimeService;
+
   private static final String CACHE_PREFIX = "distribution_data:";
   private static final String CACHE_VERSION = "v1";
   private static final String CACHE_KEY = "average_block_time";
@@ -51,8 +55,18 @@ public class DistributionDataCacheFacadeImpl implements IDistributionDataCacheFa
   }
 
   @Override
-  public DistributionDataResponse getAverageBlockTime() {
+  public DistributionDataResponse getAverageBlockTime(Integer limit) {
 
+    if(limit != null && limit > 0){
+      // 创建缓存键
+      String cacheKey = String.format("%s%s:%s:limit:%d", CACHE_PREFIX, CACHE_VERSION, CACHE_KEY, limit * 24);
+      return cacheUtils.getCacheWithoutLock(
+          cacheKey,                    // 缓存键
+          () -> loadAverageBlockTimeFromDatabase(limit * 24),  // 数据加载函数
+          TTL_SECONDS,                 // 缓存过期时间
+          TimeUnit.SECONDS             // 时间单位
+      );
+    }
     RBucket<String> bucket = redissonClient.getBucket(CACHE_KEY);
     if (bucket == null || StringUtils.isEmpty(bucket.get())) {
       DistributionDataResponse response = new DistributionDataResponse();
@@ -64,5 +78,11 @@ public class DistributionDataCacheFacadeImpl implements IDistributionDataCacheFa
 
   private DistributionDataResponse loadFromDatabase(String indicator) {
     return distributionDataService.getDistributionDataByIndicator(indicator);
+  }
+
+  private DistributionDataResponse loadAverageBlockTimeFromDatabase(Integer limit) {
+    DistributionDataResponse response = new DistributionDataResponse();
+    response.setAverageBlockTime(averageBlockTimeService.getAvgBlockTime(limit));
+    return response;
   }
 }

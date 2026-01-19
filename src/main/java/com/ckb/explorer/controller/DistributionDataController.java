@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -50,13 +51,18 @@ public class DistributionDataController {
    */
   @GetMapping("/{indicator}")
   @Operation(summary = "获取分布数据")
-  public ResponseEntity<ResponseInfo<DistributionDataResponse>> show(@PathVariable("indicator") String indicator) {
+  public ResponseEntity<ResponseInfo<DistributionDataResponse>> show(@PathVariable("indicator") String indicator,
+      @RequestParam(defaultValue = "15") Integer limit) {
     // 验证查询参数
     validateQueryParams(indicator.trim());
     DistributionDataResponse data;
     // 如果指标是平均区块时间，使用特定的方法
     if ("average_block_time".equals(indicator.trim())) {
-      data = distributionDataCacheFacade.getAverageBlockTime();
+      // 限制一下limit的值
+      if(limit != null && limit > 5* 365){
+        throw new IllegalArgumentException("limit too large");
+      }
+      data = distributionDataCacheFacade.getAverageBlockTime(limit);
     } else{
       data = distributionDataCacheFacade.getDistributionDataByIndicator(indicator.trim());
     }

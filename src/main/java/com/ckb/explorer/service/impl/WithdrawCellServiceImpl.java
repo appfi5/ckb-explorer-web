@@ -58,4 +58,34 @@ public class WithdrawCellServiceImpl extends
     }
     return total;
   }
+
+  @Override
+  public BigInteger claimedInterestsByLockScriptId(Long lockScriptId) {
+    BigInteger total = BigInteger.ZERO;
+    try {
+      // 查询已消耗的WithdrawCell
+      List<DaoCellDto> consumedDaoWithdrawingCells = baseMapper.getConsumedCellsByLockScriptId(lockScriptId);
+      if(consumedDaoWithdrawingCells.isEmpty()){
+        return total;
+      }
+      Set<Long> depositBlockNumbers = consumedDaoWithdrawingCells.stream()
+          .map(withdrawCell -> CkbUtil.convertToBlockNumber(withdrawCell.getData())).collect(
+              Collectors.toSet());
+      Set<Long> withdrawBlockNumbers = consumedDaoWithdrawingCells.stream()
+          .map(DaoCellDto::getBlockNumber).collect(Collectors.toSet());
+      depositBlockNumbers.addAll(withdrawBlockNumbers);
+
+      Map<Long, byte[]> blockDaos = blockService.getBlockDaos(depositBlockNumbers);
+
+      // 计算每个cell的DAO利息
+      for (DaoCellDto cell : consumedDaoWithdrawingCells) {
+        total = total.add(DaoCompensationCalculator.call(cell,
+            blockDaos.get(cell.getBlockNumber()),
+            blockDaos.get(CkbUtil.convertToBlockNumber(cell.getData()))));
+      }
+    } catch (Exception e) {
+      log.error("计算阶段2DAO利息异常", e);
+    }
+    return total;
+  }
 }

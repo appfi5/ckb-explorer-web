@@ -26,6 +26,10 @@ public class DaoCompensationCalculator {
       try {
         var compensationGeneratingCapacity = cellInfo.getValue().subtract(cellInfo.getOccupiedCapacity());
 
+        if (compensationGeneratingCapacity.compareTo(BigInteger.ZERO) <= 0) {
+          return BigInteger.ZERO;
+        }
+
         if (depositBlockDao == null || depositBlockDao.length < 32) {
           return BigInteger.ZERO;
         }

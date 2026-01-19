@@ -33,4 +33,32 @@ public interface OutputMapper extends BaseMapper<Output> {
   Output findByLockScriptIdOutput(@Param("lockScriptId") Long lockScriptId);
 
   PendingCellInputDto getOutputByTxHashAndIndex(@Param("txHash") byte[] txHash, @Param("index") Integer index);
+
+  @Select("<script>" +
+          "WITH ranked_transactions AS (\n"
+          + "    SELECT\n"
+          + "        tx_id,\n"
+          + "        block_timestamp,\n"
+          + "        -- 对同一交易ID，按要求排序\n"
+          + "        ROW_NUMBER() OVER (\n"
+          + "            PARTITION BY tx_id\n"
+          + "            ORDER BY ${orderByStr} ${ascOrDesc}\n"
+          + "        ) AS rn\n"
+          + "    FROM output o \n"
+          + "    WHERE type_script_id = #{typeScriptId}\n"
+          + "    <if test='null != txHash'>\n"
+          + "       and tx_hash = #{txHash}\n"
+          + "     </if> "
+          + "     <if test='null != lockScriptId'>\n"
+          + "       and (lock_script_id = #{lockScriptId} or exists (select 1 from output o1 where o1.consumed_tx_hash =o.tx_hash and o.lock_script_id = #{lockScriptId} ))\n "
+          + "      </if> "
+          + ")\n"
+          + "SELECT tx_id\n"
+          + "FROM ranked_transactions\n"
+          + "WHERE rn = 1  -- 筛选出每个交易ID的最新一条记录\n"
+          + "ORDER BY ${orderByStr} ${ascOrDesc}\n"
+          + "</script>")
+  Page<Long> getUdtTransactionHashes(Page page, @Param("typeScriptId") Long typeScriptId , @Param("orderByStr") String orderByStr,
+                                       @Param("ascOrDesc") String ascOrDesc, @Param("txHash") byte[] txHash, @Param("lockScriptId") Long lockScriptId);
+
 }

@@ -14,7 +14,7 @@ public class UdtDailyStatisticsServiceImpl extends
     UdtDailyStatisticsService {
 
   @Override
-  public List<UdtDailyStatisticsResponse> getUdtDailyStatistics() {
-    return baseMapper.getUdtDailyStatistics();
+  public List<UdtDailyStatisticsResponse> getUdtDailyStatistics(Integer limit) {
+    return baseMapper.getUdtDailyStatistics(limit);
   }
 }

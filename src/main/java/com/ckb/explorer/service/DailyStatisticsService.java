@@ -21,5 +21,5 @@ public interface DailyStatisticsService extends IService<DailyStatistics> {
      * @param indicator 指标名称
      * @return 统计数据列表
      */
-    List<DailyStatisticResponse> getByIndicator(String indicator);
+    List<DailyStatisticResponse> getByIndicator(String indicator, Integer limit);
 }

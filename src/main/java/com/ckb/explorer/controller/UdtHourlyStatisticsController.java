@@ -8,6 +8,7 @@ import jakarta.annotation.Resource;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,10 +22,15 @@ public class UdtHourlyStatisticsController {
   private IUdtDailyStatisticsCacheFacade udtDailyStatisticsCacheFacade;
 
   @GetMapping
-  public ResponseInfo<List<UdtDailyStatisticsResponse>> index() {
+  public ResponseInfo<List<UdtDailyStatisticsResponse>> index(@RequestParam(defaultValue = "15") Integer limit) {
+
+    // 限制一下limit的值
+    if(limit != null && limit > 5* 365){
+      throw new IllegalArgumentException("limit too large");
+    }
 
     // 从缓存门面获取数据
-    List<UdtDailyStatisticsResponse> dailyStatistics = udtDailyStatisticsCacheFacade.index();
+    List<UdtDailyStatisticsResponse> dailyStatistics = udtDailyStatisticsCacheFacade.index(limit);
 
     // 返回成功响应
     return ResponseInfo.SUCCESS(dailyStatistics);

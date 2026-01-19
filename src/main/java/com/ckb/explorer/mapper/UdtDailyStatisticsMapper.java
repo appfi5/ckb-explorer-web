@@ -5,12 +5,22 @@ import com.ckb.explorer.entity.UdtDailyStatistics;
 import com.ckb.explorer.domain.resp.UdtDailyStatisticsResponse;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UdtDailyStatisticsMapper extends BaseMapper<UdtDailyStatistics> {
 
 
-  @Select("select created_at_unixtimestamp, SUM(ckb_transactions_count) AS ckb_transactions_count, SUM(holders_count) AS holders_count from udt_daily_statistics group by created_at_unixtimestamp order by created_at_unixtimestamp desc")
-  List<UdtDailyStatisticsResponse> getUdtDailyStatistics();
+  @Select({"<script>",
+      "select created_at_unixtimestamp, SUM(ckb_transactions_count) AS ckb_transactions_count, SUM(holders_count) AS holders_count ",
+      "from udt_daily_statistics ",
+      "group by created_at_unixtimestamp ",
+      "order by created_at_unixtimestamp desc",
+      "<if test='limit != null and limit > 0'>", // 动态判断：limit非null且大于0时拼接
+      "limit #{limit}",
+      "</if>",
+      "</script>"
+  })
+  List<UdtDailyStatisticsResponse> getUdtDailyStatistics(@Param("limit") Integer limit);
 }

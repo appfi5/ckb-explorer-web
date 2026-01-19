@@ -8,7 +8,9 @@ import com.ckb.explorer.mapper.DailyStatisticsMapper;
 import com.ckb.explorer.mapstruct.DailyStatisticsConvert;
 import com.ckb.explorer.service.DailyStatisticsService;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
@@ -21,7 +23,7 @@ public class DailyStatisticsServiceImpl extends
     ServiceImpl<DailyStatisticsMapper, DailyStatistics> implements DailyStatisticsService {
 
   @Override
-  public List<DailyStatisticResponse> getByIndicator(String indicator) {
+  public List<DailyStatisticResponse> getByIndicator(String indicator, Integer limit) {
     LambdaQueryWrapper<DailyStatistics> queryWrapper = new LambdaQueryWrapper<>();
     
     // 创建一个List来收集所有需要查询的字段
@@ -116,11 +118,18 @@ public class DailyStatisticsServiceImpl extends
     // 将所有字段设置到查询条件中
     queryWrapper.select(fields.toArray(new SFunction[0]));
 
-    // 设置排序
-    queryWrapper.orderByAsc(DailyStatistics::getCreatedAtUnixtimestamp);
+    // 若limit为0，则查全部
+    if(limit != null && limit > 0){
+      // 按最近时间倒序取最新limit条
+      queryWrapper.orderByDesc(DailyStatistics::getCreatedAtUnixtimestamp);
+      queryWrapper.last("LIMIT " + limit);
+    }
+
     var result = baseMapper.selectList(queryWrapper);
     // 根据不同的指标名称实现不同的查询逻辑
-    return DailyStatisticsConvert.INSTANCE.toConvertList(result, isBurnt);
+    var responseList = DailyStatisticsConvert.INSTANCE.toConvertList(result, isBurnt);
 
+    // 按时间正序排序返回
+    return responseList.stream().sorted(Comparator.comparing(DailyStatisticResponse::getCreatedAtUnixtimestamp)).collect(Collectors.toList());
   }
 }

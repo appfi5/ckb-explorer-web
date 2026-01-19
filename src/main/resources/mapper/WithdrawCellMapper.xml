@@ -15,4 +15,17 @@
     WHERE lock_script_id = #{lockScriptId}
       AND (consumed_tx_hash is NULL OR consumed_tx_hash = '')
   </select>
+
+  <select id="getConsumedCellsByLockScriptId" resultType="com.ckb.explorer.domain.dto.DaoCellDto">
+    SELECT output_id         AS output_id,
+           value             AS value,
+           data              AS data,
+           occupied_capacity AS occupied_capacity,
+           output_index      AS output_index,
+           block_number      AS block_number
+    FROM withdraw_cell
+    WHERE lock_script_id = #{lockScriptId}
+      AND consumed_tx_hash is NOT NULL
+      AND consumed_tx_hash != ''
+  </select>
 </mapper>
