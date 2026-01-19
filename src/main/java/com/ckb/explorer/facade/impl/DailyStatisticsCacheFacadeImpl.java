@@ -29,21 +29,21 @@ public class DailyStatisticsCacheFacadeImpl implements DailyStatisticsCacheFacad
 
 
   @Override
-  public List<DailyStatisticResponse> getDailyStatisticsByIndicator(String indicator) {
+  public List<DailyStatisticResponse> getDailyStatisticsByIndicator(String indicator, Integer limit) {
     // 创建缓存键
-    String cacheKey = String.format("%s%s:indicator:%s", DAILY_STATISTICS_CACHE_PREFIX,
-        CACHE_VERSION, indicator);
+    String cacheKey = String.format("%s%s:indicator:%s:limit:%d", DAILY_STATISTICS_CACHE_PREFIX,
+        CACHE_VERSION, indicator, limit);
 
     return cacheUtils.getCacheWithoutLock(
         cacheKey,                    // 缓存键
-        () -> loadFromDatabase(indicator),  // 数据加载函数
+        () -> loadFromDatabase(indicator, limit),  // 数据加载函数
         ONE_HOUR_TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
   }
 
-  private List<DailyStatisticResponse> loadFromDatabase(String indicator) {
+  private List<DailyStatisticResponse> loadFromDatabase(String indicator, Integer limit) {
     // 根据指标名称从数据库加载数据
-    return dailyStatisticsService.getByIndicator(indicator);
+    return dailyStatisticsService.getByIndicator(indicator, limit);
   }
 }

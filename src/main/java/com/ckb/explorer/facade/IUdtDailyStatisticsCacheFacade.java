@@ -4,5 +4,5 @@ import com.ckb.explorer.domain.resp.UdtDailyStatisticsResponse;
 import java.util.List;
 
 public interface IUdtDailyStatisticsCacheFacade {
-  List<UdtDailyStatisticsResponse> index();
+  List<UdtDailyStatisticsResponse> index(Integer limit);
 }

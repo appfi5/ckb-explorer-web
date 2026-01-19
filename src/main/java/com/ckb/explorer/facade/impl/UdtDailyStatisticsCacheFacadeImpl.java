@@ -23,20 +23,20 @@ public class UdtDailyStatisticsCacheFacadeImpl implements IUdtDailyStatisticsCac
   // 缓存 TTL: 15分钟
   private static final long TTL_SECONDS = 15 * 60;
   @Override
-  public List<UdtDailyStatisticsResponse> index() {
+  public List<UdtDailyStatisticsResponse> index(Integer limit) {
     // 创建缓存键
-    String cacheKey = String.format("%s%s", CACHE_PREFIX,
-        CACHE_VERSION);
+    String cacheKey = String.format("%s%s:limit:%d", CACHE_PREFIX,
+        CACHE_VERSION, limit);
     return cacheUtils.getCache(
         cacheKey,                    // 缓存键
-        this::loadFromDatabase,  // 数据加载函数
+        () -> loadFromDatabase(limit),  // 数据加载函数
         TTL_SECONDS,                 // 缓存过期时间
         TimeUnit.SECONDS             // 时间单位
     );
 
   }
 
-  private List<UdtDailyStatisticsResponse> loadFromDatabase() {
-    return udtDailyStatisticsService.getUdtDailyStatistics();
+  private List<UdtDailyStatisticsResponse> loadFromDatabase(Integer limit) {
+    return udtDailyStatisticsService.getUdtDailyStatistics(limit);
   }
 }

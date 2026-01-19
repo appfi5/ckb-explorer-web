@@ -6,5 +6,5 @@ import com.ckb.explorer.entity.UdtDailyStatistics;
 import java.util.List;
 
 public interface UdtDailyStatisticsService extends IService<UdtDailyStatistics> {
-  List<UdtDailyStatisticsResponse> getUdtDailyStatistics();
+  List<UdtDailyStatisticsResponse> getUdtDailyStatistics(Integer limit);
 }

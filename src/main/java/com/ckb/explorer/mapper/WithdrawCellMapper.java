@@ -14,4 +14,6 @@ import java.util.List;
 public interface WithdrawCellMapper extends BaseMapper<WithdrawCell> {
 
   List<DaoCellDto> getUnConsumedCellsByLockScriptId(Long lockScriptId);
+
+  List<DaoCellDto> getConsumedCellsByLockScriptId(Long lockScriptId);
 }

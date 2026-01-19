@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -63,17 +64,24 @@ public class DailyStatisticsController {
    * 获取指定指标的每日统计数据
    *
    * @param indicator 指标名称
+   * @param limit 返回数据条数
    * @return 包含统计数据的响应
    */
   @GetMapping("/{indicator}")
   public ResponseEntity<ResponseInfo<List<DailyStatisticResponse>>> show(
-      @PathVariable("indicator") String indicator) {
+      @PathVariable("indicator") String indicator,
+      @RequestParam(defaultValue = "15") Integer limit) {
     // 验证查询参数
     validateQueryParams(indicator.trim());
 
+    // 限制一下limit的值
+    if(limit != null && limit > 5* 365){
+      throw new IllegalArgumentException("limit too large");
+    }
+
     // 从缓存门面获取数据
     List<DailyStatisticResponse> dailyStatistics = dailyStatisticsCacheFacade.getDailyStatisticsByIndicator(
-        indicator.trim());
+        indicator.trim(), limit);
 
     CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.MINUTES)
         .cachePublic() // 允许公共缓存（CDN、代理服务器等）

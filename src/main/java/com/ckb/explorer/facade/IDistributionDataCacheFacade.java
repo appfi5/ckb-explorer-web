@@ -14,5 +14,5 @@ public interface IDistributionDataCacheFacade {
      */
     DistributionDataResponse getDistributionDataByIndicator(String indicator);
 
-    DistributionDataResponse getAverageBlockTime();
+    DistributionDataResponse getAverageBlockTime(Integer limit);
 }
