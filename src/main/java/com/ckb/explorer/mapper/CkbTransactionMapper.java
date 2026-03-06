@@ -6,6 +6,7 @@ import com.ckb.explorer.domain.dto.TransactionDto;
 import com.ckb.explorer.domain.resp.AddressTransactionPageResponse;
 import com.ckb.explorer.domain.resp.ContractTransactionPageResponse;
 import com.ckb.explorer.domain.resp.TransactionPageResponse;
+import com.ckb.explorer.domain.resp.UdtTransactionPageResponse;
 import com.ckb.explorer.entity.CkbTransaction;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -47,4 +48,6 @@ public interface CkbTransactionMapper extends BaseMapper<CkbTransaction> {
   List<ContractTransactionPageResponse> selectContractTransactions(@Param("txHashs") List<byte[]> txHashs);
 
   Page<ContractTransactionPageResponse> getPageContractTransactions(Page page, @Param("lockScriptId") Long lockScriptId, @Param("typeScriptId") Long typeScriptId);
+
+  List<UdtTransactionPageResponse> selectUdtTransactionByTxHash( @Param("txHashes") List<byte[]> txHashes,@Param("orderByStr") String orderBy, @Param("ascOrDesc") String ascOrDesc);
 }

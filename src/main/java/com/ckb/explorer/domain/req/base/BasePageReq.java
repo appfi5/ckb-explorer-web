@@ -1,6 +1,7 @@
 package com.ckb.explorer.domain.req.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.io.Serializable;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class BasePageReq implements Serializable {
    */
   @Schema(description = "当前页面数据量", example = "10")
   @Min(value = 1, message = "Params pageSize should be an integer greater than 0")
+  @Max(value = 100, message = "Params pageSize should be an integer lesser than 100")
   private int pageSize = 10;
   /**
    * 当前页码

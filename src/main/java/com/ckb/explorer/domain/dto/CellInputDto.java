@@ -19,6 +19,7 @@ public class CellInputDto {
    */
   private BigInteger occupiedCapacity;
 
+  private Long lockScriptId;
 
   private byte[] lockCodeHash;
 

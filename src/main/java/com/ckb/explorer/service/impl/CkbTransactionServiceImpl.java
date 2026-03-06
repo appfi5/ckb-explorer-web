@@ -34,6 +34,7 @@ import com.ckb.explorer.util.CkbUtil;
 import com.ckb.explorer.util.DaoCompensationCalculator;
 import com.ckb.explorer.util.I18n;
 import jakarta.annotation.Resource;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -42,8 +43,10 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -385,6 +388,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     String orderBy = sortParts[0];
     String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
 
+    if (!"asc".equals(ascOrDesc) && !"desc".equals(ascOrDesc)) {
+      ascOrDesc = "desc";
+    }
+
     orderBy = switch (orderBy) {
       case "time" -> "block_timestamp";
       default -> throw new ServerException(i18n.getMessage(I18nKey.SORT_ERROR_MESSAGE));
@@ -492,7 +499,8 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         records.add(cellInput);
         transaction.setDisplayInputs(records);
 
-        List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.INSTANCE.toConvertList(cellbaseOutputsWithTrans.get(transaction.getId()));
+        List<CellOutputDto> cellOutputDtos = cellbaseOutputsWithTrans.get(transaction.getId());
+        List<CellOutputResponse> cellbaseOutput = CellOutputConvert.INSTANCE.toConvertList(cellOutputDtos);
         if(cellbaseOutput != null && cellbaseOutput.size() > 0){
           cellbaseOutput.stream().forEach(record-> record.setTargetBlockNumber(targetBlockNumber));
         }else{
@@ -500,13 +508,20 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         }
 
         transaction.setDisplayOutputs(cellbaseOutput);
+        Map<Long, BigInteger> income = calculateIncome(cellOutputDtos, null);
+        transaction.setIncome(income.get(script.getId()));
         // 组装普通交易
       }else{
-        transaction.setDisplayInputs(CellInputConvert.INSTANCE.toConvertList(
-            normalInputsWithTrans.get(transaction.getId())));
+        List<CellInputDto> cellInputDtos = normalInputsWithTrans.get(transaction.getId());
+        transaction.setDisplayInputs(CellInputConvert.INSTANCE.toConvertList(cellInputDtos));
 
-        transaction.setDisplayOutputs(CellOutputConvert.INSTANCE.INSTANCE.toConvertList(
-            normalOutputsWithTrans.get(transaction.getId())));
+        List<CellOutputDto> cellOutputDtos = normalOutputsWithTrans.get(transaction.getId());
+        transaction.setDisplayOutputs(CellOutputConvert.INSTANCE.toConvertList(cellOutputDtos));
+
+        if(transaction.getDisplayInputsCount() == cellInputDtos.size() && transaction.getDisplayOutputsCount() == cellOutputDtos.size() ){
+          Map<Long, BigInteger> income = calculateIncome(cellOutputDtos, cellInputDtos);
+          transaction.setIncome(income.get(script.getId()));
+        }
       }
     });
 
@@ -522,6 +537,10 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
     String[] sortParts = req.getSort().split("\\.", 2);
     String orderBy = sortParts[0];
     String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+
+    if (!"asc".equals(ascOrDesc) && !"desc".equals(ascOrDesc)) {
+      ascOrDesc = "desc";
+    }
 
     orderBy = switch (orderBy) {
       case "time" -> "block_timestamp";
@@ -551,16 +570,18 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
 
     // 从24小时表里获取翻页的交易id
     Page<Long> transactionIdsPage = new Page<>(page, pageSize);
-    Page<Long> transactionIdPage = outputMapper.getUdtTransactionHashes(
-            transactionIdsPage, script.getId(), orderBy, ascOrDesc,txHash,lockScriptId);
-
-    List<Long> transactionIds = transactionIdPage.getRecords();
-    if (transactionIds.isEmpty()){
+    transactionIdsPage.setSearchCount(false);
+    Long total = outputMapper.getUdtTransactionTxHashesTotal(script.getId(),txHash,lockScriptId);
+    if (total == 0){
       return Page.of(page, pageSize, 0);
     }
+    Page<byte[]> transactionIdPage = outputMapper.getUdtTransactionTxHashes(
+            transactionIdsPage, script.getId(), orderBy, ascOrDesc,txHash,lockScriptId);
+
+    List<byte[]> txHashes = transactionIdPage.getRecords();
 
     // 根据交易id查询交易详情
-    List<UdtTransactionPageResponse> transactions = CkbTransactionConvert.INSTANCE.toConvertUdtTransactionList(baseMapper.selectByTransactionIds(transactionIds, orderBy, ascOrDesc));
+    List<UdtTransactionPageResponse> transactions = baseMapper.selectUdtTransactionByTxHash(txHashes, orderBy, ascOrDesc);
 
     // 分开处理cellbase和普通交易
     var cellbaseTransactionsIds = transactions.stream().filter(transaction-> transaction.getIsCellbase()).map(UdtTransactionPageResponse::getId).collect(Collectors.toList());
@@ -634,7 +655,7 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
       }
     });
 
-    var result = new Page<UdtTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), transactionIdPage.getTotal());
+    var result = new Page<UdtTransactionPageResponse>(transactionIdPage.getCurrent(), transactionIdPage.getSize(), total);
     result.setRecords(transactions);
     return result;
   }
@@ -786,4 +807,53 @@ public class CkbTransactionServiceImpl extends ServiceImpl<CkbTransactionMapper,
         compensationStartedBlock.getDao()));
     return nervosDaoInfo;
   }
+
+  /**
+   * calculate_income 计算一个交易里每个地址的income
+   * @param outputs 输出列表
+   * @param inputs 输入列表
+   * @return 按 (addressId) 分组的收益计算结果
+   */
+  public Map<Long, BigInteger>  calculateIncome(List<CellOutputDto> outputs, List<CellInputDto> inputs) {
+    // 1. 分组 outputs：按 [addressId] 分组，对应 Ruby 的 group_by
+    outputs = outputs == null ? new ArrayList<>() : outputs;
+    Map<Long, BigInteger> addressOutCapMap = outputs.stream()
+        .collect(Collectors.groupingBy(
+            CellOutputDto::getLockScriptId,
+            Collectors.reducing(
+                BigInteger.ZERO,  // 初始值：BigInteger的0
+                CellOutputDto::getCapacity,
+                BigInteger::add   // BigInteger的加法
+            )
+        ));
+    // 2. 分组 inputs：按 [addressId] 分组
+    inputs = inputs == null ? new ArrayList<>() : inputs;
+    Map<Long, BigInteger> addressInCapMap = inputs.stream()
+        .collect(Collectors.groupingBy(
+            CellInputDto::getLockScriptId,
+            Collectors.reducing(
+                BigInteger.ZERO,
+                CellInputDto::getCapacity,
+                BigInteger::add
+            )
+        ));
+
+    // 3. 合并所有分组键并去重，对应 Ruby 的 (keys + keys).uniq
+    Set<Long> allKeys = new HashSet<>();
+    allKeys.addAll(addressOutCapMap.keySet());
+    allKeys.addAll(addressInCapMap.keySet());
+
+    // 4. 遍历所有键，计算每组的 income
+    return allKeys.stream()
+        .collect(Collectors.toMap(
+            lockScriptId -> lockScriptId,
+            lockScriptId -> {
+              // 空值默认0（BigInteger.ZERO）
+              BigInteger outCap = addressOutCapMap.getOrDefault(lockScriptId, BigInteger.ZERO);
+              BigInteger inCap = addressInCapMap.getOrDefault(lockScriptId, BigInteger.ZERO);
+              return outCap.subtract(inCap); // BigInteger的减法
+            }
+        ));
+  }
+
 }

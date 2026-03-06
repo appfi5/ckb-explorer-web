@@ -17,6 +17,8 @@ public class CellOutputDto {
    */
   private BigInteger occupiedCapacity;
 
+  private Long lockScriptId;
+
   private byte[] lockCodeHash;
 
   private byte[] lockArgs;

@@ -168,6 +168,19 @@ public interface DobExtendMapper extends BaseMapper<DobExtend> {
             "where dlc.lock_script_id = #{lockScriptId} ")
     List<AccountNftDto> accountNftInfo(@Param("lockScriptId") Long lockScriptId);
 
+
+
+    @Select("select '0x' || encode(de.args, 'hex')                 as collection_id,\n" +
+            "       de.name                                        as collection_name,\n" +
+            "       '0x' || encode(de.dob_script_hash, 'hex')      as type_script_hash,\n" +
+            "       '0x' || encode(dc.dob_code_script_args, 'hex') as token_id,\n" +
+            "       case de.standard when 0 then 'spore'  when 1 then 'm_nft' end as standard\n"+
+            "from dob_extend de \n" +
+            "         left join dob_code dc on de.id = dc.dob_extend_id\n" +
+            "where dc.dob_code_script_id =#{dobCodeScriptId} \n" +
+            "limit 1")
+    NftResponse getNftByDobCodeScriptId(@Param("dobCodeScriptId") Long dobCodeScriptId);
+
 }
 
 

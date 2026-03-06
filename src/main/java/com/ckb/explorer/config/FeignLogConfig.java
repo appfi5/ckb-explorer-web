@@ -15,6 +15,6 @@ public class FeignLogConfig {
     @Bean()
     Logger.Level feignLoggerLevel() {
         //这里记录所有，根据实际情况选择合适的日志level
-        return Logger.Level.FULL;
+        return Logger.Level.BASIC;
     }
 }

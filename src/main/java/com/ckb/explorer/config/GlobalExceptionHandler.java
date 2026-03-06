@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ResponseInfo<Error> handleError404(HttpServletRequest request, NoHandlerFoundException e) {
-    return new ResponseInfo<>(ResultCode.NOT_FOUND, "Request URL: [" + request.getRequestURI() + "] Not Found!",null);
+    return new ResponseInfo<>(ResultCode.NOT_FOUND, "Request URL Not Found!",null);
   }
 
   @ExceptionHandler
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseInfo<Error> illegalArgumentException(IllegalArgumentException e) {
     log.error("exception.", e);
-    return new ResponseInfo<>(ResultCode.PARAM_INVALID, e.getMessage(), null);
+    return new ResponseInfo<>(ResultCode.PARAM_INVALID, ResultCode.PARAM_INVALID.getMsg(), null);
   }
 
   @ExceptionHandler
@@ -117,6 +117,6 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ResponseInfo<Error> exception(Exception exp) {
     log.error("Exception.", exp);
-    return new ResponseInfo<>(ResultCode.SERVER_ERROR.getCode(), i18n.getMessage(exp.getMessage()));
+    return new ResponseInfo<>(ResultCode.SERVER_ERROR.getCode(), ResultCode.SERVER_ERROR.getMsg());
   }
 }

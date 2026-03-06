@@ -1,4 +1,6 @@
 FROM docker.io/library/maven:3.9.11-eclipse-temurin-21-alpine
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 
 WORKDIR /
 COPY target/ckb-explorer-web.jar app.jar

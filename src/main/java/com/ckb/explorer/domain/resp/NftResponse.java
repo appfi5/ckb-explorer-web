@@ -13,5 +13,6 @@ public class NftResponse {
   private String collectionId;
   private String collectionName;
   private String typeScriptHash;
+  private String standard;
 
 }
