@@ -1,18 +1,25 @@
 package com.ckb.explorer.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+
+
         // 允许所有路径使用跨域配置
         registry.addMapping("/**")
                 // 允许所有来源
-                .allowedOrigins("*")
+                .allowedOrigins(allowedOrigins.split(","))
                 // 允许的请求方法
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 // 允许的请求头

@@ -26,6 +26,8 @@ public interface UdtHolderAllocationsMapper extends BaseMapper<UdtHolderAllocati
     Page<UdtAddressCountDto> getAddressNum(Page page, @Param("orderByStr") String orderByStr,
                                            @Param("ascOrDesc") String ascOrDesc);
 
+    Long selectUdtTotal();
+
 
 
 }

@@ -20,4 +20,10 @@ databaseChangeLog:
         - sqlFile:
             path: sql-scripts/20260114001-create-app-info-table.sql
             relativeToChangelogFile: true
-
+  - changeSet:
+      id: 20260120001
+      author: zhutao
+      changes:
+        - sqlFile:
+            path: sql-scripts/20260120001-create-bitcoin-info-table.sql
+            relativeToChangelogFile: true

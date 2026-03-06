@@ -22,13 +22,22 @@
     </resultMap>
 
     <select id="getAddressNum" resultMap="addressCount">
+        WITH ranked_add AS (select type_script_id, tx_hash,consumed_tx_hash,is_spent from address_24h_transaction
+        where block_timestamp >= (SELECT MAX(block_timestamp) - 86400000 FROM address_24h_transaction))
         select uh.type_script_id as typeScriptId ,uh.addressesCount,COALESCE(at.h24CkbTransactionsCount,0) as h24CkbTransactionsCount from
         (select  type_script_id ,
         sum(holder_count) as addressesCount
         from udt_holder_allocations group by type_script_id ) as uh
-        left join (select type_script_id, count(distinct  ckb_transaction_id) as h24CkbTransactionsCount
-        from address_24h_transaction group by type_script_id ) as at on at.type_script_id = uh.type_script_id
+        left join (
+            select type_script_id,count(*) as h24CkbTransactionsCount from
+        (select type_script_id,tx_hash from ranked_add union
+        select type_script_id,consumed_tx_hash as tx_hash from ranked_add r2 where r2.is_spent=1
+        ) as ra group by type_script_id ) as at on at.type_script_id = uh.type_script_id
         order by ${orderByStr} ${ascOrDesc}
+    </select>
+
+    <select id="selectUdtTotal" resultType="java.lang.Long">
+        select count(*) from type_script_extend
     </select>
 
 </mapper>

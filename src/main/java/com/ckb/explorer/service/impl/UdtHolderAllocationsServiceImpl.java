@@ -90,12 +90,17 @@ public class UdtHolderAllocationsServiceImpl extends ServiceImpl<UdtHolderAlloca
             orderBy = "h24CkbTransactionsCount";
         }
         String ascOrDesc = sortParts.length > 1 ? sortParts[1].toLowerCase() : "desc";
+        if (!"asc".equals(ascOrDesc) && !"desc".equals(ascOrDesc)) {
+            ascOrDesc = "desc";
+        }
         Page<UdtAddressCountDto> page = new Page<>(req.getPage(), req.getPageSize());
-
-        Page<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum(page,orderBy,ascOrDesc);
-        if(CollectionUtils.isEmpty(addressesCounts.getRecords())){
+        page.setSearchCount(false);
+        Long total = super.baseMapper.selectUdtTotal();
+        if(total==0){
             return new Page<>(req.getPage(), req.getPageSize());
         }
+        Page<UdtAddressCountDto> addressesCounts = super.baseMapper.getAddressNum(page,orderBy,ascOrDesc);
+        addressesCounts.setTotal(total);
 
         List<Long> typeScriptIds = addressesCounts.getRecords().stream().map(UdtAddressCountDto::getTypeScriptId).collect(Collectors.toList());
         List<Script> scripts = scriptService.listByIds(typeScriptIds);

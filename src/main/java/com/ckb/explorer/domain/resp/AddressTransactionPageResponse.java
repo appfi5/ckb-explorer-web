@@ -2,7 +2,9 @@ package com.ckb.explorer.domain.resp;
 
 import com.ckb.explorer.domain.resp.base.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.math.BigDecimal;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import java.math.BigInteger;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,7 +36,8 @@ public class AddressTransactionPageResponse extends BaseResponse<Long> {
 
   private List<CellOutputResponse> displayOutputs;
 
-  // private BigDecimal income; // 不展示
+  @JsonSerialize(using = ToStringSerializer.class)
+  private BigInteger income = BigInteger.ZERO;
 
   // private Boolean isRgbTransaction; // object.rgb_transaction 一期不做rgb++
 

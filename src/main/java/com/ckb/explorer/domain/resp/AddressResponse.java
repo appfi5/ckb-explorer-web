@@ -65,4 +65,6 @@ public class AddressResponse extends BaseResponse<Long> {
 
   private String bitcoinAddressHash; // 一期不做rgb++ 比特币相关
 
+  private Long timestamp;
+
 }
